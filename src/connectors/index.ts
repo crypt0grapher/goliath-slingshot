@@ -26,12 +26,11 @@ export function getNetworkLibrary(): Web3Provider {
 }
 
 export const injected = new InjectedConnector({
-  supportedChainIds: [1, 4],
+  supportedChainIds: [8901],
 });
 
-// mainnet only
 export const walletconnect = new WalletConnectConnector({
-  rpc: { 1: REACT_APP_NETWORK_URL },
+  rpc: { [NETWORK_CHAIN_ID]: REACT_APP_NETWORK_URL },
   bridge: 'https://bridge.walletconnect.org',
   qrcode: true,
   pollingInterval: 15000,
@@ -49,9 +48,8 @@ export const walletconnect = new WalletConnectConnector({
 //   networks: [1]
 // })
 
-// mainnet only
 export const walletlink = new WalletLinkConnector({
   url: REACT_APP_NETWORK_URL,
-  appName: 'Swap',
+  appName: 'Goliath Slingshot',
   // appLogoUrl: '',
 });

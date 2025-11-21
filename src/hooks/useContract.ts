@@ -1,6 +1,7 @@
 import { Contract } from '@ethersproject/contracts';
 import StakingRewardsJson from '@uniswap/liquidity-staker/build/StakingRewards.json';
 import { ChainId, WETH } from '@uniswap/sdk';
+import { WXCN } from '../constants';
 import IUniswapV2PairJson from '@uniswap/v2-core/build/IUniswapV2Pair.json';
 import { useMemo } from 'react';
 import {
@@ -37,7 +38,9 @@ export function useTokenContract(tokenAddress?: string, withSignerIfPossible?: b
 
 export function useWETHContract(withSignerIfPossible?: boolean): Contract | null {
   const { chainId } = useActiveWeb3React();
-  return useContract(chainId ? WETH[chainId].address : undefined, WETH_ABI, withSignerIfPossible);
+  // For Goliath testnet, use WXCN instead of WETH
+  const wethAddress = chainId === ChainId.GOLIATH_TESTNET ? WXCN.address : chainId ? WETH[chainId]?.address : undefined;
+  return useContract(wethAddress, WETH_ABI, withSignerIfPossible);
 }
 
 export function useArgentWalletDetectorContract(): Contract | null {

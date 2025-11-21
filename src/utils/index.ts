@@ -17,7 +17,7 @@ export function isAddress(value: any): string | false {
   }
 }
 
-const ETHERSCAN_PREFIXES: { [chainId in ChainId]: string } = {
+const ETHERSCAN_PREFIXES: { [chainId: number]: string } = {
   1: '',
   3: 'ropsten.',
   4: 'rinkeby.',
@@ -26,10 +26,26 @@ const ETHERSCAN_PREFIXES: { [chainId in ChainId]: string } = {
 };
 
 export function getEtherscanLink(
-  chainId: ChainId,
+  chainId: ChainId | number,
   data: string,
   type: 'transaction' | 'token' | 'address' | 'block'
 ): string {
+  // Goliath Testnet uses Blockscout explorer
+  if (chainId === 8901) {
+    const baseUrl = 'https://testnet.explorer.goliath.net';
+    switch (type) {
+      case 'transaction':
+        return `${baseUrl}/tx/${data}`;
+      case 'token':
+        return `${baseUrl}/token/${data}`;
+      case 'block':
+        return `${baseUrl}/block/${data}`;
+      case 'address':
+      default:
+        return `${baseUrl}/address/${data}`;
+    }
+  }
+
   const prefix = `https://${ETHERSCAN_PREFIXES[chainId] || ETHERSCAN_PREFIXES[1]}etherscan.io`;
 
   switch (type) {

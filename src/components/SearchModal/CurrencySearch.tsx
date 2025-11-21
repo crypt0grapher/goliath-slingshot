@@ -80,7 +80,8 @@ export function CurrencySearch({
 
   const showETH: boolean = useMemo(() => {
     const s = searchQuery.toLowerCase().trim();
-    return s === '' || s === 'e' || s === 'et' || s === 'eth';
+    // Show native currency for ETH searches or XCN searches
+    return s === '' || s === 'e' || s === 'et' || s === 'eth' || s === 'x' || s === 'xc' || s === 'xcn';
   }, [searchQuery]);
 
   const tokenComparator = useTokenComparator(invertSearchOrder);
@@ -146,7 +147,7 @@ export function CurrencySearch({
     (e: KeyboardEvent<HTMLInputElement>) => {
       if (e.key === 'Enter') {
         const s = searchQuery.toLowerCase().trim();
-        if (s === 'eth') {
+        if (s === 'eth' || s === 'xcn') {
           handleCurrencySelect(ETHER);
         } else if (filteredSortedTokens.length > 0) {
           if (

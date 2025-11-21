@@ -1,7 +1,8 @@
 import { splitSignature } from '@ethersproject/bytes';
 import { Contract } from '@ethersproject/contracts';
 import { TransactionResponse } from '@ethersproject/providers';
-import { Currency, currencyEquals, ETHER, Percent, WETH } from '@uniswap/sdk';
+import { ChainId, Currency, currencyEquals, ETHER, Percent, WETH } from '@uniswap/sdk';
+import { WXCN } from '../../constants';
 import React, { useCallback, useContext, useMemo, useState } from 'react';
 import { ArrowDown, Plus } from 'react-feather';
 import { RouteComponentProps } from 'react-router';
@@ -427,10 +428,14 @@ export default function RemoveLiquidity({
   );
 
   const oneCurrencyIsETH = currencyA === ETHER || currencyB === ETHER;
+  // Get the correct wrapped native token for the chain
+  const wrappedNativeToken = chainId === ChainId.GOLIATH_TESTNET ? WXCN : chainId ? WETH[chainId] : undefined;
+
   const oneCurrencyIsWETH = Boolean(
     chainId &&
-      ((currencyA && currencyEquals(WETH[chainId], currencyA)) ||
-        (currencyB && currencyEquals(WETH[chainId], currencyB)))
+      wrappedNativeToken &&
+      ((currencyA && currencyEquals(wrappedNativeToken, currencyA)) ||
+        (currencyB && currencyEquals(wrappedNativeToken, currencyB)))
   );
 
   const handleSelectCurrencyA = useCallback(
@@ -570,17 +575,17 @@ export default function RemoveLiquidity({
                       <RowBetween style={{ justifyContent: 'flex-end' }}>
                         {oneCurrencyIsETH ? (
                           <StyledInternalLink
-                            to={`/remove/${currencyA === ETHER ? WETH[chainId].address : currencyIdA}/${
-                              currencyB === ETHER ? WETH[chainId].address : currencyIdB
+                            to={`/remove/${currencyA === ETHER && wrappedNativeToken ? wrappedNativeToken.address : currencyIdA}/${
+                              currencyB === ETHER && wrappedNativeToken ? wrappedNativeToken.address : currencyIdB
                             }`}
                           >
-                            Receive WETH
+                            Receive {chainId === (8901 as any) ? 'WXCN' : 'WETH'}
                           </StyledInternalLink>
                         ) : oneCurrencyIsWETH ? (
                           <StyledInternalLink
                             to={`/remove/${
-                              currencyA && currencyEquals(currencyA, WETH[chainId]) ? 'ETH' : currencyIdA
-                            }/${currencyB && currencyEquals(currencyB, WETH[chainId]) ? 'ETH' : currencyIdB}`}
+                              currencyA && wrappedNativeToken && currencyEquals(currencyA, wrappedNativeToken) ? 'ETH' : currencyIdA
+                            }/${currencyB && wrappedNativeToken && currencyEquals(currencyB, wrappedNativeToken) ? 'ETH' : currencyIdB}`}
                           >
                             Receive ETH
                           </StyledInternalLink>

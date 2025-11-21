@@ -126,6 +126,8 @@ const HideSmall = styled.span`
 const NetworkCard = styled(LightCard)`
   border-radius: 0.8rem;
   padding: 8px 12px;
+  white-space: nowrap;
+  min-width: 120px;
   box-shadow: rgba(0, 0, 0, 0.01) 0px 0px 1px, rgba(0, 0, 0, 0.04) 0px 4px 8px, rgba(0, 0, 0, 0.04) 0px 16px 24px,
     rgba(0, 0, 0, 0.01) 0px 24px 32px;
 
@@ -209,6 +211,35 @@ const StyledNavLink = styled(NavLink).attrs({
   `};
 `;
 
+const DisabledNavLink = styled.span`
+  ${({ theme }) => theme.flexRowNoWrap}
+  align-items: left;
+  border-radius: 12px;
+  outline: none;
+  cursor: not-allowed;
+  text-decoration: none;
+  color: ${({ theme }) => theme.text3};
+  font-size: 0.9rem;
+  width: fit-content;
+  padding: 0.3rem 0.6rem;
+  font-weight: 500;
+  opacity: 0.5;
+
+  &:not(:last-child) {
+    margin-right: 0.16rem;
+  }
+
+  ${({ theme }) => theme.mediaWidth.upToSmall`
+    border-radius: 8px;
+    padding: 0.3rem 7%;
+    border: 1px solid ${({ theme }) => theme.bg3};
+
+    &:not(:last-child) {
+      margin-right: 2%;
+    }
+  `};
+`;
+
 export const StyledMenuButton = styled.button`
   position: relative;
   width: 100%;
@@ -240,11 +271,12 @@ export const StyledMenuButton = styled.button`
   }
 `;
 
-const NETWORK_LABELS: { [chainId in ChainId]?: string } = {
+const NETWORK_LABELS: { [chainId: number]: string } = {
   [ChainId.RINKEBY]: 'Rinkeby',
   [ChainId.ROPSTEN]: 'Ropsten',
   [ChainId.GÖRLI]: 'Goerli',
   [ChainId.KOVAN]: 'Kovan',
+  8901: 'Goliath Testnet',
 };
 
 export default function Header() {
@@ -258,7 +290,7 @@ export default function Header() {
       <HeaderRow>
         <Title href=".">
           <Icon>
-            <img width={'22px'} src={darkMode ? LogoDark : Logo} alt="logo" />
+            <img width={'222px'} src={chainId === (8901 as any) ? 'https://testnet.explorer.goliath.net/assets/configs/network_logo.svg' : darkMode ? LogoDark : Logo} alt="logo" />
           </Icon>
         </Title>
       </HeaderRow>
@@ -280,6 +312,9 @@ export default function Header() {
         >
           {t('pool')}
         </StyledNavLink>
+        <DisabledNavLink id={`bridge-nav-link`}>
+          Bridge
+        </DisabledNavLink>
       </HeaderLinks>
 
       <HeaderControls>
@@ -292,7 +327,7 @@ export default function Header() {
           <AccountElement active={!!account} style={{ pointerEvents: 'auto' }}>
             {account && userEthBalance ? (
               <BalanceText style={{ flexShrink: 0 }} pl="0.75rem" pr="0.5rem" fontWeight={500}>
-                {userEthBalance?.toSignificant(4)} ETH
+                {userEthBalance?.toSignificant(7)} XCN
               </BalanceText>
             ) : null}
             <Web3Status />

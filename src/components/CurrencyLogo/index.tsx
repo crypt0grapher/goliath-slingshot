@@ -5,6 +5,7 @@ import styled from 'styled-components';
 import EthereumLogo from '../../assets/images/ethereum-logo.png';
 import useHttpLocations from '../../hooks/useHttpLocations';
 import { WrappedTokenInfo } from '../../state/lists/hooks';
+import { useActiveWeb3React } from '../../hooks';
 import Logo from '../Logo';
 
 const getTokenLogoURL = (address: string) =>
@@ -34,6 +35,7 @@ export default function CurrencyLogo({
   size?: string;
   style?: React.CSSProperties;
 }) {
+  const { chainId } = useActiveWeb3React();
   const uriLocations = useHttpLocations(currency instanceof WrappedTokenInfo ? currency.logoURI : undefined);
 
   const srcs: string[] = useMemo(() => {
@@ -49,8 +51,11 @@ export default function CurrencyLogo({
     return [];
   }, [currency, uriLocations]);
 
+  // For Goliath network, use XCN logo for native token
   if (currency === ETHER) {
-    return <StyledEthereumLogo src={EthereumLogo} size={size} style={style} />;
+    const isGoliath = chainId === (8901 as any);
+    const logoSrc = isGoliath ? 'https://bridge.onyx.org/img/networks/80888.svg' : EthereumLogo;
+    return <StyledEthereumLogo src={logoSrc} size={size} style={style} />;
   }
 
   return <StyledLogo size={size} srcs={srcs} alt={`${currency?.symbol ?? 'token'} logo`} style={style} />;

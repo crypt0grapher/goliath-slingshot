@@ -94,12 +94,17 @@ function CurrencyRow({
   otherSelected: boolean;
   style: CSSProperties;
 }) {
-  const { account } = useActiveWeb3React();
+  const { account, chainId } = useActiveWeb3React();
   const key = currencyKey(currency);
   const selectedTokenList = useCombinedActiveList();
   const isOnSelectedList = isTokenOnList(selectedTokenList, currency);
   const customAdded = useIsUserAddedToken(currency);
   const balance = useCurrencyBalance(account ?? undefined, currency);
+
+  // For Goliath, display XCN instead of ETH
+  const isGoliath = chainId === (8901 as any);
+  const displaySymbol = currency === ETHER && isGoliath ? 'XCN' : currency.symbol;
+  const displayName = currency === ETHER && isGoliath ? 'Onyxcoin' : currency.name;
 
   // only show add or remove buttons if not on selected list
   return (
@@ -112,11 +117,11 @@ function CurrencyRow({
     >
       <CurrencyLogo currency={currency} size={'24px'} />
       <Column>
-        <Text title={currency.name} fontWeight={500}>
-          {currency.symbol}
+        <Text title={displayName} fontWeight={500}>
+          {displaySymbol}
         </Text>
         <TYPE.darkGray ml="0px" fontSize={'12px'} fontWeight={300}>
-          {currency.name} {!isOnSelectedList && customAdded && '• Added by user'}
+          {displayName} {!isOnSelectedList && customAdded && '• Added by user'}
         </TYPE.darkGray>
       </Column>
       <TokenTags currency={currency} />

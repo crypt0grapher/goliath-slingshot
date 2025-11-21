@@ -6,6 +6,8 @@ import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../index';
 import sortByListPriority from 'utils/listSort';
+import { WXCN, USDC_GOLIATH } from '../../constants';
+import { useActiveWeb3React } from '../../hooks';
 
 type TagDetails = Tags[keyof Tags];
 export interface TagInfo extends TagDetails {
@@ -38,6 +40,30 @@ export type TokenAddressMap = Readonly<
   { [chainId in ChainId]: Readonly<{ [tokenAddress: string]: { token: WrappedTokenInfo; list: TokenList } }> }
 >;
 
+// Create Goliath token list
+const GOLIATH_TOKEN_LIST: TokenList = {
+  name: 'Goliath Default',
+  timestamp: new Date().toISOString(),
+  version: { major: 1, minor: 0, patch: 0 },
+  tokens: [
+    {
+      chainId: 8901,
+      address: WXCN.address,
+      decimals: WXCN.decimals,
+      symbol: WXCN.symbol!,
+      name: WXCN.name!,
+      logoURI: 'https://bridge.onyx.org/img/networks/80888.svg',
+    },
+    {
+      chainId: 8901,
+      address: USDC_GOLIATH.address,
+      decimals: USDC_GOLIATH.decimals,
+      symbol: USDC_GOLIATH.symbol!,
+      name: USDC_GOLIATH.name!,
+    },
+  ],
+};
+
 /**
  * An empty result, useful as a default.
  */
@@ -47,6 +73,7 @@ const EMPTY_LIST: TokenAddressMap = {
   [ChainId.ROPSTEN]: {},
   [ChainId.GÖRLI]: {},
   [ChainId.MAINNET]: {},
+  [ChainId.GOLIATH_TESTNET]: {},
 };
 
 const listCache: WeakMap<TokenList, TokenAddressMap> | null =
@@ -97,11 +124,12 @@ export function useAllLists(): {
 
 function combineMaps(map1: TokenAddressMap, map2: TokenAddressMap): TokenAddressMap {
   return {
-    1: { ...map1[1], ...map2[1] },
-    3: { ...map1[3], ...map2[3] },
-    4: { ...map1[4], ...map2[4] },
-    5: { ...map1[5], ...map2[5] },
-    42: { ...map1[42], ...map2[42] },
+    [ChainId.MAINNET]: { ...map1[ChainId.MAINNET], ...map2[ChainId.MAINNET] },
+    [ChainId.ROPSTEN]: { ...map1[ChainId.ROPSTEN], ...map2[ChainId.ROPSTEN] },
+    [ChainId.RINKEBY]: { ...map1[ChainId.RINKEBY], ...map2[ChainId.RINKEBY] },
+    [ChainId.GÖRLI]: { ...map1[ChainId.GÖRLI], ...map2[ChainId.GÖRLI] },
+    [ChainId.KOVAN]: { ...map1[ChainId.KOVAN], ...map2[ChainId.KOVAN] },
+    [ChainId.GOLIATH_TESTNET]: { ...map1[ChainId.GOLIATH_TESTNET], ...map2[ChainId.GOLIATH_TESTNET] },
   };
 }
 
@@ -145,8 +173,16 @@ export function useInactiveListUrls(): string[] {
 
 // get all the tokens from active lists, combine with local default tokens
 export function useCombinedActiveList(): TokenAddressMap {
+  const { chainId } = useActiveWeb3React();
   const activeListUrls = useActiveListUrls();
   const activeTokens = useCombinedTokenMapFromUrls(activeListUrls);
+
+  // For Goliath network, only use Goliath tokens
+  if (chainId === ChainId.GOLIATH_TESTNET) {
+    const goliathTokenMap = listToTokenMap(GOLIATH_TOKEN_LIST);
+    return goliathTokenMap;
+  }
+
   const defaultTokenMap = listToTokenMap(DEFAULT_TOKEN_LIST);
   return combineMaps(activeTokens, defaultTokenMap);
 }
@@ -159,6 +195,13 @@ export function useCombinedInactiveList(): TokenAddressMap {
 
 // used to hide warnings on import for default tokens
 export function useDefaultTokenList(): TokenAddressMap {
+  const { chainId } = useActiveWeb3React();
+
+  // For Goliath network, only use Goliath tokens
+  if (chainId === ChainId.GOLIATH_TESTNET) {
+    return listToTokenMap(GOLIATH_TOKEN_LIST);
+  }
+
   return listToTokenMap(DEFAULT_TOKEN_LIST);
 }
 

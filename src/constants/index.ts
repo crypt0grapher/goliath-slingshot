@@ -9,15 +9,15 @@ import {
 } from '../connectors';
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-export const FACTORY_ADDRESS = '0x6Bd5A1A63ffF10De3c6B7C667040E9AE1B47fDf2';
-export const ROUTER_ADDRESS = '0xA4E1f3fD10E2397f58926E215Ed331D7cDA14056';
+export const FACTORY_ADDRESS = '0x698Ba06870312aEd129fC2e48dc3d002d981aB8E';
+export const ROUTER_ADDRESS = '0x47e948B9583637806c4043aE54041321BD31E017';
 
 export const LP_TOKEN_NAME = 'Swap-LP-Token';
 export const LP_TOKEN_SYMBOL = 'SWAP-LP';
 
 // a list of tokens by chain
 type ChainTokenList = {
-  readonly [chainId in ChainId]: Token[];
+  readonly [chainId: number]: Token[];
 };
 
 export const DAI = new Token(
@@ -33,6 +33,12 @@ export const COMP = new Token(ChainId.MAINNET, '0xc00e94Cb662C3520282E6f57172140
 export const MKR = new Token(ChainId.MAINNET, '0x9f8F72aA9304c8B593d555F12eF6589cC3A579A2', 18, 'MKR', 'Maker');
 export const AMPL = new Token(ChainId.MAINNET, '0xD46bA6D942050d489DBd938a2C909A5d5039A161', 9, 'AMPL', 'Ampleforth');
 export const WBTC = new Token(ChainId.MAINNET, '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599', 8, 'WBTC', 'Wrapped BTC');
+
+// Goliath Testnet tokens
+const GOLIATH_CHAIN_ID = 8901;
+export const USDC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xF568bE1D688353d2813810aA6DaF1cB1dCe38D7E', 6, 'USDC', 'USD Coin');
+export const WXCN = new Token(GOLIATH_CHAIN_ID, '0xec6Cd1441201e36F7289f0B2729a97d091AcB5b7', 8, 'WXCN', 'Wrapped Onyxcoin');
+// Note: XCN is the native token (like ETH), not a ERC20 token
 
 // Block time here is slightly higher (~1s) than average in order to avoid ongoing proposals past the displayed time
 export const AVERAGE_BLOCK_TIME_IN_SECS = 13;
@@ -50,19 +56,21 @@ const WETH_ONLY: ChainTokenList = {
   [ChainId.RINKEBY]: [WETH[ChainId.RINKEBY]],
   [ChainId.GÖRLI]: [WETH[ChainId.GÖRLI]],
   [ChainId.KOVAN]: [WETH[ChainId.KOVAN]],
+  8901: [WXCN], // Use the already defined WXCN token
 };
 
 // used to construct intermediary pairs for trading
 export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
   ...WETH_ONLY,
   [ChainId.MAINNET]: [...WETH_ONLY[ChainId.MAINNET], DAI, USDC, USDT, COMP, MKR, WBTC],
+  8901: [WXCN, USDC_GOLIATH],
 };
 
 /**
  * Some tokens can only be swapped via certain pairs, so we override the list of bases that are considered for these
  * tokens.
  */
-export const CUSTOM_BASES: { [chainId in ChainId]?: { [tokenAddress: string]: Token[] } } = {
+export const CUSTOM_BASES: { [chainId: number]: { [tokenAddress: string]: Token[] } | undefined } = {
   [ChainId.MAINNET]: {
     [AMPL.address]: [DAI, WETH[ChainId.MAINNET]],
   },
@@ -72,6 +80,7 @@ export const CUSTOM_BASES: { [chainId in ChainId]?: { [tokenAddress: string]: To
 export const SUGGESTED_BASES: ChainTokenList = {
   ...WETH_ONLY,
   [ChainId.MAINNET]: [...WETH_ONLY[ChainId.MAINNET], DAI, USDC, USDT, WBTC],
+  8901: [WXCN, USDC_GOLIATH],
 };
 
 // used to construct the list of all pairs we consider by default in the frontend
@@ -82,9 +91,10 @@ export const BASES_TO_TRACK_LIQUIDITY_FOR: ChainTokenList = {
   [ChainId.RINKEBY]: [...WETH_ONLY[ChainId.RINKEBY]],
   [ChainId.GÖRLI]: [...WETH_ONLY[ChainId.GÖRLI]],
   [ChainId.KOVAN]: [...WETH_ONLY[ChainId.KOVAN]],
+  8901: [WXCN, USDC_GOLIATH],
 };
 
-export const PINNED_PAIRS: { readonly [chainId in ChainId]?: [Token, Token][] } = {
+export const PINNED_PAIRS: { readonly [chainId: number]: [Token, Token][] | undefined } = {
   [ChainId.MAINNET]: [
     [
       new Token(ChainId.MAINNET, '0x5d3a536E4D6DbD6114cc1Ead35777bAB948E3643', 8, 'cDAI', 'Compound Dai'),
