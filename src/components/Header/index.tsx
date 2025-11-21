@@ -290,7 +290,7 @@ export default function Header() {
       <HeaderRow>
         <Title href=".">
           <Icon>
-            <img width={'222px'} src={chainId === (8901 as any) ? 'https://testnet.explorer.goliath.net/assets/configs/network_logo.svg' : darkMode ? LogoDark : Logo} alt="logo" />
+            <img width={'222px'} src={chainId && chainId !== (8901 as any) ? (darkMode ? LogoDark : Logo) : 'https://testnet.explorer.goliath.net/assets/configs/network_logo.svg'} alt="logo" />
           </Icon>
         </Title>
       </HeaderRow>
