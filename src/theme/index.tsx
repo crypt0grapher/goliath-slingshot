@@ -59,19 +59,19 @@ export function colors(darkMode: boolean): Colors {
     advancedBG: darkMode ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.6)',
 
     //primary colors
-    primary1: '#2792d6',
-    primary2: '#3099db',
-    primary3: '#389fe0',
-    primary4: '#54afe8',
-    primary5: '#5fb3e8',
+    primary1: '#2d2d2d',
+    primary2: '#3a3a3a',
+    primary3: '#4a4a4a',
+    primary4: '#5a5a5a',
+    primary5: '#6a6a6a',
 
     // color text
     primaryText1: darkMode ? '#fff' : '#000',
 
     // secondary colors
-    secondary1: '#3B6A9C',
-    secondary2: darkMode ? '#17000b26' : '#F6DDE8',
-    secondary3: darkMode ? '#17000b26' : '#FDEAF1',
+    secondary1: '#4a4a4a',
+    secondary2: darkMode ? '#17000b26' : '#e0e0e0',
+    secondary3: darkMode ? '#17000b26' : '#f0f0f0',
 
     // other
     red1: '#FD4040',
@@ -80,7 +80,7 @@ export function colors(darkMode: boolean): Colors {
     green1: '#27AE60',
     yellow1: '#FFE270',
     yellow2: '#F3841E',
-    blue1: '#3B6A9C',
+    blue1: '#4a4a4a',
   };
 }
 
@@ -95,7 +95,7 @@ export function theme(darkMode: boolean): DefaultTheme {
     },
 
     //shadows
-    shadow1: darkMode ? '#000' : '#2F80ED',
+    shadow1: darkMode ? '#000' : '#333333',
 
     // media queries
     mediaWidth: mediaWidthTemplates,
