@@ -1,4 +1,4 @@
-import { CurrencyAmount, JSBI, Token, Trade } from '@uniswap/sdk';
+import { CurrencyAmount, ETHER, JSBI, Token, Trade } from '@uniswap/sdk';
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { ArrowDown } from 'react-feather';
 import { Text } from 'rebass';
@@ -38,6 +38,7 @@ import { computeTradePriceBreakdown, warningSeverity } from '../../utils/prices'
 import AppBody from '../AppBody';
 import { ClickableText } from '../Pool/styleds';
 import Loader from '../../components/Loader';
+import { WXCN } from '../../constants';
 
 export default function Swap() {
   const loadedUrlParams = useDefaultsFromURLSearch();
@@ -87,7 +88,29 @@ export default function Swap() {
   } = useWrapCallback(currencies[Field.INPUT], currencies[Field.OUTPUT], typedValue);
 
   const showWrap: boolean = wrapType !== WrapType.NOT_APPLICABLE;
+
+  // Detect if this is an XCN → Token swap (not XCN → WXCN which is handled by wrap)
+  // These need special handling due to WXCN decimal scaling
+  const isXCNToToken = currencies[Field.INPUT] === ETHER &&
+    currencies[Field.OUTPUT] instanceof Token &&
+    currencies[Field.OUTPUT]?.symbol !== 'WXCN';
+
+  // For XCN → Token swaps, we need to wrap first then swap
+  // So we hide the direct trade and show wrap + swap flow
   const trade = showWrap ? undefined : v2Trade;
+
+  // State for two-step XCN swap process
+  const [xcnSwapStep, setXcnSwapStep] = useState<'idle' | 'wrapping' | 'approving' | 'swapping' | 'done'>('idle');
+
+  // Get wrap callback for XCN → WXCN (used in two-step process)
+  const {
+    execute: executeXcnWrap,
+  } = useWrapCallback(
+    isXCNToToken ? ETHER : undefined,
+    isXCNToToken ? WXCN : undefined,
+    isXCNToToken ? typedValue : undefined
+  );
+
 
   const parsedAmounts = showWrap
     ? {
@@ -189,6 +212,46 @@ export default function Swap() {
         });
       });
   }, [priceImpactWithoutFee, swapCallback, tradeToConfirm, showConfirm]);
+
+  // Handler for XCN → Token two-step swap (wrap first, then swap)
+  const handleXCNSwap = useCallback(async () => {
+    if (!executeXcnWrap || !isXCNToToken) return;
+
+    try {
+      // Step 1: Wrap XCN to WXCN
+      setXcnSwapStep('wrapping');
+      setSwapState({ attemptingTxn: true, tradeToConfirm, showConfirm, swapErrorMessage: undefined, txHash: undefined });
+
+      await executeXcnWrap();
+
+      // After wrapping, user needs to:
+      // 1. Wait for wrap tx to confirm
+      // 2. Approve WXCN for the router
+      // 3. Execute the swap with WXCN as input
+
+      setXcnSwapStep('done');
+      setSwapState({
+        attemptingTxn: false,
+        tradeToConfirm,
+        showConfirm: false,
+        swapErrorMessage: undefined,
+        txHash: undefined,
+      });
+
+      // Show success message - user should now swap WXCN to target token
+      alert('XCN wrapped to WXCN successfully! Now select WXCN as input and swap to your desired token.');
+
+    } catch (error: any) {
+      setXcnSwapStep('idle');
+      setSwapState({
+        attemptingTxn: false,
+        tradeToConfirm,
+        showConfirm,
+        swapErrorMessage: error.message || 'Wrap failed',
+        txHash: undefined,
+      });
+    }
+  }, [executeXcnWrap, isXCNToToken, tradeToConfirm, showConfirm]);
 
   // errors
   const [showInverted, setShowInverted] = useState<boolean>(false);
@@ -363,6 +426,27 @@ export default function Swap() {
                 {wrapInputError ??
                   (wrapType === WrapType.WRAP ? 'Wrap' : wrapType === WrapType.UNWRAP ? 'Unwrap' : null)}
               </ButtonPrimary>
+            ) : isXCNToToken ? (
+              <AutoColumn gap="md">
+                <TYPE.main style={{ textAlign: 'center', marginBottom: '8px' }}>
+                  ⚠️ XCN swaps require wrapping first due to decimal scaling
+                </TYPE.main>
+                <ButtonPrimary
+                  onClick={handleXCNSwap}
+                  disabled={!parsedAmount || xcnSwapStep === 'wrapping'}
+                >
+                  {xcnSwapStep === 'wrapping' ? (
+                    <AutoRow gap="6px" justify="center">
+                      Wrapping XCN... <Loader stroke="white" />
+                    </AutoRow>
+                  ) : (
+                    `Wrap ${typedValue || '0'} XCN to WXCN`
+                  )}
+                </ButtonPrimary>
+                <TYPE.small style={{ textAlign: 'center', color: '#888' }}>
+                  After wrapping, select WXCN as input to complete the swap
+                </TYPE.small>
+              </AutoColumn>
             ) : noRoute && userHasSpecifiedInputOutput ? (
               <GreyCard style={{ textAlign: 'center' }}>
                 <TYPE.main mb="4px">Insufficient liquidity for this trade.</TYPE.main>

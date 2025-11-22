@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
-import { JSBI, Percent, Router, SwapParameters, Trade, TradeType } from '@uniswap/sdk';
+import { ETHER, JSBI, Percent, Router, SwapParameters, Trade, TradeType } from '@uniswap/sdk';
 import { useMemo } from 'react';
 import { BIPS_BASE, INITIAL_ALLOWED_SLIPPAGE } from '../constants';
 import { useTransactionAdder } from '../state/transactions/hooks';
@@ -84,7 +84,19 @@ function useSwapCallArguments(
       args: swapParams.args,
       path: trade.route.path.map(token => `${token.symbol} (${token.address})`),
       allowedSlippage: allowedSlippage,
+      isNativeIn: trade.inputAmount.currency === ETHER,
+      isNativeOut: trade.outputAmount.currency === ETHER,
     });
+
+    // Additional check for native currency swaps
+    if (trade.inputAmount.currency === ETHER || trade.outputAmount.currency === ETHER) {
+      console.log('DEBUG: Native currency swap detected', {
+        routerMethod: swapParams.methodName,
+        expectedPath0: trade.inputAmount.currency === ETHER ? 'Should be WXCN address' : 'N/A',
+        actualPath0: swapParams.args[1] ? swapParams.args[1][0] : 'N/A',
+        WXCN_ADDRESS: '0xd319Df5FA3efb42B5fe4c5f873A7049f65428877'
+      });
+    }
 
     swapMethods.push(swapParams);
 
@@ -144,6 +156,11 @@ export function useSwapCallback(
 
             return contract.estimateGas[methodName](...args, options)
               .then((gasEstimate) => {
+                console.log('DEBUG: Gas estimate successful', {
+                  method: methodName,
+                  gasEstimate: gasEstimate.toString(),
+                  value: value
+                });
                 return {
                   call,
                   gasEstimate,
