@@ -315,6 +315,9 @@ export default function Header() {
         <DisabledNavLink id={`bridge-nav-link`}>
           Bridge
         </DisabledNavLink>
+        <DisabledNavLink id={`yield-nav-link`}>
+          Yield
+        </DisabledNavLink>
       </HeaderLinks>
 
       <HeaderControls>
