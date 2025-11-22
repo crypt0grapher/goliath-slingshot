@@ -182,7 +182,9 @@ export function useToken(tokenAddress?: string): Token | undefined | null {
 }
 
 export function useCurrency(currencyId: string | undefined): Currency | null | undefined {
-  const isETH = currencyId?.toUpperCase() === 'ETH';
-  const token = useToken(isETH ? undefined : currencyId);
-  return isETH ? ETHER : token;
+  // Accept both 'ETH' and 'XCN' as native currency identifiers
+  // ETH is standard Uniswap convention, XCN is the native token on Goliath
+  const isNativeCurrency = currencyId?.toUpperCase() === 'ETH' || currencyId?.toUpperCase() === 'XCN';
+  const token = useToken(isNativeCurrency ? undefined : currencyId);
+  return isNativeCurrency ? ETHER : token;
 }

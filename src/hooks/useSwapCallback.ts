@@ -60,14 +60,33 @@ function useSwapCallArguments(
 
     const swapMethods = [];
 
-    swapMethods.push(
-      Router.swapCallParameters(trade, {
-        feeOnTransfer: false,
-        allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
-        recipient,
-        deadline: deadline.toNumber(),
-      })
-    );
+    const swapParams = Router.swapCallParameters(trade, {
+      feeOnTransfer: false,
+      allowedSlippage: new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE),
+      recipient,
+      deadline: deadline.toNumber(),
+    });
+
+    // Debug logging for swap parameters
+    console.log('DEBUG: Swap Parameters:', {
+      methodName: swapParams.methodName,
+      inputCurrency: trade.inputAmount.currency.symbol,
+      outputCurrency: trade.outputAmount.currency.symbol,
+      inputAmount: trade.inputAmount.toExact(),
+      outputAmount: trade.outputAmount.toExact(),
+      inputAmountRaw: trade.inputAmount.raw.toString(),
+      outputAmountRaw: trade.outputAmount.raw.toString(),
+      minimumAmountOut: trade.minimumAmountOut(new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE)).toExact(),
+      minimumAmountOutRaw: trade.minimumAmountOut(new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE)).raw.toString(),
+      maximumAmountIn: trade.maximumAmountIn(new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE)).toExact(),
+      maximumAmountInRaw: trade.maximumAmountIn(new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE)).raw.toString(),
+      value: swapParams.value,
+      args: swapParams.args,
+      path: trade.route.path.map(token => `${token.symbol} (${token.address})`),
+      allowedSlippage: allowedSlippage,
+    });
+
+    swapMethods.push(swapParams);
 
     if (trade.tradeType === TradeType.EXACT_INPUT) {
       swapMethods.push(

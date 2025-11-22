@@ -18,7 +18,7 @@ const initialState: SwapState = {
   independentField: Field.INPUT,
   typedValue: '',
   [Field.INPUT]: {
-    currencyId: 'XCN', // Default to native token (XCN on Goliath, ETH on Ethereum)
+    currencyId: 'ETH', // Default to native token (XCN on Goliath, ETH on Ethereum) - use 'ETH' as standard identifier
   },
   [Field.OUTPUT]: {
     currencyId: '',

@@ -92,11 +92,32 @@ export function useTradeExactIn(currencyAmountIn?: CurrencyAmount, currencyOut?:
 
   return useMemo(() => {
     if (currencyAmountIn && currencyOut && allowedPairs.length > 0) {
+      console.log('DEBUG: Computing trade exactIn', {
+        inputCurrency: currencyAmountIn.currency.symbol,
+        inputDecimals: currencyAmountIn.currency.decimals,
+        inputAmount: currencyAmountIn.toExact(),
+        inputAmountRaw: currencyAmountIn.raw.toString(),
+        outputCurrency: currencyOut.symbol,
+        outputDecimals: currencyOut.decimals,
+        pairsCount: allowedPairs.length,
+        pairs: allowedPairs.map(p => `${p.token0.symbol}/${p.token1.symbol}`)
+      });
+
       if (singleHopOnly) {
-        return (
-          Trade.bestTradeExactIn(allowedPairs, currencyAmountIn, currencyOut, { maxHops: 1, maxNumResults: 1 })[0] ??
-          null
-        );
+        const trades = Trade.bestTradeExactIn(allowedPairs, currencyAmountIn, currencyOut, { maxHops: 1, maxNumResults: 1 });
+        const trade = trades[0] ?? null;
+        if (trade) {
+          console.log('DEBUG: Trade found (single hop)', {
+            inputAmount: trade.inputAmount.toExact(),
+            outputAmount: trade.outputAmount.toExact(),
+            inputAmountRaw: trade.inputAmount.raw.toString(),
+            outputAmountRaw: trade.outputAmount.raw.toString(),
+            executionPrice: trade.executionPrice.toSignificant(6),
+            priceImpact: trade.priceImpact.toSignificant(2),
+            route: trade.route.path.map(t => t.symbol).join(' -> ')
+          });
+        }
+        return trade;
       }
       // search through trades with varying hops, find best trade out of them
       let bestTradeSoFar: Trade | null = null;
@@ -109,6 +130,19 @@ export function useTradeExactIn(currencyAmountIn?: CurrencyAmount, currencyOut?:
           bestTradeSoFar = currentTrade;
         }
       }
+
+      if (bestTradeSoFar) {
+        console.log('DEBUG: Best trade found (multi-hop)', {
+          inputAmount: bestTradeSoFar.inputAmount.toExact(),
+          outputAmount: bestTradeSoFar.outputAmount.toExact(),
+          inputAmountRaw: bestTradeSoFar.inputAmount.raw.toString(),
+          outputAmountRaw: bestTradeSoFar.outputAmount.raw.toString(),
+          executionPrice: bestTradeSoFar.executionPrice.toSignificant(6),
+          priceImpact: bestTradeSoFar.priceImpact.toSignificant(2),
+          route: bestTradeSoFar.route.path.map(t => t.symbol).join(' -> ')
+        });
+      }
+
       return bestTradeSoFar;
     }
 

@@ -78,17 +78,20 @@ export function tryParseAmount(value?: string, currency?: Currency): CurrencyAmo
       decimals: currency.decimals,
       typedValueParsed,
       isToken: currency instanceof Token,
-      currencySymbol: currency.symbol
+      currencySymbol: currency.symbol,
+      currencyAddress: currency instanceof Token ? currency.address : 'NATIVE'
     });
     if (typedValueParsed !== '0') {
       const result = currency instanceof Token
         ? new TokenAmount(currency, JSBI.BigInt(typedValueParsed))
         : CurrencyAmount.ether(JSBI.BigInt(typedValueParsed));
-      console.log('DEBUG result:', {
+      console.log('DEBUG parsed amount result:', {
         raw: result.raw.toString(),
         toExact: result.toExact(),
+        toSignificant: result.toSignificant(18),
         numerator: result.numerator.toString(),
-        denominator: result.denominator.toString()
+        denominator: result.denominator.toString(),
+        currencyDecimals: result.currency.decimals
       });
       return result;
     }
@@ -214,7 +217,9 @@ function parseCurrencyFromURLParameter(urlParam: any): string {
   if (typeof urlParam === 'string') {
     const valid = isAddress(urlParam);
     if (valid) return valid;
-    if (urlParam.toUpperCase() === 'ETH') return 'ETH';
+    // Accept both 'ETH' and 'XCN' as native currency identifiers
+    const upperParam = urlParam.toUpperCase();
+    if (upperParam === 'ETH' || upperParam === 'XCN') return 'ETH';
     if (valid === false) return 'ETH';
   }
   return 'ETH' ?? '';
