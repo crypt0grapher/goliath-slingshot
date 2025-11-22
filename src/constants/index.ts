@@ -10,7 +10,7 @@ import {
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 export const FACTORY_ADDRESS = '0x698Ba06870312aEd129fC2e48dc3d002d981aB8E';
-export const ROUTER_ADDRESS = '0x47e948B9583637806c4043aE54041321BD31E017';
+export const ROUTER_ADDRESS = '0x727D1a87bb2180Ff77E2a5b7dC7C796f66E0fbb4';
 
 export const LP_TOKEN_NAME = 'Swap-LP-Token';
 export const LP_TOKEN_SYMBOL = 'SWAP-LP';
@@ -56,14 +56,14 @@ const WETH_ONLY: ChainTokenList = {
   [ChainId.RINKEBY]: [WETH[ChainId.RINKEBY]],
   [ChainId.GÖRLI]: [WETH[ChainId.GÖRLI]],
   [ChainId.KOVAN]: [WETH[ChainId.KOVAN]],
-  8901: [WXCN], // Use the already defined WXCN token
+  8901: [WETH[ChainId.GOLIATH_TESTNET]], // Use WETH mapping from SDK which points to WXCN
 };
 
 // used to construct intermediary pairs for trading
 export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
   ...WETH_ONLY,
   [ChainId.MAINNET]: [...WETH_ONLY[ChainId.MAINNET], DAI, USDC, USDT, COMP, MKR, WBTC],
-  8901: [WXCN, USDC_GOLIATH],
+  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH],
 };
 
 /**
@@ -80,7 +80,7 @@ export const CUSTOM_BASES: { [chainId: number]: { [tokenAddress: string]: Token[
 export const SUGGESTED_BASES: ChainTokenList = {
   ...WETH_ONLY,
   [ChainId.MAINNET]: [...WETH_ONLY[ChainId.MAINNET], DAI, USDC, USDT, WBTC],
-  8901: [WXCN, USDC_GOLIATH],
+  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH],
 };
 
 // used to construct the list of all pairs we consider by default in the frontend
@@ -91,7 +91,7 @@ export const BASES_TO_TRACK_LIQUIDITY_FOR: ChainTokenList = {
   [ChainId.RINKEBY]: [...WETH_ONLY[ChainId.RINKEBY]],
   [ChainId.GÖRLI]: [...WETH_ONLY[ChainId.GÖRLI]],
   [ChainId.KOVAN]: [...WETH_ONLY[ChainId.KOVAN]],
-  8901: [WXCN, USDC_GOLIATH],
+  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH],
 };
 
 export const PINNED_PAIRS: { readonly [chainId: number]: [Token, Token][] | undefined } = {
