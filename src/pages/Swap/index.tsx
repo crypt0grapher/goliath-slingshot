@@ -95,8 +95,13 @@ export default function Swap() {
     currencies[Field.OUTPUT] instanceof Token &&
     currencies[Field.OUTPUT]?.symbol !== 'WXCN';
 
-  // For XCN → Token swaps, we need to wrap first then swap
-  // So we hide the direct trade and show wrap + swap flow
+  // Detect if this is a Token → XCN swap (not WXCN → XCN which is handled by unwrap)
+  // These also need special handling due to WXCN decimal scaling
+  const isTokenToXCN = currencies[Field.OUTPUT] === ETHER &&
+    currencies[Field.INPUT] instanceof Token &&
+    currencies[Field.INPUT]?.symbol !== 'WXCN';
+
+  // For XCN swaps, we need to wrap/unwrap manually
   const trade = showWrap ? undefined : v2Trade;
 
   // State for two-step XCN swap process
@@ -445,6 +450,26 @@ export default function Swap() {
                 </ButtonPrimary>
                 <TYPE.small style={{ textAlign: 'center', color: '#888' }}>
                   After wrapping, select WXCN as input to complete the swap
+                </TYPE.small>
+              </AutoColumn>
+            ) : isTokenToXCN ? (
+              <AutoColumn gap="md">
+                <TYPE.main style={{ textAlign: 'center', marginBottom: '8px' }}>
+                  ⚠️ Swapping to XCN requires an extra step
+                </TYPE.main>
+                <GreyCard style={{ textAlign: 'center', padding: '12px' }}>
+                  <TYPE.body style={{ marginBottom: '8px' }}>
+                    Due to decimal scaling, please:
+                  </TYPE.body>
+                  <TYPE.body style={{ fontWeight: 500 }}>
+                    1. Swap {currencies[Field.INPUT]?.symbol} → WXCN
+                  </TYPE.body>
+                  <TYPE.body style={{ fontWeight: 500 }}>
+                    2. Then unwrap WXCN → XCN
+                  </TYPE.body>
+                </GreyCard>
+                <TYPE.small style={{ textAlign: 'center', color: '#888' }}>
+                  Select WXCN as output instead to proceed
                 </TYPE.small>
               </AutoColumn>
             ) : noRoute && userHasSpecifiedInputOutput ? (
