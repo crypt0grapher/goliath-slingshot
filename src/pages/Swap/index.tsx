@@ -429,7 +429,7 @@ export default function Swap() {
             ) : isXCNToToken ? (
               <AutoColumn gap="md">
                 <TYPE.main style={{ textAlign: 'center', marginBottom: '8px' }}>
-                  ⚠️ XCN swaps require wrapping first due to decimal scaling
+                  ⚠️ XCN swaps require wrapping first
                 </TYPE.main>
                 <ButtonPrimary
                   onClick={handleXCNSwap}
