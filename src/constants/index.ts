@@ -37,7 +37,7 @@ export const WBTC = new Token(ChainId.MAINNET, '0x2260FAC5E5542a773Aa44fBCfeDf7C
 // Goliath Testnet tokens
 const GOLIATH_CHAIN_ID = 8901;
 export const USDC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xF568bE1D688353d2813810aA6DaF1cB1dCe38D7E', 6, 'USDC', 'USD Coin');
-export const WXCN = new Token(GOLIATH_CHAIN_ID, '0xec6Cd1441201e36F7289f0B2729a97d091AcB5b7', 8, 'WXCN', 'Wrapped Onyxcoin');
+export const WXCN = new Token(GOLIATH_CHAIN_ID, '0xd319Df5FA3efb42B5fe4c5f873A7049f65428877', 18, 'WXCN', 'Wrapped Onyxcoin');
 // Note: XCN is the native token (like ETH), not a ERC20 token
 
 // Block time here is slightly higher (~1s) than average in order to avoid ongoing proposals past the displayed time
@@ -200,8 +200,8 @@ export const ALLOWED_PRICE_IMPACT_HIGH: Percent = new Percent(JSBI.BigInt(500), 
 export const PRICE_IMPACT_WITHOUT_FEE_CONFIRM_MIN: Percent = new Percent(JSBI.BigInt(1000), BIPS_BASE); // 10%
 // for non expert mode disable swaps above this
 export const BLOCKED_PRICE_IMPACT_NON_EXPERT: Percent = new Percent(JSBI.BigInt(1500), BIPS_BASE); // 15%
-// used to ensure the user doesn't send so much ETH so they end up with <.01
-export const MIN_ETH: JSBI = JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(16)); // .01 ETH
+// used to ensure the user doesn't send so much XCN so they end up with <.01
+export const MIN_ETH: JSBI = JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(16)); // .01 XCN
 export const BETTER_TRADE_LESS_HOPS_THRESHOLD = new Percent(JSBI.BigInt(50), JSBI.BigInt(10000));
 export const ZERO_PERCENT = new Percent('0');
 export const ONE_HUNDRED_PERCENT = new Percent('1');

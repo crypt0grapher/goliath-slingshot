@@ -49,14 +49,15 @@ export default function useWrapCallback(
           sufficientBalance && inputAmount
             ? async () => {
                 try {
-                  const txReceipt = await wethContract.deposit({ value: `0x${inputAmount.raw.toString(16)}` });
-                  addTransaction(txReceipt, { summary: `Wrap ${inputAmount.toSignificant(6)} ETH to WETH` });
+                  const hexValue = `0x${inputAmount.raw.toString(16)}`;
+                  const txReceipt = await wethContract.deposit({ value: hexValue });
+                  addTransaction(txReceipt, { summary: `Wrap ${inputAmount.toSignificant(7)} XCN to WXCN` });
                 } catch (error) {
                   console.error('Could not deposit', error);
                 }
               }
             : undefined,
-        inputError: sufficientBalance ? undefined : 'Insufficient ETH balance',
+        inputError: sufficientBalance ? undefined : 'Insufficient XCN balance',
       };
     } else if (currencyEquals(wethToken, inputCurrency) && outputCurrency === ETHER) {
       return {
@@ -66,13 +67,13 @@ export default function useWrapCallback(
             ? async () => {
                 try {
                   const txReceipt = await wethContract.withdraw(`0x${inputAmount.raw.toString(16)}`);
-                  addTransaction(txReceipt, { summary: `Unwrap ${inputAmount.toSignificant(6)} WETH to ETH` });
+                  addTransaction(txReceipt, { summary: `Unwrap ${inputAmount.toSignificant(7)} WXCN to XCN` });
                 } catch (error) {
                   console.error('Could not withdraw', error);
                 }
               }
             : undefined,
-        inputError: sufficientBalance ? undefined : 'Insufficient WETH balance',
+        inputError: sufficientBalance ? undefined : 'Insufficient WXCN balance',
       };
     } else {
       return NOT_APPLICABLE;

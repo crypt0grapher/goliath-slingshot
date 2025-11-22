@@ -135,7 +135,7 @@ export default function Swap() {
     [independentField]: typedValue,
     [dependentField]: showWrap
       ? parsedAmounts[independentField]?.toExact() ?? ''
-      : parsedAmounts[dependentField]?.toSignificant(6) ?? '',
+      : parsedAmounts[dependentField]?.toSignificant(7) ?? '',
   };
 
   const route = trade?.route;
@@ -226,7 +226,19 @@ export default function Swap() {
   );
 
   const handleMaxInput = useCallback(() => {
-    maxAmountInput && onUserInput(Field.INPUT, maxAmountInput.toExact());
+    if (maxAmountInput) {
+      const exactValue = maxAmountInput.toExact();
+      console.log('DEBUG MAX BUTTON:', {
+        maxAmountInputRaw: maxAmountInput.raw.toString(),
+        toExact: exactValue,
+        toSignificant: maxAmountInput.toSignificant(7),
+        numerator: maxAmountInput.numerator.toString(),
+        denominator: maxAmountInput.denominator.toString(),
+        currencyDecimals: maxAmountInput.currency.decimals,
+        currencySymbol: maxAmountInput.currency.symbol
+      });
+      onUserInput(Field.INPUT, exactValue);
+    }
   }, [maxAmountInput, onUserInput]);
 
   const handleOutputSelect = useCallback(

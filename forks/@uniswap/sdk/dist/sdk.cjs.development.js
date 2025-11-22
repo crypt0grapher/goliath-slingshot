@@ -373,7 +373,7 @@ function Currency(decimals, symbol, name) {
  * The only instance of the base class `Currency`.
  */
 
-Currency.ETHER = /*#__PURE__*/new Currency(8, 'XCN', 'Onyxcoin');
+Currency.ETHER = /*#__PURE__*/new Currency(18, 'XCN', 'Onyxcoin');
 var ETHER = Currency.ETHER;
 
 var _WETH;
@@ -439,7 +439,7 @@ function currencyEquals(currencyA, currencyB) {
     return currencyA === currencyB;
   }
 }
-var WETH = (_WETH = {}, _WETH[exports.ChainId.MAINNET] = /*#__PURE__*/new Token(exports.ChainId.MAINNET, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH', 'Wrapped Ether'), _WETH[exports.ChainId.ROPSTEN] = /*#__PURE__*/new Token(exports.ChainId.ROPSTEN, '0xc778417E063141139Fce010982780140Aa0cD5Ab', 18, 'WETH', 'Wrapped Ether'), _WETH[exports.ChainId.RINKEBY] = /*#__PURE__*/new Token(exports.ChainId.RINKEBY, '0xc778417E063141139Fce010982780140Aa0cD5Ab', 18, 'WETH', 'Wrapped Ether'), _WETH[exports.ChainId.GÖRLI] = /*#__PURE__*/new Token(exports.ChainId.GÖRLI, '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6', 18, 'WETH', 'Wrapped Ether'), _WETH[exports.ChainId.KOVAN] = /*#__PURE__*/new Token(exports.ChainId.KOVAN, '0xd0A1E359811322d97991E03f863a0C30C2cF029C', 18, 'WETH', 'Wrapped Ether'), _WETH[exports.ChainId.GOLIATH_TESTNET] = /*#__PURE__*/new Token(exports.ChainId.GOLIATH_TESTNET, '0xec6Cd1441201e36F7289f0B2729a97d091AcB5b7', 8, 'WXCN', 'Wrapped Onyxcoin'), _WETH);
+var WETH = (_WETH = {}, _WETH[exports.ChainId.MAINNET] = /*#__PURE__*/new Token(exports.ChainId.MAINNET, '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2', 18, 'WETH', 'Wrapped Ether'), _WETH[exports.ChainId.ROPSTEN] = /*#__PURE__*/new Token(exports.ChainId.ROPSTEN, '0xc778417E063141139Fce010982780140Aa0cD5Ab', 18, 'WETH', 'Wrapped Ether'), _WETH[exports.ChainId.RINKEBY] = /*#__PURE__*/new Token(exports.ChainId.RINKEBY, '0xc778417E063141139Fce010982780140Aa0cD5Ab', 18, 'WETH', 'Wrapped Ether'), _WETH[exports.ChainId.GÖRLI] = /*#__PURE__*/new Token(exports.ChainId.GÖRLI, '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6', 18, 'WETH', 'Wrapped Ether'), _WETH[exports.ChainId.KOVAN] = /*#__PURE__*/new Token(exports.ChainId.KOVAN, '0xd0A1E359811322d97991E03f863a0C30C2cF029C', 18, 'WETH', 'Wrapped Ether'), _WETH[exports.ChainId.GOLIATH_TESTNET] = /*#__PURE__*/new Token(exports.ChainId.GOLIATH_TESTNET, '0xd319Df5FA3efb42B5fe4c5f873A7049f65428877', 18, 'WXCN', 'Wrapped Onyxcoin'), _WETH);
 
 var _toSignificantRoundin, _toFixedRounding;
 var Decimal = /*#__PURE__*/toFormat(_Decimal);
@@ -563,7 +563,6 @@ var Fraction = /*#__PURE__*/function () {
   return Fraction;
 }();
 
-var Big$1 = /*#__PURE__*/toFormat(_Big);
 var CurrencyAmount = /*#__PURE__*/function (_Fraction) {
   _inheritsLoose(CurrencyAmount, _Fraction);
 
@@ -631,8 +630,8 @@ var CurrencyAmount = /*#__PURE__*/function (_Fraction) {
       };
     }
 
-    Big$1.DP = this.currency.decimals;
-    return new Big$1(this.numerator.toString()).div(this.denominator.toString()).toFormat(format);
+    Big.DP = this.currency.decimals;
+    return new Big(this.numerator.toString()).div(this.denominator.toString()).toFormat(format);
   };
 
   _createClass(CurrencyAmount, [{

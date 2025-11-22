@@ -11,6 +11,12 @@ import Logo from '../Logo';
 const getTokenLogoURL = (address: string) =>
   `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/${address}/logo.png`;
 
+// Custom logos for Goliath testnet tokens
+const GOLIATH_TOKEN_LOGOS: { [address: string]: string } = {
+  '0xec6Cd1441201e36F7289f0B2729a97d091AcB5b7': 'https://bridge.onyx.org/img/networks/80888.svg', // WXCN
+  '0xF568bE1D688353d2813810aA6DaF1cB1dCe38D7E': 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png', // USDC
+};
+
 const StyledEthereumLogo = styled.img<{ size: string }>`
   width: ${({ size }) => size};
   height: ${({ size }) => size};
@@ -42,6 +48,12 @@ export default function CurrencyLogo({
     if (currency === ETHER) return [];
 
     if (currency instanceof Token) {
+      // Check for Goliath custom logos first
+      const goliathLogo = GOLIATH_TOKEN_LOGOS[currency.address];
+      if (goliathLogo) {
+        return [goliathLogo];
+      }
+
       if (currency instanceof WrappedTokenInfo) {
         return [...uriLocations, getTokenLogoURL(currency.address)];
       }
