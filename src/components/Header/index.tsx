@@ -6,8 +6,6 @@ import { darken } from 'polished';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 
-import Logo from '../../assets/svg/logo.svg';
-import LogoDark from '../../assets/svg/logo_white.svg';
 import { useActiveWeb3React } from '../../hooks';
 import { useDarkModeManager } from '../../state/user/hooks';
 import { useETHBalances } from '../../state/wallet/hooks';
@@ -168,6 +166,10 @@ const Icon = styled.div`
   }
 `;
 
+const LogoImg = styled.img<{ invert?: boolean }>`
+  ${({ invert }) => invert && `filter: invert(1);`}
+`;
+
 const activeClassName = 'ACTIVE';
 
 const StyledNavLink = styled(NavLink).attrs({
@@ -290,7 +292,7 @@ export default function Header() {
       <HeaderRow>
         <Title href=".">
           <Icon>
-            <img width={'100px'} src={chainId && chainId !== (8901 as any) ? (darkMode ? LogoDark : Logo) : 'https://testnet.explorer.goliath.net/assets/configs/network_logo.svg'} alt="logo" />
+            <LogoImg width={'100px'} src="https://testnet.explorer.goliath.net/assets/configs/network_logo.svg" alt="logo" invert={darkMode} />
           </Icon>
         </Title>
       </HeaderRow>
