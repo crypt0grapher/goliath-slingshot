@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../index';
 import sortByListPriority from 'utils/listSort';
-import { WXCN, USDC_GOLIATH } from '../../constants';
+import { WXCN, USDC_GOLIATH, ETH_GOLIATH, BTC_GOLIATH } from '../../constants';
 import { useActiveWeb3React } from '../../hooks';
 
 type TagDetails = Tags[keyof Tags];
@@ -61,6 +61,22 @@ const GOLIATH_TOKEN_LIST: TokenList = {
       symbol: USDC_GOLIATH.symbol!,
       name: USDC_GOLIATH.name!,
       logoURI: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
+    },
+    {
+      chainId: 8901,
+      address: ETH_GOLIATH.address,
+      decimals: ETH_GOLIATH.decimals,
+      symbol: ETH_GOLIATH.symbol!,
+      name: ETH_GOLIATH.name!,
+      logoURI: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png',
+    },
+    {
+      chainId: 8901,
+      address: BTC_GOLIATH.address,
+      decimals: BTC_GOLIATH.decimals,
+      symbol: BTC_GOLIATH.symbol!,
+      name: BTC_GOLIATH.name!,
+      logoURI: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/bitcoin/info/logo.png',
     },
   ],
 };

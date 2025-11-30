@@ -42,6 +42,10 @@ export const USDC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xF568bE1D688353d281381
 export const WXCN = new Token(GOLIATH_CHAIN_ID, '0xd319Df5FA3efb42B5fe4c5f873A7049f65428877', 18, 'WXCN', 'Wrapped Onyxcoin');
 // Note: XCN is the native token (like ETH), not a ERC20 token
 
+// Wrapped asset tokens on Goliath (ERC20 representations)
+export const ETH_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xF22914De280D7B60255859bA6933831598fB5DD6', 18, 'ETH', 'Ethereum');
+export const BTC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x3658049f0e9be1D2019652BfBe4EEBB42246Ea10', 8, 'BTC', 'Bitcoin');
+
 // Block time here is slightly higher (~1s) than average in order to avoid ongoing proposals past the displayed time
 export const AVERAGE_BLOCK_TIME_IN_SECS = 13;
 export const PROPOSAL_LENGTH_IN_BLOCKS = 40_320;
@@ -65,7 +69,7 @@ const WETH_ONLY: ChainTokenList = {
 export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
   ...WETH_ONLY,
   [ChainId.MAINNET]: [...WETH_ONLY[ChainId.MAINNET], DAI, USDC, USDT, COMP, MKR, WBTC],
-  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH],
+  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH, ETH_GOLIATH, BTC_GOLIATH],
 };
 
 /**
@@ -82,7 +86,7 @@ export const CUSTOM_BASES: { [chainId: number]: { [tokenAddress: string]: Token[
 export const SUGGESTED_BASES: ChainTokenList = {
   ...WETH_ONLY,
   [ChainId.MAINNET]: [...WETH_ONLY[ChainId.MAINNET], DAI, USDC, USDT, WBTC],
-  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH],
+  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH, ETH_GOLIATH, BTC_GOLIATH],
 };
 
 // used to construct the list of all pairs we consider by default in the frontend
@@ -93,7 +97,7 @@ export const BASES_TO_TRACK_LIQUIDITY_FOR: ChainTokenList = {
   [ChainId.RINKEBY]: [...WETH_ONLY[ChainId.RINKEBY]],
   [ChainId.GÖRLI]: [...WETH_ONLY[ChainId.GÖRLI]],
   [ChainId.KOVAN]: [...WETH_ONLY[ChainId.KOVAN]],
-  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH],
+  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH, ETH_GOLIATH, BTC_GOLIATH],
 };
 
 export const PINNED_PAIRS: { readonly [chainId: number]: [Token, Token][] | undefined } = {
