@@ -15,6 +15,8 @@ const getTokenLogoURL = (address: string) =>
 const GOLIATH_TOKEN_LOGOS: { [address: string]: string } = {
   '0xec6Cd1441201e36F7289f0B2729a97d091AcB5b7': 'https://bridge.onyx.org/img/networks/80888.svg', // WXCN
   '0xF568bE1D688353d2813810aA6DaF1cB1dCe38D7E': 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png', // USDC
+  '0xF22914De280D7B60255859bA6933831598fB5DD6': 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png', // ETH
+  '0x3658049f0e9be1D2019652BfBe4EEBB42246Ea10': 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/bitcoin/info/logo.png', // BTC
 };
 
 const StyledEthereumLogo = styled.img<{ size: string }>`
