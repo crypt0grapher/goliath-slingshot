@@ -314,9 +314,9 @@ export default function Header() {
         >
           {t('pool')}
         </StyledNavLink>
-        <DisabledNavLink id={`bridge-nav-link`}>
+        <StyledNavLink id={`bridge-nav-link`} to={'/bridge'}>
           Bridge
-        </DisabledNavLink>
+        </StyledNavLink>
         <DisabledNavLink id={`yield-nav-link`}>
           Yield
         </DisabledNavLink>
