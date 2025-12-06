@@ -7,13 +7,27 @@ import { getStepDescription } from '../../utils/bridge/eta';
 const StepperContainer = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0;
 `;
 
-const StepRow = styled.div`
+const StepRow = styled.div<{ showLine: boolean; lineActive: boolean }>`
   display: flex;
   align-items: flex-start;
   position: relative;
+  padding-bottom: ${({ showLine }) => (showLine ? '24px' : '0')};
+
+  ${({ showLine, lineActive, theme }) =>
+    showLine &&
+    `
+    &::before {
+      content: '';
+      position: absolute;
+      left: 15px;
+      top: 32px;
+      width: 2px;
+      height: calc(100% - 32px);
+      background-color: ${lineActive ? theme.green1 : theme.bg3};
+    }
+  `}
 `;
 
 const StepIconContainer = styled.div<{ status: 'pending' | 'active' | 'completed' | 'error' }>`
@@ -24,6 +38,7 @@ const StepIconContainer = styled.div<{ status: 'pending' | 'active' | 'completed
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  z-index: 1;
   background-color: ${({ status, theme }) => {
     switch (status) {
       case 'completed':
@@ -46,16 +61,8 @@ const StepIconContainer = styled.div<{ status: 'pending' | 'active' | 'completed
   }};
 `;
 
-const StepLine = styled.div<{ active: boolean }>`
-  width: 2px;
-  height: 24px;
-  background-color: ${({ active, theme }) => (active ? theme.green1 : theme.bg3)};
-  margin-left: 15px;
-`;
-
 const StepContent = styled.div`
   margin-left: 12px;
-  padding-bottom: 24px;
 `;
 
 const StepLabel = styled.div<{ active: boolean }>`
@@ -148,20 +155,17 @@ export default function BridgeStatusStepper({ operation }: BridgeStatusStepperPr
         const description = getStepDescription(step.stepIndex, operation);
 
         return (
-          <React.Fragment key={step.stepIndex}>
-            <StepRow>
-              <StepIconContainer status={status}>
-                <StepIcon status={status} />
-              </StepIconContainer>
-              <StepContent>
-                <StepLabel active={status === 'active' || status === 'completed'}>
-                  {step.label}
-                </StepLabel>
-                {description && <StepDescription>{description}</StepDescription>}
-              </StepContent>
-            </StepRow>
-            {!isLast && <StepLine active={status === 'completed'} />}
-          </React.Fragment>
+          <StepRow key={step.stepIndex} showLine={!isLast} lineActive={status === 'completed'}>
+            <StepIconContainer status={status}>
+              <StepIcon status={status} />
+            </StepIconContainer>
+            <StepContent>
+              <StepLabel active={status === 'active' || status === 'completed'}>
+                {step.label}
+              </StepLabel>
+              {description && <StepDescription>{description}</StepDescription>}
+            </StepContent>
+          </StepRow>
         );
       })}
     </StepperContainer>

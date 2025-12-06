@@ -22,6 +22,7 @@ import Slider from '../../components/Slider';
 import CurrencyLogo from '../../components/CurrencyLogo';
 import { ROUTER_ADDRESS, LP_TOKEN_NAME } from '../../constants';
 import { useActiveWeb3React } from '../../hooks';
+import { useNetworkSwitch, GOLIATH_TESTNET_CHAIN_ID } from '../../hooks/useNetworkSwitch';
 import { useCurrency } from '../../hooks/Tokens';
 import { usePairContract } from '../../hooks/useContract';
 import useIsArgentWallet from '../../hooks/useIsArgentWallet';
@@ -52,6 +53,8 @@ export default function RemoveLiquidity({
 }: RouteComponentProps<{ currencyIdA: string; currencyIdB: string }>) {
   const [currencyA, currencyB] = [useCurrency(currencyIdA) ?? undefined, useCurrency(currencyIdB) ?? undefined];
   const { account, chainId, library } = useActiveWeb3React();
+  const { switchToGoliath, isLoading: isSwitchingNetwork } = useNetworkSwitch();
+  const isWrongNetwork = account && chainId !== GOLIATH_TESTNET_CHAIN_ID;
   const [tokenA, tokenB] = useMemo(
     () => [wrappedCurrency(currencyA, chainId), wrappedCurrency(currencyB, chainId)],
     [currencyA, currencyB, chainId]
@@ -660,6 +663,10 @@ export default function RemoveLiquidity({
             <div style={{ position: 'relative' }}>
               {!account ? (
                 <ButtonPrimary onClick={toggleWalletModal}>Connect Wallet</ButtonPrimary>
+              ) : isWrongNetwork ? (
+                <ButtonPrimary onClick={switchToGoliath} disabled={isSwitchingNetwork}>
+                  {isSwitchingNetwork ? 'Switching...' : 'Switch to Goliath'}
+                </ButtonPrimary>
               ) : (
                 <RowBetween>
                   <ButtonConfirmed

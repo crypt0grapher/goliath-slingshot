@@ -19,6 +19,7 @@ import ProgressSteps from '../../components/ProgressSteps';
 import SwapHeader from '../../components/swap/SwapHeader';
 import AdvancedSwapDetailsDropdown from '../../components/swap/AdvancedSwapDetailsDropdown';
 import { useActiveWeb3React } from '../../hooks';
+import { useNetworkSwitch, GOLIATH_TESTNET_CHAIN_ID } from '../../hooks/useNetworkSwitch';
 import { useCurrency, useAllTokens } from '../../hooks/Tokens';
 import { ApprovalState, useApproveCallbackFromTrade } from '../../hooks/useApproveCallback';
 import { useSwapCallback } from '../../hooks/useSwapCallback';
@@ -64,8 +65,10 @@ export default function Swap() {
       return !Boolean(token.address in defaultTokens);
     });
 
-  const { account } = useActiveWeb3React();
+  const { account, chainId } = useActiveWeb3React();
   const theme = useContext(ThemeContext);
+  const { switchToGoliath, isLoading: isSwitchingNetwork } = useNetworkSwitch();
+  const isWrongNetwork = account && chainId !== GOLIATH_TESTNET_CHAIN_ID;
 
   // toggle wallet when disconnected
   const toggleWalletModal = useWalletModalToggle();
@@ -362,6 +365,10 @@ export default function Swap() {
           <BottomGrouping>
             {!account ? (
               <ButtonPrimary onClick={toggleWalletModal}>Connect Wallet</ButtonPrimary>
+            ) : isWrongNetwork ? (
+              <ButtonPrimary onClick={switchToGoliath} disabled={isSwitchingNetwork}>
+                {isSwitchingNetwork ? 'Switching...' : 'Switch to Goliath'}
+              </ButtonPrimary>
             ) : showWrap ? (
               <ButtonPrimary disabled={Boolean(wrapInputError)} onClick={onWrap}>
                 {wrapInputError ??

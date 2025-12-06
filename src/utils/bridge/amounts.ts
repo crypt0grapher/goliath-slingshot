@@ -15,7 +15,17 @@ export function parseAmount(
   network: BridgeNetwork
 ): bigint {
   const config = getTokenConfigForChain(token, network);
-  return ethers.utils.parseUnits(amount, config.decimals).toBigInt();
+  const parsed = ethers.utils.parseUnits(amount, config.decimals);
+  const result = parsed.toBigInt();
+
+  // Debug validation
+  console.log('[parseAmount] Input:', amount, 'Decimals:', config.decimals, 'Parsed:', parsed.toString(), 'BigInt:', result.toString());
+
+  if (result === BigInt(0) && parseFloat(amount) > 0) {
+    console.error('[parseAmount] WARNING: Amount parsed to 0 but input was non-zero!', { amount, decimals: config.decimals });
+  }
+
+  return result;
 }
 
 /**

@@ -12,11 +12,15 @@ export type ValidationState =
   | 'EMPTY_AMOUNT'
   | 'INVALID_AMOUNT'
   | 'AMOUNT_TOO_SMALL'
+  | 'AMOUNT_TOO_LARGE'
   | 'INSUFFICIENT_BALANCE'
   | 'BRIDGE_PAUSED'
   | 'BRIDGE_UNAVAILABLE'
   | 'NEEDS_APPROVAL'
   | 'READY';
+
+// Maximum amount for bridging FROM Goliath (to prevent testnet token abuse)
+export const GOLIATH_TO_SEPOLIA_MAX_ETH = '0.05';
 
 export interface ValidationResult {
   state: ValidationState;
@@ -131,7 +135,22 @@ export function validateBridgeInput(input: ValidationInput): ValidationResult {
     };
   }
 
-  // 8. Insufficient balance
+  // 8. Amount too large (only for Goliath -> Sepolia to prevent testnet abuse)
+  if (
+    originNetwork === BridgeNetwork.GOLIATH &&
+    selectedToken === 'ETH' &&
+    compareAmounts(inputAmount, GOLIATH_TO_SEPOLIA_MAX_ETH, selectedToken, originNetwork) > 0
+  ) {
+    return {
+      state: 'AMOUNT_TOO_LARGE',
+      isValid: false,
+      buttonText: 'Amount exceeds limit',
+      errorMessage: `Maximum ${GOLIATH_TO_SEPOLIA_MAX_ETH} ETH per transaction (testnet limit)`,
+      disableButton: true,
+    };
+  }
+
+  // 9. Insufficient balance
   if (
     originBalance &&
     compareAmounts(inputAmount, originBalance, selectedToken, originNetwork) > 0
@@ -145,7 +164,7 @@ export function validateBridgeInput(input: ValidationInput): ValidationResult {
     };
   }
 
-  // 9. All checks passed
+  // 10. All checks passed
   return {
     state: 'READY',
     isValid: true,

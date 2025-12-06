@@ -48,6 +48,12 @@ export const OutputAmount = styled.div`
   color: ${({ theme }) => theme.text1};
 `;
 
+export const OutputBalance = styled.div`
+  font-size: 14px;
+  color: ${({ theme }) => theme.text2};
+  margin-top: 8px;
+`;
+
 export const BottomSection = styled.div`
   margin-top: 16px;
 `;

@@ -54,11 +54,11 @@ export const BRIDGE_TOKENS: Record<BridgeTokenSymbol, BridgeTokenConfig> = {
   },
 };
 
-// v1.0: USDC and ETH available
-export const BRIDGE_TOKEN_LIST: BridgeTokenSymbol[] = ['USDC', 'ETH'];
+// v1.0: ETH only
+export const BRIDGE_TOKEN_LIST: BridgeTokenSymbol[] = ['ETH'];
 
 // Default token for bridge form
-export const DEFAULT_BRIDGE_TOKEN: BridgeTokenSymbol = 'USDC';
+export const DEFAULT_BRIDGE_TOKEN: BridgeTokenSymbol = 'ETH';
 
 /**
  * Get token config for a specific chain

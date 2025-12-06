@@ -30,12 +30,15 @@ export interface UseBridgeFormReturn {
 
   // Balances
   originBalance: string;
+  destinationBalance: string;
   isBalanceLoading: boolean;
+  isDestinationBalanceLoading: boolean;
 
   // Allowance
   hasAllowance: boolean;
   isAllowanceLoading: boolean;
   needsApproval: boolean;
+  refetchAllowance: () => void;
 
   // Validation
   validation: ValidationResult;
@@ -69,9 +72,14 @@ export function useBridgeForm(): UseBridgeFormReturn {
     form.originNetwork
   );
 
+  const { balance: destinationBalance, isLoading: isDestinationBalanceLoading } = useBridgeBalances(
+    form.selectedToken,
+    form.destinationNetwork
+  );
+
   // Allowance (only for ERC-20 tokens)
   const needsApprovalCheck = tokenRequiresApproval(form.selectedToken, form.originNetwork);
-  const { hasAllowance, isLoading: isAllowanceLoading } = useBridgeAllowance(
+  const { hasAllowance, isLoading: isAllowanceLoading, refetch: refetchAllowance } = useBridgeAllowance(
     form.selectedToken,
     form.originNetwork,
     form.inputAmount,
@@ -154,12 +162,15 @@ export function useBridgeForm(): UseBridgeFormReturn {
 
     // Balances
     originBalance,
+    destinationBalance,
     isBalanceLoading,
+    isDestinationBalanceLoading,
 
     // Allowance
     hasAllowance,
     isAllowanceLoading,
     needsApproval,
+    refetchAllowance,
 
     // Validation
     validation,

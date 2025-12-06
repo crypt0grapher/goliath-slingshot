@@ -14,6 +14,7 @@ import { ButtonPrimary } from '../../components/Button';
 import { AutoColumn } from '../../components/Column';
 
 import { useActiveWeb3React } from '../../hooks';
+import { useNetworkSwitch, GOLIATH_TESTNET_CHAIN_ID } from '../../hooks/useNetworkSwitch';
 import { usePairs } from '../../data/Reserves';
 import { toV2LiquidityToken, useTrackedTokenPairs } from '../../state/user/hooks';
 import { Dots } from '../../components/swap/styleds';
@@ -61,7 +62,9 @@ const EmptyProposals = styled.div`
 
 export default function Pool() {
   const theme = useContext(ThemeContext);
-  const { account } = useActiveWeb3React();
+  const { account, chainId } = useActiveWeb3React();
+  const { switchToGoliath, isLoading: isSwitchingNetwork } = useNetworkSwitch();
+  const isWrongNetwork = account && chainId !== GOLIATH_TESTNET_CHAIN_ID;
 
   // fetch the user's balances of all tracked V2 LP tokens
   const trackedTokenPairs = useTrackedTokenPairs();
@@ -123,6 +126,17 @@ export default function Pool() {
                 <TYPE.body color={theme.text3} textAlign="center">
                   Connect to a wallet to view your liquidity.
                 </TYPE.body>
+              </Card>
+            ) : isWrongNetwork ? (
+              <Card padding="40px">
+                <AutoColumn gap="md" justify="center">
+                  <TYPE.body color={theme.text3} textAlign="center">
+                    Please switch to Goliath Testnet to view your liquidity.
+                  </TYPE.body>
+                  <ButtonPrimary onClick={switchToGoliath} disabled={isSwitchingNetwork} style={{ maxWidth: '200px' }}>
+                    {isSwitchingNetwork ? 'Switching...' : 'Switch to Goliath'}
+                  </ButtonPrimary>
+                </AutoColumn>
               </Card>
             ) : v2IsLoading ? (
               <EmptyProposals>

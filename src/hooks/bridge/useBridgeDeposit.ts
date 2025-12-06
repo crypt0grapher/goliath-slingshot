@@ -43,13 +43,10 @@ export function useBridgeDeposit(): UseDepositReturn {
         let tx: ethers.ContractTransaction;
 
         if (tokenConfig.isNative) {
-          // Native ETH deposit
-          tx = await bridgeContract.deposit(
-            ethers.constants.AddressZero,
-            amountAtomic.toString(),
-            recipient,
-            { value: amountAtomic.toString() }
-          );
+          // Native ETH deposit - use depositNative function
+          tx = await bridgeContract.depositNative(recipient, {
+            value: amountAtomic.toString(),
+          });
         } else {
           // ERC-20 deposit
           tx = await bridgeContract.deposit(tokenConfig.address, amountAtomic.toString(), recipient);
@@ -75,7 +72,7 @@ export function useBridgeDeposit(): UseDepositReturn {
           createdAt: Date.now(),
           updatedAt: Date.now(),
           originConfirmations: 0,
-          requiredConfirmations: 12,
+          requiredConfirmations: 10,
           errorMessage: null,
           estimatedCompletionTime: null,
         };

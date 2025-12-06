@@ -12,6 +12,8 @@ import { getStaticEtaEstimate } from '../../utils/bridge/eta';
 
 const ContentWrapper = styled.div`
   padding: 1rem;
+  width: 100%;
+  box-sizing: border-box;
 `;
 
 const Title = styled.h3`

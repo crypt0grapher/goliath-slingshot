@@ -9,6 +9,13 @@ export const BRIDGE_SEPOLIA_ABI = [
     ],
     name: 'deposit',
     outputs: [{ name: 'depositId', type: 'bytes32' }],
+    stateMutability: 'nonpayable',
+    type: 'function',
+  },
+  {
+    inputs: [{ name: 'destinationAddress', type: 'address' }],
+    name: 'depositNative',
+    outputs: [{ name: 'depositId', type: 'bytes32' }],
     stateMutability: 'payable',
     type: 'function',
   },
@@ -38,13 +45,6 @@ export const BRIDGE_GOLIATH_ABI = [
     name: 'burn',
     outputs: [{ name: 'withdrawId', type: 'bytes32' }],
     stateMutability: 'nonpayable',
-    type: 'function',
-  },
-  {
-    inputs: [{ name: 'destinationAddress', type: 'address' }],
-    name: 'burnNative',
-    outputs: [{ name: 'withdrawId', type: 'bytes32' }],
-    stateMutability: 'payable',
     type: 'function',
   },
   {

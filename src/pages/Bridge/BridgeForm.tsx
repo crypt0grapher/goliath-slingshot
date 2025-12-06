@@ -13,8 +13,9 @@ import { useBridgeForm, useBridgeApprove, useBridgeNetworkSwitch } from '../../h
 import { useActiveWeb3React } from '../../hooks';
 import { useWalletModalToggle } from '../../state/application/hooks';
 import { bridgeActions } from '../../state/bridge/reducer';
-import { getButtonState } from '../../utils/bridge/validation';
-import { Wrapper, FormContainer, NetworkRow, OutputContainer, OutputLabel, OutputAmount, ErrorMessage } from './styleds';
+import { getButtonState, GOLIATH_TO_SEPOLIA_MAX_ETH } from '../../utils/bridge/validation';
+import { BridgeNetwork } from '../../constants/bridge/networks';
+import { Wrapper, FormContainer, NetworkRow, OutputContainer, OutputLabel, OutputAmount, OutputBalance, ErrorMessage } from './styleds';
 
 const ActionButton = styled(ButtonPrimary)`
   margin-top: 16px;
@@ -22,6 +23,16 @@ const ActionButton = styled(ButtonPrimary)`
 
 const ErrorButton = styled(ButtonError)`
   margin-top: 16px;
+`;
+
+const InfoMessage = styled.div`
+  background-color: rgba(33, 114, 229, 0.1);
+  border: 1px solid rgba(33, 114, 229, 0.3);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 13px;
+  color: ${({ theme }) => theme.text2};
+  line-height: 1.5;
 `;
 
 export default function BridgeForm() {
@@ -42,9 +53,11 @@ export default function BridgeForm() {
     inputAmount,
     outputAmount,
     originBalance,
+    destinationBalance,
     direction,
     validation,
     needsApproval,
+    refetchAllowance,
     isSubmitting,
     isApproving,
     setOriginNetwork,
@@ -74,7 +87,10 @@ export default function BridgeForm() {
     }
 
     if (needsApproval) {
-      await approve();
+      const approved = await approve();
+      if (approved) {
+        refetchAllowance();
+      }
       return;
     }
 
@@ -86,6 +102,7 @@ export default function BridgeForm() {
     needsApproval,
     originNetwork,
     approve,
+    refetchAllowance,
     switchNetwork,
     toggleWalletModal,
     dispatch,
@@ -129,10 +146,19 @@ export default function BridgeForm() {
             <OutputAmount>
               {outputAmount || '0'} {selectedToken}
             </OutputAmount>
+            <OutputBalance>
+              Balance: {destinationBalance} {selectedToken}
+            </OutputBalance>
           </OutputContainer>
         </FormContainer>
 
         <BridgeSummary direction={direction} recipient={null} account={account} />
+
+        {originNetwork === BridgeNetwork.GOLIATH && (
+          <InfoMessage>
+            Testnet limit: Maximum {GOLIATH_TO_SEPOLIA_MAX_ETH} ETH per transaction when bridging from Goliath to Sepolia to prevent abuse of testnet token minting.
+          </InfoMessage>
+        )}
 
         {validation.errorMessage && <ErrorMessage>{validation.errorMessage}</ErrorMessage>}
 

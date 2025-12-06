@@ -14,7 +14,7 @@ export const FACTORY_ADDRESS = '0x698Ba06870312aEd129fC2e48dc3d002d981aB8E';
 // v2: Fixed safeTransferETH to use native tinyXCN (8 dec) instead of WXCN (18 dec)
 export const ROUTER_ADDRESS = '0x8707F9f249ed2f4c2eBdd4e25CE4393fbfA7C5C7';
 
-export const LP_TOKEN_NAME = 'Swap-LP-Token';
+export const LP_TOKEN_NAME = 'Uniswap V2';
 export const LP_TOKEN_SYMBOL = 'SWAP-LP';
 
 // a list of tokens by chain

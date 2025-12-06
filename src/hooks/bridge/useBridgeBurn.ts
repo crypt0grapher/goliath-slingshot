@@ -37,20 +37,27 @@ export function useBridgeBurn(): UseBurnReturn {
         const amountAtomic = parseAmount(amountHuman, token, BridgeNetwork.GOLIATH);
         const bridgeAddress = getBridgeContractAddress(BridgeNetwork.GOLIATH);
 
+        // Debug: log amount conversion
+        console.log('[Bridge] Amount conversion:', {
+          amountHuman,
+          amountAtomic: amountAtomic.toString(),
+          token,
+          decimals: tokenConfig.decimals,
+        });
+
         const signer = library.getSigner(account);
         const bridgeContract = new ethers.Contract(bridgeAddress, BRIDGE_GOLIATH_ABI, signer as any);
 
         let tx: ethers.ContractTransaction;
 
         if (tokenConfig.isNative) {
-          // Native XCN burn
-          tx = await bridgeContract.burnNative(recipient, {
-            value: amountAtomic.toString(),
-          });
-        } else {
-          // ERC-20 burn
-          tx = await bridgeContract.burn(tokenConfig.address, amountAtomic.toString(), recipient);
+          // Native token burning is not supported on Goliath
+          // All bridgeable tokens on Goliath are ERC-20 (including wrapped XCN, ETH)
+          throw new Error('Native token burning is not supported. Please use wrapped token.');
         }
+
+        // ERC-20 burn (all tokens on Goliath are ERC-20)
+        tx = await bridgeContract.burn(tokenConfig.address, amountAtomic.toString(), recipient);
 
         // Create operation record
         const operationId = uuidv4();
@@ -72,7 +79,7 @@ export function useBridgeBurn(): UseBurnReturn {
           createdAt: Date.now(),
           updatedAt: Date.now(),
           originConfirmations: 0,
-          requiredConfirmations: 6, // Goliath finality
+          requiredConfirmations: 6,
           errorMessage: null,
           estimatedCompletionTime: null,
         };
