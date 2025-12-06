@@ -18,6 +18,7 @@ import Row, { RowBetween, RowFlat } from '../../components/Row';
 import { ROUTER_ADDRESS } from '../../constants';
 import { PairState } from '../../data/Reserves';
 import { useActiveWeb3React } from '../../hooks';
+import { useNetworkSwitch, GOLIATH_TESTNET_CHAIN_ID } from '../../hooks/useNetworkSwitch';
 import { useCurrency } from '../../hooks/Tokens';
 import { ApprovalState, useApproveCallback } from '../../hooks/useApproveCallback';
 import useTransactionDeadline from '../../hooks/useTransactionDeadline';
@@ -45,6 +46,8 @@ export default function AddLiquidity({
 }: RouteComponentProps<{ currencyIdA?: string; currencyIdB?: string }>) {
   const { account, chainId, library } = useActiveWeb3React();
   const theme = useContext(ThemeContext);
+  const { switchToGoliath, isLoading: isSwitchingNetwork } = useNetworkSwitch();
+  const isWrongNetwork = account && chainId !== GOLIATH_TESTNET_CHAIN_ID;
 
   const currencyA = useCurrency(currencyIdA);
   const currencyB = useCurrency(currencyIdB);
@@ -391,6 +394,10 @@ export default function AddLiquidity({
 
             {!account ? (
               <ButtonPrimary onClick={toggleWalletModal}>Connect Wallet</ButtonPrimary>
+            ) : isWrongNetwork ? (
+              <ButtonPrimary onClick={switchToGoliath} disabled={isSwitchingNetwork}>
+                {isSwitchingNetwork ? 'Switching...' : 'Switch to Goliath'}
+              </ButtonPrimary>
             ) : (
               <AutoColumn gap={'md'}>
                 {(approvalA === ApprovalState.NOT_APPROVED ||

@@ -70,6 +70,23 @@ export function SwapPoolTabs({ active }: { active: 'swap' | 'pool' }) {
   );
 }
 
+export function SwapPoolBridgeTabs({ active }: { active: 'swap' | 'pool' | 'bridge' }) {
+  const { t } = useTranslation();
+  return (
+    <Tabs style={{ marginBottom: '20px', display: 'none' }}>
+      <StyledNavLink id={`swap-nav-link`} to={'/swap'} isActive={() => active === 'swap'}>
+        {t('swap')}
+      </StyledNavLink>
+      <StyledNavLink id={`pool-nav-link`} to={'/pool'} isActive={() => active === 'pool'}>
+        {t('pool')}
+      </StyledNavLink>
+      <StyledNavLink id={`bridge-nav-link`} to={'/bridge'} isActive={() => active === 'bridge'}>
+        Bridge
+      </StyledNavLink>
+    </Tabs>
+  );
+}
+
 export function FindPoolTabs() {
   return (
     <Tabs>

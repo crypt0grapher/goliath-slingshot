@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
 
 import { useActiveWeb3React } from '../../hooks';
+import { useNetworkSwitch, GOLIATH_TESTNET_CHAIN_ID } from '../../hooks/useNetworkSwitch';
 import { useDarkModeManager } from '../../state/user/hooks';
 import { useETHBalances } from '../../state/wallet/hooks';
 
@@ -128,6 +129,40 @@ const NetworkCard = styled(LightCard)`
   min-width: 120px;
   box-shadow: rgba(0, 0, 0, 0.01) 0px 0px 1px, rgba(0, 0, 0, 0.04) 0px 4px 8px, rgba(0, 0, 0, 0.04) 0px 16px 24px,
     rgba(0, 0, 0, 0.01) 0px 24px 32px;
+
+  ${({ theme }) => theme.mediaWidth.upToSmall`
+    margin: 0;
+    margin-right: 0.5rem;
+    width: initial;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex-shrink: 1;
+  `};
+`;
+
+const WrongNetworkButton = styled.button`
+  border-radius: 0.8rem;
+  padding: 8px 12px;
+  white-space: nowrap;
+  min-width: 120px;
+  background-color: ${({ theme }) => theme.bg2};
+  border: 1px solid ${({ theme }) => theme.bg3};
+  color: ${({ theme }) => theme.text1};
+  font-weight: 500;
+  font-size: 1rem;
+  cursor: pointer;
+  box-shadow: rgba(0, 0, 0, 0.01) 0px 0px 1px, rgba(0, 0, 0, 0.04) 0px 4px 8px, rgba(0, 0, 0, 0.04) 0px 16px 24px,
+    rgba(0, 0, 0, 0.01) 0px 24px 32px;
+  transition: opacity 0.2s ease;
+
+  &:hover {
+    opacity: 0.8;
+  }
+
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
     margin: 0;
@@ -279,6 +314,7 @@ const NETWORK_LABELS: { [chainId: number]: string } = {
   [ChainId.GÖRLI]: 'Goerli',
   [ChainId.KOVAN]: 'Kovan',
   8901: 'Goliath Testnet',
+  11155111: 'Sepolia',
 };
 
 export default function Header() {
@@ -286,6 +322,10 @@ export default function Header() {
   const { t } = useTranslation();
   const userEthBalance = useETHBalances(account ? [account] : [])?.[account ?? ''];
   const [darkMode, toggleDarkMode] = useDarkModeManager();
+  const { switchToGoliath, isLoading: isSwitchingNetwork } = useNetworkSwitch();
+
+  const isWrongNetwork = account && chainId && chainId !== GOLIATH_TESTNET_CHAIN_ID;
+  const networkName = chainId && NETWORK_LABELS[chainId] ? NETWORK_LABELS[chainId] : `Chain ${chainId}`;
 
   return (
     <HeaderFrame>
@@ -314,9 +354,9 @@ export default function Header() {
         >
           {t('pool')}
         </StyledNavLink>
-        <DisabledNavLink id={`bridge-nav-link`}>
+        <StyledNavLink id={`bridge-nav-link`} to={'/bridge'}>
           Bridge
-        </DisabledNavLink>
+        </StyledNavLink>
         <DisabledNavLink id={`yield-nav-link`}>
           Yield
         </DisabledNavLink>
@@ -325,8 +365,18 @@ export default function Header() {
       <HeaderControls>
         <HeaderElement>
           <HideSmall>
-            {chainId && NETWORK_LABELS[chainId] && (
-              <NetworkCard title={NETWORK_LABELS[chainId]}>{NETWORK_LABELS[chainId]}</NetworkCard>
+            {isWrongNetwork ? (
+              <WrongNetworkButton
+                onClick={switchToGoliath}
+                disabled={isSwitchingNetwork}
+                title={`Connected to ${networkName}. Click to switch to Goliath Testnet.`}
+              >
+                {isSwitchingNetwork ? 'Switching...' : networkName}
+              </WrongNetworkButton>
+            ) : (
+              chainId === GOLIATH_TESTNET_CHAIN_ID && (
+                <NetworkCard title="Goliath Testnet">Goliath Testnet</NetworkCard>
+              )
             )}
           </HideSmall>
           <AccountElement active={!!account} style={{ pointerEvents: 'auto' }}>

@@ -10,8 +10,9 @@ import mint from './mint/reducer';
 import lists from './lists/reducer';
 import burn from './burn/reducer';
 import multicall from './multicall/reducer';
+import bridge from './bridge/reducer';
 
-const PERSISTED_KEYS: string[] = ['user', 'transactions', 'lists'];
+const PERSISTED_KEYS: string[] = ['user', 'transactions', 'lists', 'bridge'];
 
 const store = configureStore({
   reducer: {
@@ -23,9 +24,10 @@ const store = configureStore({
     burn,
     multicall,
     lists,
+    bridge,
   },
   middleware: [
-    ...getDefaultMiddleware({ immutableCheck: false, thunk: false, serializableCheck: false }),
+    ...getDefaultMiddleware({ immutableCheck: false, thunk: true, serializableCheck: false }),
     save({ states: PERSISTED_KEYS }),
   ],
   preloadedState: load({ states: PERSISTED_KEYS }),

@@ -26,7 +26,7 @@ export function getNetworkLibrary(): Web3Provider {
 }
 
 export const injected = new InjectedConnector({
-  supportedChainIds: [8901],
+  supportedChainIds: [8901, 11155111], // Goliath Testnet + Sepolia (for Bridge)
 });
 
 export const walletconnect = new WalletConnectConnector({
