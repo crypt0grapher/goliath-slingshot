@@ -28,11 +28,14 @@ const HeaderFrame = styled.div`
   flex-direction: row;
 
   ${({ theme }) => theme.mediaWidth.upToLarge`
-    grid-template-columns: 60px 1fr 120px;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto;
+    gap: 0.5rem;
   `};
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
     grid-template-columns: 60px 1fr;
+    grid-template-rows: auto;
   `};
 
   ${({ theme }) => theme.mediaWidth.upToExtraSmall`
@@ -45,6 +48,10 @@ const HeaderControls = styled.div`
   flex-direction: row;
   align-items: center;
   justify-self: flex-end;
+
+  ${({ theme }) => theme.mediaWidth.upToLarge`
+    grid-row: 1;
+  `};
 `;
 
 const HeaderElement = styled.div`
@@ -52,7 +59,7 @@ const HeaderElement = styled.div`
   align-items: center;
   gap: 8px;
 
-  ${({ theme }) => theme.mediaWidth.upToMedium`
+  ${({ theme }) => theme.mediaWidth.upToLarge`
    flex-direction: row-reverse;
     align-items: center;
   `};
@@ -67,8 +74,9 @@ const HeaderRow = styled(RowFixed)`
   display: flex;
   align-items: center;
 
-  ${({ theme }) => theme.mediaWidth.upToMedium`
-    width: 100%;
+  ${({ theme }) => theme.mediaWidth.upToLarge`
+    width: auto;
+    grid-row: 1;
   `};
 `;
 
@@ -83,8 +91,10 @@ const HeaderLinks = styled(Row)`
   background-color: ${({ theme }) => theme.bg1};
 
   ${({ theme }) => theme.mediaWidth.upToLarge`
-    margin: 0;
-    margin-right: auto;
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin: 0 auto;
+    width: fit-content;
   `};
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
@@ -96,6 +106,8 @@ const HeaderLinks = styled(Row)`
     transform: translateX(-50%);
     border-radius: 0;
     border-top: 1px solid ${({ theme }) => theme.bg3};
+    grid-column: auto;
+    grid-row: auto;
   `};
 `;
 

@@ -16,6 +16,10 @@ const SelectorContainer = styled.div<{ disabled: boolean }>`
   &:hover {
     background-color: ${({ theme, disabled }) => (disabled ? theme.bg2 : theme.bg3)};
   }
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    padding: 0.6rem 0.75rem;
+  `}
 `;
 
 const NetworkLabel = styled.span`
@@ -29,6 +33,11 @@ const NetworkName = styled.span`
   font-weight: 500;
   color: ${({ theme }) => theme.text1};
   margin-left: 8px;
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    font-size: 14px;
+    margin-left: 6px;
+  `}
 `;
 
 const NetworkIconPlaceholder = styled.div`
@@ -42,6 +51,13 @@ const NetworkIconPlaceholder = styled.div`
   font-size: 12px;
   font-weight: 600;
   color: ${({ theme }) => theme.text1};
+  flex-shrink: 0;
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+  `}
 `;
 
 const DropdownContainer = styled.div`

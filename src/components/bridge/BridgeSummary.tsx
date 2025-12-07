@@ -8,6 +8,10 @@ const SummaryContainer = styled.div`
   background-color: ${({ theme }) => theme.bg2};
   border-radius: 12px;
   margin-top: 8px;
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    padding: 0.75rem;
+  `}
 `;
 
 const SummaryRow = styled.div`
@@ -20,18 +24,30 @@ const SummaryRow = styled.div`
 const Label = styled.span`
   font-size: 14px;
   color: ${({ theme }) => theme.text2};
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    font-size: 13px;
+  `}
 `;
 
 const Value = styled.span`
   font-size: 14px;
   font-weight: 500;
   color: ${({ theme }) => theme.text1};
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    font-size: 13px;
+  `}
 `;
 
 const FreeLabel = styled.span`
   font-size: 14px;
   font-weight: 500;
   color: ${({ theme }) => theme.green1};
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    font-size: 13px;
+  `}
 `;
 
 interface BridgeSummaryProps {
