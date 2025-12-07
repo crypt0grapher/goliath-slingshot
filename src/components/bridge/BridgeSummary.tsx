@@ -19,11 +19,13 @@ const SummaryRow = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 4px 0;
+  gap: 8px;
 `;
 
 const Label = styled.span`
   font-size: 14px;
   color: ${({ theme }) => theme.text2};
+  flex-shrink: 0;
 
   ${({ theme }) => theme.mediaWidth.upToExtraSmall`
     font-size: 13px;
@@ -34,6 +36,8 @@ const Value = styled.span`
   font-size: 14px;
   font-weight: 500;
   color: ${({ theme }) => theme.text1};
+  text-align: right;
+  word-break: break-all;
 
   ${({ theme }) => theme.mediaWidth.upToExtraSmall`
     font-size: 13px;
