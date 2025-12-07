@@ -3,6 +3,10 @@ import styled from 'styled-components';
 export const Wrapper = styled.div`
   position: relative;
   padding: 1rem;
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    padding: 0.75rem;
+  `}
 `;
 
 export const BridgeHeader = styled.div`
@@ -24,6 +28,10 @@ export const FormContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 4px;
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    gap: 2px;
+  `}
 `;
 
 export const NetworkRow = styled.div`
@@ -34,6 +42,11 @@ export const OutputContainer = styled.div`
   padding: 1rem;
   background-color: ${({ theme }) => theme.bg2};
   border-radius: 16px;
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    padding: 0.75rem;
+    border-radius: 12px;
+  `}
 `;
 
 export const OutputLabel = styled.div`
@@ -46,6 +59,10 @@ export const OutputAmount = styled.div`
   font-size: 28px;
   font-weight: 500;
   color: ${({ theme }) => theme.text1};
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    font-size: 24px;
+  `}
 `;
 
 export const OutputBalance = styled.div`

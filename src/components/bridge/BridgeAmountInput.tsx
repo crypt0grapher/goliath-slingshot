@@ -10,6 +10,11 @@ const InputContainer = styled.div`
   padding: 1rem;
   background-color: ${({ theme }) => theme.bg2};
   border-radius: 16px;
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    padding: 0.75rem;
+    border-radius: 12px;
+  `}
 `;
 
 const InputRow = styled.div`
@@ -27,6 +32,7 @@ const StyledInput = styled.input`
   background-color: transparent;
   color: ${({ theme }) => theme.text1};
   text-align: left;
+  min-width: 0;
 
   &::placeholder {
     color: ${({ theme }) => theme.text4};
@@ -39,6 +45,10 @@ const StyledInput = styled.input`
     -webkit-appearance: none;
     margin: 0;
   }
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    font-size: 24px;
+  `}
 `;
 
 const BalanceRow = styled.div`
@@ -51,6 +61,10 @@ const BalanceRow = styled.div`
 const BalanceText = styled.span`
   font-size: 14px;
   color: ${({ theme }) => theme.text2};
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    font-size: 13px;
+  `}
 `;
 
 const MaxButton = styled.button`
