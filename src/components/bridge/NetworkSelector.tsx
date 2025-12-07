@@ -26,6 +26,12 @@ const NetworkLabel = styled.span`
   font-size: 14px;
   color: ${({ theme }) => theme.text2};
   margin-right: 8px;
+  flex-shrink: 0;
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    font-size: 13px;
+    margin-right: 6px;
+  `}
 `;
 
 const NetworkName = styled.span`
@@ -58,6 +64,13 @@ const NetworkIconPlaceholder = styled.div`
     height: 20px;
     font-size: 10px;
   `}
+`;
+
+const NetworkInfo = styled.div`
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
 `;
 
 const DropdownContainer = styled.div`
@@ -145,11 +158,11 @@ export default function NetworkSelector({
   return (
     <DropdownContainer ref={dropdownRef}>
       <SelectorContainer onClick={handleToggle} disabled={disabled}>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <NetworkInfo>
           <NetworkLabel>{label}:</NetworkLabel>
           <NetworkIconPlaceholder>{metadata.shortName.charAt(0)}</NetworkIconPlaceholder>
           <NetworkName>{metadata.displayName}</NetworkName>
-        </div>
+        </NetworkInfo>
         {!disabled && (
           <ChevronWrapper isOpen={isOpen}>
             <ChevronDown size={20} />

@@ -10,9 +10,12 @@ export const BodyWrapper = styled.div`
   box-shadow: rgba(0, 0, 0, 0.01) 0px 0px 1px, rgba(0, 0, 0, 0.04) 0px 4px 8px, rgba(0, 0, 0, 0.04) 0px 16px 24px,
     rgba(0, 0, 0, 0.01) 0px 24px 32px;
   background: ${({ theme }) => theme.bg1};
+  overflow: hidden;
 
   ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-    width: 90%;
+    width: calc(100% - 1rem);
+    margin: 0 0.5rem;
+    border-radius: 1.2rem;
   `}
 `;
 

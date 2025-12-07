@@ -21,10 +21,12 @@ const InputRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 8px;
 `;
 
 const StyledInput = styled.input`
-  flex: 1;
+  width: 0;
+  flex: 1 1 auto;
   font-size: 28px;
   font-weight: 500;
   outline: none;
@@ -32,7 +34,9 @@ const StyledInput = styled.input`
   background-color: transparent;
   color: ${({ theme }) => theme.text1};
   text-align: left;
-  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
   &::placeholder {
     color: ${({ theme }) => theme.text4};

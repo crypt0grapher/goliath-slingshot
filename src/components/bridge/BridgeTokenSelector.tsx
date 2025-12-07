@@ -19,6 +19,8 @@ const SelectorButton = styled.button`
   outline: none;
   user-select: none;
   transition: 0.2s;
+  flex-shrink: 0;
+  white-space: nowrap;
 
   &:hover {
     background-color: ${({ theme }) => theme.bg4};
