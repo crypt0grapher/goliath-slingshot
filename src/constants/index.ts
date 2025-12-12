@@ -38,13 +38,13 @@ export const WBTC = new Token(ChainId.MAINNET, '0x2260FAC5E5542a773Aa44fBCfeDf7C
 
 // Goliath Testnet tokens
 const GOLIATH_CHAIN_ID = 8901;
-export const USDC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xF568bE1D688353d2813810aA6DaF1cB1dCe38D7E', 6, 'USDC', 'USD Coin');
-export const WXCN = new Token(GOLIATH_CHAIN_ID, '0xd319Df5FA3efb42B5fe4c5f873A7049f65428877', 18, 'WXCN', 'Wrapped Onyxcoin');
+export const USDC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x407A137fcdE44E03142f5EE83c32519A3dc0f54d', 6, 'USDC', 'USD Coin');
+export const WXCN = new Token(GOLIATH_CHAIN_ID, '0xec6Cd1441201e36F7289f0B2729a97d091AcB5b7', 18, 'WXCN', 'Wrapped Onyxcoin');
 // Note: XCN is the native token (like ETH), not a ERC20 token
 
 // Wrapped asset tokens on Goliath (ERC20 representations)
-export const ETH_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xF22914De280D7B60255859bA6933831598fB5DD6', 18, 'ETH', 'Ethereum');
-export const BTC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x3658049f0e9be1D2019652BfBe4EEBB42246Ea10', 8, 'BTC', 'Bitcoin');
+export const ETH_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xbae3635460ef6C04F6Ab516F12b4BA3783E894c4', 18, 'ETH', 'Ethereum');
+export const BTC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xF568bE1D688353d2813810aA6DaF1cB1dCe38D7E', 8, 'BTC', 'Bitcoin');
 
 // Block time here is slightly higher (~1s) than average in order to avoid ongoing proposals past the displayed time
 export const AVERAGE_BLOCK_TIME_IN_SECS = 13;
