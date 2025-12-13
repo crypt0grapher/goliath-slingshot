@@ -30,7 +30,7 @@ export const BRIDGE_TOKENS: Record<BridgeTokenSymbol, BridgeTokenConfig> = {
       isNative: false,
     },
     goliath: {
-      address: '0xF568bE1D688353d2813810aA6DaF1cB1dCe38D7E',
+      address: '0xEf2B9f754405f52c80B5A67656f14672a00d23b4',
       decimals: 6,
       isNative: false,
     },
@@ -47,7 +47,7 @@ export const BRIDGE_TOKENS: Record<BridgeTokenSymbol, BridgeTokenConfig> = {
     },
     goliath: {
       // ETH is ERC-20 on Goliath
-      address: '0xbae3635460ef6C04F6Ab516F12b4BA3783E894c4',
+      address: '0x9d318b851a6AF920D467bC5dC9882b5DFD36D65e',
       decimals: 18,
       isNative: false,
     },
