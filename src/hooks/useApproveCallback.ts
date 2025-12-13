@@ -88,7 +88,12 @@ export function useApproveCallback(
           approval: { tokenAddress: token.address, spender: spender },
         });
       })
-      .catch((error: Error) => {
+      .catch((error: any) => {
+        // User rejected the transaction - handle gracefully
+        if (error?.code === 4001 || error?.code === 'ACTION_REJECTED') {
+          console.debug('User rejected token approval');
+          return;
+        }
         console.debug('Failed to approve token', error);
         throw error;
       });
