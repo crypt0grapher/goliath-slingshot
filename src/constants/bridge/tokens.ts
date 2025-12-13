@@ -47,7 +47,7 @@ export const BRIDGE_TOKENS: Record<BridgeTokenSymbol, BridgeTokenConfig> = {
     },
     goliath: {
       // ETH is ERC-20 on Goliath
-      address: '0xF22914De280D7B60255859bA6933831598fB5DD6',
+      address: '0xbae3635460ef6C04F6Ab516F12b4BA3783E894c4',
       decimals: 18,
       isNative: false,
     },
