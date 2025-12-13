@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { ExternalLink } from 'react-feather';
 import Modal from '../../components/Modal';
-import { ButtonPrimary, ButtonSecondary } from '../../components/Button';
+import { ButtonPrimary, ButtonOutlined } from '../../components/Button';
 import { selectActiveOperation, selectIsStatusModalOpen } from '../../state/bridge/selectors';
 import { bridgeActions } from '../../state/bridge/reducer';
 import { BridgeStatusStepper } from '../../components/bridge';
@@ -84,7 +84,7 @@ const ExplorerLinkStyled = styled.a`
   padding: 10px;
   background-color: ${({ theme }) => theme.bg2};
   border-radius: 12px;
-  color: ${({ theme }) => theme.primary1};
+  color: ${({ theme }) => theme.text1};
   text-decoration: none;
   font-size: 14px;
 
@@ -197,9 +197,9 @@ export default function BridgeStatusModal() {
           {isCompleted && (
             <ButtonPrimary onClick={handleBridgeMore}>Bridge More</ButtonPrimary>
           )}
-          <ButtonSecondary onClick={handleClose}>
+          <ButtonOutlined onClick={handleClose}>
             {isCompleted ? 'Close' : 'Close (Bridge continues in background)'}
-          </ButtonSecondary>
+          </ButtonOutlined>
         </ButtonsContainer>
       </ContentWrapper>
     </Modal>
