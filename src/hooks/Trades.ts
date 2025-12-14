@@ -92,6 +92,13 @@ export function useTradeExactIn(currencyAmountIn?: CurrencyAmount, currencyOut?:
 
   return useMemo(() => {
     if (currencyAmountIn && currencyOut && allowedPairs.length > 0) {
+      // Find the direct pair if it exists
+      const directPair = allowedPairs.find(p => {
+        const tokens = [p.token0.symbol, p.token1.symbol];
+        return tokens.includes(currencyAmountIn.currency.symbol || '') &&
+               tokens.includes(currencyOut.symbol || '');
+      });
+
       console.log('DEBUG: Computing trade exactIn', {
         inputCurrency: currencyAmountIn.currency.symbol,
         inputDecimals: currencyAmountIn.currency.decimals,
@@ -100,7 +107,15 @@ export function useTradeExactIn(currencyAmountIn?: CurrencyAmount, currencyOut?:
         outputCurrency: currencyOut.symbol,
         outputDecimals: currencyOut.decimals,
         pairsCount: allowedPairs.length,
-        pairs: allowedPairs.map(p => `${p.token0.symbol}/${p.token1.symbol}`)
+        pairs: allowedPairs.map(p => `${p.token0.symbol}/${p.token1.symbol}`),
+        directPairExists: !!directPair,
+        directPairDetails: directPair ? {
+          token0: directPair.token0.symbol,
+          token1: directPair.token1.symbol,
+          reserve0: directPair.reserve0.toExact(),
+          reserve1: directPair.reserve1.toExact(),
+          pairAddress: directPair.liquidityToken.address
+        } : null
       });
 
       if (singleHopOnly) {
@@ -125,8 +140,31 @@ export function useTradeExactIn(currencyAmountIn?: CurrencyAmount, currencyOut?:
         const currentTrade: Trade | null =
           Trade.bestTradeExactIn(allowedPairs, currencyAmountIn, currencyOut, { maxHops: i, maxNumResults: 1 })[0] ??
           null;
+
+        // Debug logging for each hop level
+        console.log(`DEBUG: Hop ${i} trade:`, currentTrade ? {
+          hops: currentTrade.route.path.length - 1,
+          route: currentTrade.route.path.map(t => t.symbol).join(' -> '),
+          outputAmount: currentTrade.outputAmount.toExact(),
+          executionPrice: currentTrade.executionPrice.toSignificant(8),
+          priceImpact: currentTrade.priceImpact.toSignificant(4) + '%'
+        } : 'NO TRADE FOUND');
+
+        // Compare with best trade so far
+        const isBetter = isTradeBetter(bestTradeSoFar, currentTrade, BETTER_TRADE_LESS_HOPS_THRESHOLD);
+        console.log(`DEBUG: Is hop ${i} trade better than current best?`, {
+          isBetter,
+          threshold: BETTER_TRADE_LESS_HOPS_THRESHOLD.toSignificant(4) + '%',
+          bestSoFar: bestTradeSoFar ? {
+            hops: bestTradeSoFar.route.path.length - 1,
+            route: bestTradeSoFar.route.path.map(t => t.symbol).join(' -> '),
+            outputAmount: bestTradeSoFar.outputAmount.toExact(),
+            executionPrice: bestTradeSoFar.executionPrice.toSignificant(8)
+          } : 'NONE'
+        });
+
         // if current trade is best yet, save it
-        if (isTradeBetter(bestTradeSoFar, currentTrade, BETTER_TRADE_LESS_HOPS_THRESHOLD)) {
+        if (isBetter) {
           bestTradeSoFar = currentTrade;
         }
       }

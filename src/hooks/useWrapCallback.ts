@@ -57,7 +57,7 @@ export default function useWrapCallback(
                 }
               }
             : undefined,
-        inputError: sufficientBalance ? undefined : 'Insufficient XCN balance',
+        inputError: inputAmount && balance && balance.lessThan(inputAmount) ? 'Insufficient XCN balance' : undefined,
       };
     } else if (currencyEquals(wethToken, inputCurrency) && outputCurrency === ETHER) {
       return {
@@ -73,7 +73,7 @@ export default function useWrapCallback(
                 }
               }
             : undefined,
-        inputError: sufficientBalance ? undefined : 'Insufficient WXCN balance',
+        inputError: inputAmount && balance && balance.lessThan(inputAmount) ? 'Insufficient WXCN balance' : undefined,
       };
     } else {
       return NOT_APPLICABLE;
