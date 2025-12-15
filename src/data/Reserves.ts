@@ -35,10 +35,7 @@ export function usePairs(currencies: [Currency | undefined, Currency | undefined
       }),
     [tokens]
   );
-  // computePairAddress
   const results = useMultipleContractSingleData(pairAddresses, PAIR_INTERFACE, 'getReserves');
-
-  console.groupEnd();
 
   return useMemo(() => {
     return results.map((result, i) => {
@@ -52,28 +49,12 @@ export function usePairs(currencies: [Currency | undefined, Currency | undefined
       const { reserve0, reserve1 } = reserves;
       const [token0, token1] = tokenA.sortsBefore(tokenB) ? [tokenA, tokenB] : [tokenB, tokenA];
 
-      // Debug logging for reserves
-      if (reserves && tokenA && tokenB) {
-        console.log('DEBUG: Pair reserves fetched', {
-          pair: `${token0.symbol}/${token1.symbol}`,
-          reserve0: reserve0.toString(),
-          reserve1: reserve1.toString(),
-          token0Symbol: token0.symbol,
-          token0Decimals: token0.decimals,
-          token1Symbol: token1.symbol,
-          token1Decimals: token1.decimals,
-          pairAddress: pairAddresses[i],
-          reserve0Formatted: new TokenAmount(token0, reserve0.toString()).toExact(),
-          reserve1Formatted: new TokenAmount(token1, reserve1.toString()).toExact()
-        });
-      }
-
       return [
         PairState.EXISTS,
         new Pair(new TokenAmount(token0, reserve0.toString()), new TokenAmount(token1, reserve1.toString())),
       ];
     });
-  }, [results, tokens, pairAddresses]);
+  }, [results, tokens]);
 }
 
 export function usePair(tokenA?: Currency, tokenB?: Currency): [PairState, Pair | null] {

@@ -61,20 +61,22 @@ export function activeListeningKeys(
   const listeners = allListeners[chainId];
   if (!listeners) return {};
 
-  return Object.keys(listeners).reduce<{ [callKey: string]: number }>((memo, callKey) => {
+  const result: { [callKey: string]: number } = {};
+  const callKeys = Object.keys(listeners);
+  for (let i = 0; i < callKeys.length; i++) {
+    const callKey = callKeys[i];
     const keyListeners = listeners[callKey];
-
-    memo[callKey] = Object.keys(keyListeners)
-      .filter((key) => {
-        const blocksPerFetch = parseInt(key);
-        if (blocksPerFetch <= 0) return false;
-        return keyListeners[blocksPerFetch] > 0;
-      })
-      .reduce((previousMin, current) => {
-        return Math.min(previousMin, parseInt(current));
-      }, Infinity);
-    return memo;
-  }, {});
+    let minBlocksPerFetch = Infinity;
+    const blocksPerFetchKeys = Object.keys(keyListeners);
+    for (let j = 0; j < blocksPerFetchKeys.length; j++) {
+      const blocksPerFetch = parseInt(blocksPerFetchKeys[j]);
+      if (blocksPerFetch > 0 && keyListeners[blocksPerFetch] > 0 && blocksPerFetch < minBlocksPerFetch) {
+        minBlocksPerFetch = blocksPerFetch;
+      }
+    }
+    result[callKey] = minBlocksPerFetch;
+  }
+  return result;
 }
 
 /**

@@ -73,33 +73,15 @@ export function tryParseAmount(value?: string, currency?: Currency): CurrencyAmo
   }
   try {
     const typedValueParsed = parseUnits(value, currency.decimals).toString();
-    console.log('DEBUG tryParseAmount:', {
-      value,
-      decimals: currency.decimals,
-      typedValueParsed,
-      isToken: currency instanceof Token,
-      currencySymbol: currency.symbol,
-      currencyAddress: currency instanceof Token ? currency.address : 'NATIVE'
-    });
     if (typedValueParsed !== '0') {
-      const result = currency instanceof Token
+      return currency instanceof Token
         ? new TokenAmount(currency, JSBI.BigInt(typedValueParsed))
         : CurrencyAmount.ether(JSBI.BigInt(typedValueParsed));
-      console.log('DEBUG parsed amount result:', {
-        raw: result.raw.toString(),
-        toExact: result.toExact(),
-        toSignificant: result.toSignificant(18),
-        numerator: result.numerator.toString(),
-        denominator: result.denominator.toString(),
-        currencyDecimals: result.currency.decimals
-      });
-      return result;
     }
   } catch (error) {
     // should fail if the user specifies too many decimal places of precision (or maybe exceed max uint?)
     console.debug(`Failed to parse input amount: "${value}"`, error);
   }
-  // necessary for all paths to return a value
   return undefined;
 }
 

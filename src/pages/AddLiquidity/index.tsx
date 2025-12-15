@@ -118,32 +118,11 @@ export default function AddLiquidity({
   const addTransaction = useTransactionAdder();
 
   async function onAdd() {
-    console.log('onAdd called', { chainId, library: !!library, account, deadline: deadline?.toString() });
-    if (!chainId || !library || !account) {
-      console.error('onAdd: Missing chainId, library, or account', { chainId, library: !!library, account });
-      return;
-    }
+    if (!chainId || !library || !account) return;
     const router = getRouterContract(chainId, library, account);
-    console.log('Router contract:', router.address);
 
     const { [Field.CURRENCY_A]: parsedAmountA, [Field.CURRENCY_B]: parsedAmountB } = parsedAmounts;
-    console.log('Parsed amounts:', {
-      amountA: parsedAmountA?.toExact(),
-      amountB: parsedAmountB?.toExact(),
-      currencyA: currencyA?.symbol,
-      currencyB: currencyB?.symbol,
-      deadline: deadline?.toString(),
-    });
-    if (!parsedAmountA || !parsedAmountB || !currencyA || !currencyB || !deadline) {
-      console.error('onAdd: Missing required values', {
-        parsedAmountA: !!parsedAmountA,
-        parsedAmountB: !!parsedAmountB,
-        currencyA: !!currencyA,
-        currencyB: !!currencyB,
-        deadline: !!deadline,
-      });
-      return;
-    }
+    if (!parsedAmountA || !parsedAmountB || !currencyA || !currencyB || !deadline) return;
 
     const amountsMin = {
       [Field.CURRENCY_A]: calculateSlippageAmount(parsedAmountA, noLiquidity ? 0 : allowedSlippage)[0],
@@ -183,16 +162,13 @@ export default function AddLiquidity({
       value = null;
     }
 
-    console.log('Calling addLiquidity with args:', args, 'value:', value?.toString());
     setAttemptingTxn(true);
     await estimate(...args, value ? { value } : {})
-      .then((estimatedGasLimit) => {
-        console.log('Gas estimated:', estimatedGasLimit.toString());
-        return method(...args, {
+      .then((estimatedGasLimit) =>
+        method(...args, {
           ...(value ? { value } : {}),
           gasLimit: calculateGasMargin(estimatedGasLimit),
         }).then((response) => {
-          console.log('Transaction submitted:', response.hash);
           setAttemptingTxn(false);
 
           addTransaction(response, {
@@ -208,15 +184,11 @@ export default function AddLiquidity({
           });
 
           setTxHash(response.hash);
-        });
-      })
+        })
+      )
       .catch((error) => {
         setAttemptingTxn(false);
         console.error('Add liquidity error:', error);
-        // Log the full error for debugging
-        if (error?.data?.message) {
-          console.error('Contract error message:', error.data.message);
-        }
       });
   }
 

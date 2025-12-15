@@ -1,6 +1,6 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { Contract } from '@ethersproject/contracts';
-import { ETHER, JSBI, Percent, Router, SwapParameters, Trade, TradeType } from '@uniswap/sdk';
+import { JSBI, Percent, Router, SwapParameters, Trade, TradeType } from '@uniswap/sdk';
 import { useMemo } from 'react';
 import { BIPS_BASE, INITIAL_ALLOWED_SLIPPAGE } from '../constants';
 import { useTransactionAdder } from '../state/transactions/hooks';
@@ -67,37 +67,6 @@ function useSwapCallArguments(
       deadline: deadline.toNumber(),
     });
 
-    // Debug logging for swap parameters
-    console.log('DEBUG: Swap Parameters:', {
-      methodName: swapParams.methodName,
-      inputCurrency: trade.inputAmount.currency.symbol,
-      outputCurrency: trade.outputAmount.currency.symbol,
-      inputAmount: trade.inputAmount.toExact(),
-      outputAmount: trade.outputAmount.toExact(),
-      inputAmountRaw: trade.inputAmount.raw.toString(),
-      outputAmountRaw: trade.outputAmount.raw.toString(),
-      minimumAmountOut: trade.minimumAmountOut(new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE)).toExact(),
-      minimumAmountOutRaw: trade.minimumAmountOut(new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE)).raw.toString(),
-      maximumAmountIn: trade.maximumAmountIn(new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE)).toExact(),
-      maximumAmountInRaw: trade.maximumAmountIn(new Percent(JSBI.BigInt(allowedSlippage), BIPS_BASE)).raw.toString(),
-      value: swapParams.value,
-      args: swapParams.args,
-      path: trade.route.path.map(token => `${token.symbol} (${token.address})`),
-      allowedSlippage: allowedSlippage,
-      isNativeIn: trade.inputAmount.currency === ETHER,
-      isNativeOut: trade.outputAmount.currency === ETHER,
-    });
-
-    // Additional check for native currency swaps
-    if (trade.inputAmount.currency === ETHER || trade.outputAmount.currency === ETHER) {
-      console.log('DEBUG: Native currency swap detected', {
-        routerMethod: swapParams.methodName,
-        expectedPath0: trade.inputAmount.currency === ETHER ? 'Should be WXCN address' : 'N/A',
-        actualPath0: swapParams.args[1] ? swapParams.args[1][0] : 'N/A',
-        WXCN_ADDRESS: '0xd319Df5FA3efb42B5fe4c5f873A7049f65428877'
-      });
-    }
-
     swapMethods.push(swapParams);
 
     if (trade.tradeType === TradeType.EXACT_INPUT) {
@@ -155,17 +124,10 @@ export function useSwapCallback(
             const options = !value || isZero(value) ? {} : { value };
 
             return contract.estimateGas[methodName](...args, options)
-              .then((gasEstimate) => {
-                console.log('DEBUG: Gas estimate successful', {
-                  method: methodName,
-                  gasEstimate: gasEstimate.toString(),
-                  value: value
-                });
-                return {
-                  call,
-                  gasEstimate,
-                };
-              })
+              .then((gasEstimate) => ({
+                call,
+                gasEstimate,
+              }))
               .catch((gasError) => {
                 console.debug('Gas estimate failed, trying eth_call to extract error', call);
 

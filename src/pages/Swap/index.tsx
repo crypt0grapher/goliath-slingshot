@@ -234,17 +234,7 @@ export default function Swap() {
 
   const handleMaxInput = useCallback(() => {
     if (maxAmountInput) {
-      const exactValue = maxAmountInput.toExact();
-      console.log('DEBUG MAX BUTTON:', {
-        maxAmountInputRaw: maxAmountInput.raw.toString(),
-        toExact: exactValue,
-        toSignificant: maxAmountInput.toSignificant(7),
-        numerator: maxAmountInput.numerator.toString(),
-        denominator: maxAmountInput.denominator.toString(),
-        currencyDecimals: maxAmountInput.currency.decimals,
-        currencySymbol: maxAmountInput.currency.symbol
-      });
-      onUserInput(Field.INPUT, exactValue);
+      onUserInput(Field.INPUT, maxAmountInput.toExact());
     }
   }, [maxAmountInput, onUserInput]);
 
