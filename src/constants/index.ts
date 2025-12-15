@@ -209,3 +209,21 @@ export const MIN_ETH: JSBI = JSBI.exponentiate(JSBI.BigInt(10), JSBI.BigInt(16))
 export const BETTER_TRADE_LESS_HOPS_THRESHOLD = new Percent(JSBI.BigInt(50), JSBI.BigInt(10000));
 export const ZERO_PERCENT = new Percent('0');
 export const ONE_HUNDRED_PERCENT = new Percent('1');
+
+// Minimum liquidity filtering for routing (prevents routing through dust pairs)
+// Based on liquidity_filtering_settings_for_chained_swaps.md recommendations
+
+// Minimum normalized token amount (in decimal form)
+// For 18-decimal token: 0.001 tokens = 1e15 raw
+// For 8-decimal token: 0.001 tokens = 1e5 raw
+// This ensures pairs like WXCN/BTC with only 0.0002 BTC are filtered out
+export const MIN_RESERVE_TOKENS = 0.001;
+
+// Maximum acceptable price impact for a trade route (in basis points)
+// Routes exceeding this threshold will be filtered out regardless of other factors
+// Testnet: 15% (1500 bips), Mainnet: 10% (1000 bips)
+export const MAX_PRICE_IMPACT_FOR_ROUTE = new Percent(JSBI.BigInt(1500), BIPS_BASE);
+
+// Price impact at which we show a warning but still allow the trade (in basis points)
+// 5% = 500 bips
+export const ROUTE_PRICE_IMPACT_WARNING = new Percent(JSBI.BigInt(500), BIPS_BASE);
