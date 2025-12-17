@@ -74,12 +74,12 @@ export function calculateMaxSpendable(
 export function isValidAmountString(amount: string): boolean {
   if (!amount || amount.trim() === '') return false;
 
-  // Check for valid decimal number format
-  const regex = /^\d*\.?\d*$/;
+  // Check for valid decimal number format (accepting both dot and comma as decimal separator)
+  const regex = /^\d*[.,]?\d*$/;
   if (!regex.test(amount)) return false;
 
-  // Ensure it's not just a dot
-  if (amount === '.') return false;
+  // Ensure it's not just a dot or comma
+  if (amount === '.' || amount === ',') return false;
 
   // Ensure there's at least one digit
   if (!/\d/.test(amount)) return false;
@@ -117,8 +117,11 @@ export function isPositiveAmount(amount: string): boolean {
  * Sanitize amount input string
  */
 export function sanitizeAmountInput(input: string): string {
+  // Convert commas to dots (for locales using comma as decimal separator)
+  let sanitized = input.replace(/,/g, '.');
+
   // Remove any non-numeric characters except decimal point
-  let sanitized = input.replace(/[^0-9.]/g, '');
+  sanitized = sanitized.replace(/[^0-9.]/g, '');
 
   // Ensure only one decimal point
   const parts = sanitized.split('.');
