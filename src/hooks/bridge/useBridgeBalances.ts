@@ -22,14 +22,16 @@ export function useBridgeBalances(
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchBalance = useCallback(async () => {
+  const fetchBalance = useCallback(async (silent = false) => {
     if (!account) {
       setBalanceAtomic(BigInt(0));
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
+    if (!silent) {
+      setIsLoading(true);
+      setError(null);
+    }
 
     try {
       const tokenConfig = getTokenConfigForChain(token, network);
@@ -44,18 +46,36 @@ export function useBridgeBalances(
       }
 
       setBalanceAtomic(balance);
+      if (!silent) {
+        setError(null);
+      }
     } catch (err) {
       console.error('Error fetching balance:', err);
-      setError('Failed to fetch balance');
-      setBalanceAtomic(BigInt(0));
+      if (!silent) {
+        setError('Failed to fetch balance');
+        setBalanceAtomic(BigInt(0));
+      }
     } finally {
-      setIsLoading(false);
+      if (!silent) {
+        setIsLoading(false);
+      }
     }
   }, [account, token, network]);
 
   useEffect(() => {
     fetchBalance();
   }, [fetchBalance]);
+
+  // Poll balances every second to keep them updated (silent mode to avoid UI flickering)
+  useEffect(() => {
+    if (!account) return;
+
+    const intervalId = setInterval(() => {
+      fetchBalance(true);
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [account, fetchBalance]);
 
   // Format the balance for display
   const balance = balanceAtomic > BigInt(0) ? formatAmount(balanceAtomic, token, network) : '0';
