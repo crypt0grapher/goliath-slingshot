@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { ethers } from 'ethers';
 import { useActiveWeb3React } from '../index';
+import { useProviderReady } from '../useProviderReady';
 import { useDispatch } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
 import { bridgeActions } from '../../state/bridge/reducer';
@@ -10,6 +11,28 @@ import { getBridgeContractAddress } from '../../constants/bridge/contracts';
 import { BRIDGE_SEPOLIA_ABI } from '../../constants/bridge/abis';
 import { parseAmount } from '../../utils/bridge/amounts';
 
+// Configuration for retry behavior
+const DEPOSIT_RETRY_CONFIG = {
+  maxRetries: 2,
+  retryDelay: 500, // ms
+  shouldRetry: (error: any): boolean => {
+    if (error?.code === 4001 || error?.code === 'ACTION_REJECTED') {
+      return false;
+    }
+    const errorMessage = error?.message?.toLowerCase() || '';
+    return (
+      errorMessage.includes('nonce') ||
+      errorMessage.includes('timeout') ||
+      errorMessage.includes('network') ||
+      errorMessage.includes('connection') ||
+      errorMessage.includes('provider') ||
+      errorMessage.includes('unexpected')
+    );
+  },
+};
+
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 interface UseDepositReturn {
   deposit: (token: BridgeTokenSymbol, amountHuman: string, recipient: string) => Promise<string>;
   isLoading: boolean;
@@ -18,6 +41,7 @@ interface UseDepositReturn {
 
 export function useBridgeDeposit(): UseDepositReturn {
   const { account, library } = useActiveWeb3React();
+  const { isReady: providerReady, recheckProvider } = useProviderReady();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,24 +56,65 @@ export function useBridgeDeposit(): UseDepositReturn {
       setError(null);
       dispatch(bridgeActions.setSubmitting(true));
 
-      try {
-        const tokenConfig = getTokenConfigForChain(token, BridgeNetwork.SEPOLIA);
-        const amountAtomic = parseAmount(amountHuman, token, BridgeNetwork.SEPOLIA);
-        const bridgeAddress = getBridgeContractAddress(BridgeNetwork.SEPOLIA);
+      // If provider is not ready, wait a moment and recheck
+      if (!providerReady) {
+        console.debug('Bridge: Provider not ready, waiting before deposit...');
+        recheckProvider();
+        await wait(300);
+      }
 
+      const tokenConfig = getTokenConfigForChain(token, BridgeNetwork.SEPOLIA);
+      const amountAtomic = parseAmount(amountHuman, token, BridgeNetwork.SEPOLIA);
+      const bridgeAddress = getBridgeContractAddress(BridgeNetwork.SEPOLIA);
+
+      // Core deposit execution logic
+      const executeDeposit = async (): Promise<ethers.ContractTransaction> => {
         const signer = library.getSigner(account);
         const bridgeContract = new ethers.Contract(bridgeAddress, BRIDGE_SEPOLIA_ABI, signer as any);
 
-        let tx: ethers.ContractTransaction;
-
         if (tokenConfig.isNative) {
           // Native ETH deposit - use depositNative function
-          tx = await bridgeContract.depositNative(recipient, {
+          return bridgeContract.depositNative(recipient, {
             value: amountAtomic.toString(),
           });
         } else {
           // ERC-20 deposit
-          tx = await bridgeContract.deposit(tokenConfig.address, amountAtomic.toString(), recipient);
+          return bridgeContract.deposit(tokenConfig.address, amountAtomic.toString(), recipient);
+        }
+      };
+
+      let tx: ethers.ContractTransaction;
+      let lastError: Error | null = null;
+
+      try {
+        for (let attempt = 0; attempt <= DEPOSIT_RETRY_CONFIG.maxRetries; attempt++) {
+          try {
+            if (attempt > 0) {
+              console.debug(`Bridge: Deposit retry attempt ${attempt}/${DEPOSIT_RETRY_CONFIG.maxRetries}`);
+              recheckProvider();
+              await wait(DEPOSIT_RETRY_CONFIG.retryDelay);
+            }
+
+            tx = await executeDeposit();
+            break; // Success
+          } catch (err: any) {
+            lastError = err;
+
+            if (err?.code === 4001 || err?.code === 'ACTION_REJECTED') {
+              console.debug('Bridge: User rejected deposit transaction');
+              throw err;
+            }
+
+            if (!DEPOSIT_RETRY_CONFIG.shouldRetry(err) || attempt === DEPOSIT_RETRY_CONFIG.maxRetries) {
+              throw err;
+            }
+
+            console.debug(`Bridge: Deposit attempt ${attempt + 1} failed, will retry:`, err.message);
+          }
+        }
+
+        if (!tx!) {
+          throw lastError || new Error('Deposit failed after multiple attempts');
         }
 
         // Create operation record
@@ -115,7 +180,7 @@ export function useBridgeDeposit(): UseDepositReturn {
         dispatch(bridgeActions.setSubmitting(false));
       }
     },
-    [account, library, dispatch]
+    [account, library, dispatch, providerReady, recheckProvider]
   );
 
   return { deposit, isLoading, error };

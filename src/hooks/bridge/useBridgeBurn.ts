@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { ethers } from 'ethers';
 import { useActiveWeb3React } from '../index';
+import { useProviderReady } from '../useProviderReady';
 import { useDispatch } from 'react-redux';
 import { v4 as uuidv4 } from 'uuid';
 import { bridgeActions } from '../../state/bridge/reducer';
@@ -10,6 +11,28 @@ import { getBridgeContractAddress } from '../../constants/bridge/contracts';
 import { BRIDGE_GOLIATH_ABI } from '../../constants/bridge/abis';
 import { parseAmount } from '../../utils/bridge/amounts';
 
+// Configuration for retry behavior
+const BURN_RETRY_CONFIG = {
+  maxRetries: 2,
+  retryDelay: 500, // ms
+  shouldRetry: (error: any): boolean => {
+    if (error?.code === 4001 || error?.code === 'ACTION_REJECTED') {
+      return false;
+    }
+    const errorMessage = error?.message?.toLowerCase() || '';
+    return (
+      errorMessage.includes('nonce') ||
+      errorMessage.includes('timeout') ||
+      errorMessage.includes('network') ||
+      errorMessage.includes('connection') ||
+      errorMessage.includes('provider') ||
+      errorMessage.includes('unexpected')
+    );
+  },
+};
+
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
 interface UseBurnReturn {
   burn: (token: BridgeTokenSymbol, amountHuman: string, recipient: string) => Promise<string>;
   isLoading: boolean;
@@ -18,6 +41,7 @@ interface UseBurnReturn {
 
 export function useBridgeBurn(): UseBurnReturn {
   const { account, library } = useActiveWeb3React();
+  const { isReady: providerReady, recheckProvider } = useProviderReady();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,32 +56,69 @@ export function useBridgeBurn(): UseBurnReturn {
       setError(null);
       dispatch(bridgeActions.setSubmitting(true));
 
-      try {
-        const tokenConfig = getTokenConfigForChain(token, BridgeNetwork.GOLIATH);
-        const amountAtomic = parseAmount(amountHuman, token, BridgeNetwork.GOLIATH);
-        const bridgeAddress = getBridgeContractAddress(BridgeNetwork.GOLIATH);
+      // If provider is not ready, wait a moment and recheck
+      if (!providerReady) {
+        console.debug('Bridge: Provider not ready, waiting before burn...');
+        recheckProvider();
+        await wait(300);
+      }
 
-        // Debug: log amount conversion
-        console.log('[Bridge] Amount conversion:', {
-          amountHuman,
-          amountAtomic: amountAtomic.toString(),
-          token,
-          decimals: tokenConfig.decimals,
-        });
+      const tokenConfig = getTokenConfigForChain(token, BridgeNetwork.GOLIATH);
+      const amountAtomic = parseAmount(amountHuman, token, BridgeNetwork.GOLIATH);
+      const bridgeAddress = getBridgeContractAddress(BridgeNetwork.GOLIATH);
 
+      // Debug: log amount conversion
+      console.log('[Bridge] Amount conversion:', {
+        amountHuman,
+        amountAtomic: amountAtomic.toString(),
+        token,
+        decimals: tokenConfig.decimals,
+      });
+
+      if (tokenConfig.isNative) {
+        throw new Error('Native token burning is not supported. Please use wrapped token.');
+      }
+
+      // Core burn execution logic
+      const executeBurn = async (): Promise<ethers.ContractTransaction> => {
         const signer = library.getSigner(account);
         const bridgeContract = new ethers.Contract(bridgeAddress, BRIDGE_GOLIATH_ABI, signer as any);
+        return bridgeContract.burn(tokenConfig.address, amountAtomic.toString(), recipient);
+      };
 
-        let tx: ethers.ContractTransaction;
+      let tx: ethers.ContractTransaction;
+      let lastError: Error | null = null;
 
-        if (tokenConfig.isNative) {
-          // Native token burning is not supported on Goliath
-          // All bridgeable tokens on Goliath are ERC-20 (including wrapped XCN, ETH)
-          throw new Error('Native token burning is not supported. Please use wrapped token.');
+      try {
+        for (let attempt = 0; attempt <= BURN_RETRY_CONFIG.maxRetries; attempt++) {
+          try {
+            if (attempt > 0) {
+              console.debug(`Bridge: Burn retry attempt ${attempt}/${BURN_RETRY_CONFIG.maxRetries}`);
+              recheckProvider();
+              await wait(BURN_RETRY_CONFIG.retryDelay);
+            }
+
+            tx = await executeBurn();
+            break; // Success
+          } catch (err: any) {
+            lastError = err;
+
+            if (err?.code === 4001 || err?.code === 'ACTION_REJECTED') {
+              console.debug('Bridge: User rejected burn transaction');
+              throw err;
+            }
+
+            if (!BURN_RETRY_CONFIG.shouldRetry(err) || attempt === BURN_RETRY_CONFIG.maxRetries) {
+              throw err;
+            }
+
+            console.debug(`Bridge: Burn attempt ${attempt + 1} failed, will retry:`, err.message);
+          }
         }
 
-        // ERC-20 burn (all tokens on Goliath are ERC-20)
-        tx = await bridgeContract.burn(tokenConfig.address, amountAtomic.toString(), recipient);
+        if (!tx!) {
+          throw lastError || new Error('Burn failed after multiple attempts');
+        }
 
         // Create operation record
         const operationId = uuidv4();
@@ -122,7 +183,7 @@ export function useBridgeBurn(): UseBurnReturn {
         dispatch(bridgeActions.setSubmitting(false));
       }
     },
-    [account, library, dispatch]
+    [account, library, dispatch, providerReady, recheckProvider]
   );
 
   return { burn, isLoading, error };
