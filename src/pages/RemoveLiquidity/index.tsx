@@ -31,7 +31,7 @@ import useTransactionDeadline from '../../hooks/useTransactionDeadline';
 import { useTransactionAdder } from '../../state/transactions/hooks';
 import { StyledInternalLink, TYPE } from '../../theme';
 import { calculateGasMargin, calculateSlippageAmount, getRouterContract } from '../../utils';
-import { currencyId } from '../../utils/currencyId';
+import { currencyId, getCurrencySymbol } from '../../utils/currencyId';
 import useDebouncedChangeHandler from '../../utils/useDebouncedChangeHandler';
 import { wrappedCurrency } from '../../utils/wrappedCurrency';
 import AppBody from '../AppBody';
@@ -59,6 +59,10 @@ export default function RemoveLiquidity({
     () => [wrappedCurrency(currencyA, chainId), wrappedCurrency(currencyB, chainId)],
     [currencyA, currencyB, chainId]
   );
+
+  // Get display symbols (XCN for native on Goliath)
+  const symbolA = getCurrencySymbol(currencyA, chainId);
+  const symbolB = getCurrencySymbol(currencyB, chainId);
 
   const theme = useContext(ThemeContext);
 
@@ -323,11 +327,11 @@ export default function RemoveLiquidity({
               'Remove ' +
               parsedAmounts[Field.CURRENCY_A]?.toSignificant(3) +
               ' ' +
-              currencyA?.symbol +
+              symbolA +
               ' and ' +
               parsedAmounts[Field.CURRENCY_B]?.toSignificant(3) +
               ' ' +
-              currencyB?.symbol,
+              symbolB,
           });
 
           setTxHash(response.hash);
@@ -350,7 +354,7 @@ export default function RemoveLiquidity({
           <RowFixed gap="4px">
             <CurrencyLogo currency={currencyA} size={'24px'} />
             <Text fontSize={24} fontWeight={500} style={{ marginLeft: '10px' }}>
-              {currencyA?.symbol}
+              {symbolA}
             </Text>
           </RowFixed>
         </RowBetween>
@@ -364,7 +368,7 @@ export default function RemoveLiquidity({
           <RowFixed gap="4px">
             <CurrencyLogo currency={currencyB} size={'24px'} />
             <Text fontSize={24} fontWeight={500} style={{ marginLeft: '10px' }}>
-              {currencyB?.symbol}
+              {symbolB}
             </Text>
           </RowFixed>
         </RowBetween>
@@ -383,7 +387,7 @@ export default function RemoveLiquidity({
       <>
         <RowBetween>
           <Text color={theme.text2} fontWeight={500} fontSize={16}>
-            {'UNI ' + currencyA?.symbol + '/' + currencyB?.symbol} Burned
+            {'UNI ' + symbolA + '/' + symbolB} Burned
           </Text>
           <RowFixed>
             <DoubleCurrencyLogo currency0={currencyA} currency1={currencyB} margin={true} />
@@ -399,13 +403,13 @@ export default function RemoveLiquidity({
                 Price
               </Text>
               <Text fontWeight={500} fontSize={16} color={theme.text1}>
-                1 {currencyA?.symbol} = {tokenA ? pair.priceOf(tokenA).toSignificant(6) : '-'} {currencyB?.symbol}
+                1 {symbolA} = {tokenA ? pair.priceOf(tokenA).toSignificant(6) : '-'} {symbolB}
               </Text>
             </RowBetween>
             <RowBetween>
               <div />
               <Text fontWeight={500} fontSize={16} color={theme.text1}>
-                1 {currencyB?.symbol} = {tokenB ? pair.priceOf(tokenB).toSignificant(6) : '-'} {currencyA?.symbol}
+                1 {symbolB} = {tokenB ? pair.priceOf(tokenB).toSignificant(6) : '-'} {symbolA}
               </Text>
             </RowBetween>
           </>
@@ -420,8 +424,8 @@ export default function RemoveLiquidity({
   }
 
   const pendingText = `Removing ${parsedAmounts[Field.CURRENCY_A]?.toSignificant(6)} ${
-    currencyA?.symbol
-  } and ${parsedAmounts[Field.CURRENCY_B]?.toSignificant(6)} ${currencyB?.symbol}`;
+    symbolA
+  } and ${parsedAmounts[Field.CURRENCY_B]?.toSignificant(6)} ${symbolB}`;
 
   const liquidityPercentChangeCallback = useCallback(
     (value: number) => {
@@ -559,7 +563,7 @@ export default function RemoveLiquidity({
                       <RowFixed>
                         <CurrencyLogo currency={currencyA} style={{ marginRight: '12px' }} />
                         <Text fontSize={24} fontWeight={500} id="remove-liquidity-tokena-symbol">
-                          {currencyA?.symbol}
+                          {symbolA}
                         </Text>
                       </RowFixed>
                     </RowBetween>
@@ -570,7 +574,7 @@ export default function RemoveLiquidity({
                       <RowFixed>
                         <CurrencyLogo currency={currencyB} style={{ marginRight: '12px' }} />
                         <Text fontSize={24} fontWeight={500} id="remove-liquidity-tokenb-symbol">
-                          {currencyB?.symbol}
+                          {symbolB}
                         </Text>
                       </RowFixed>
                     </RowBetween>
@@ -649,13 +653,13 @@ export default function RemoveLiquidity({
                 <RowBetween>
                   Price:
                   <div>
-                    1 {currencyA?.symbol} = {tokenA ? pair.priceOf(tokenA).toSignificant(6) : '-'} {currencyB?.symbol}
+                    1 {symbolA} = {tokenA ? pair.priceOf(tokenA).toSignificant(6) : '-'} {symbolB}
                   </div>
                 </RowBetween>
                 <RowBetween>
                   <div />
                   <div>
-                    1 {currencyB?.symbol} = {tokenB ? pair.priceOf(tokenB).toSignificant(6) : '-'} {currencyA?.symbol}
+                    1 {symbolB} = {tokenB ? pair.priceOf(tokenB).toSignificant(6) : '-'} {symbolA}
                   </div>
                 </RowBetween>
               </div>

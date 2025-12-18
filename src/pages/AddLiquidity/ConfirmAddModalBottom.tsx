@@ -1,4 +1,4 @@
-import { Currency, CurrencyAmount, Fraction, Percent } from '@uniswap/sdk';
+import { ChainId, Currency, CurrencyAmount, ETHER, Fraction, Percent } from '@uniswap/sdk';
 import React from 'react';
 import { Text } from 'rebass';
 import { ButtonPrimary } from '../../components/Button';
@@ -6,6 +6,18 @@ import { RowBetween, RowFixed } from '../../components/Row';
 import CurrencyLogo from '../../components/CurrencyLogo';
 import { Field } from '../../state/mint/actions';
 import { TYPE } from '../../theme';
+import { useActiveWeb3React } from '../../hooks';
+
+/**
+ * Get the display symbol for a currency, showing XCN for native token on Goliath
+ */
+function getCurrencySymbol(currency: Currency | undefined, chainId: ChainId | undefined): string {
+  if (!currency) return '';
+  if (currency === ETHER) {
+    return chainId === ChainId.GOLIATH_TESTNET ? 'XCN' : 'ETH';
+  }
+  return currency.symbol || '';
+}
 
 export function ConfirmAddModalBottom({
   noLiquidity,
@@ -22,17 +34,23 @@ export function ConfirmAddModalBottom({
   poolTokenPercentage?: Percent;
   onAdd: () => void;
 }) {
+  const { chainId } = useActiveWeb3React();
+
+  // Get display symbols (XCN for native on Goliath)
+  const symbolA = getCurrencySymbol(currencies[Field.CURRENCY_A], chainId);
+  const symbolB = getCurrencySymbol(currencies[Field.CURRENCY_B], chainId);
+
   return (
     <>
       <RowBetween>
-        <TYPE.body>{currencies[Field.CURRENCY_A]?.symbol} Deposited</TYPE.body>
+        <TYPE.body>{symbolA} Deposited</TYPE.body>
         <RowFixed>
           <CurrencyLogo currency={currencies[Field.CURRENCY_A]} style={{ marginRight: '8px' }} />
           <TYPE.body>{parsedAmounts[Field.CURRENCY_A]?.toSignificant(6)}</TYPE.body>
         </RowFixed>
       </RowBetween>
       <RowBetween>
-        <TYPE.body>{currencies[Field.CURRENCY_B]?.symbol} Deposited</TYPE.body>
+        <TYPE.body>{symbolB} Deposited</TYPE.body>
         <RowFixed>
           <CurrencyLogo currency={currencies[Field.CURRENCY_B]} style={{ marginRight: '8px' }} />
           <TYPE.body>{parsedAmounts[Field.CURRENCY_B]?.toSignificant(6)}</TYPE.body>
@@ -41,16 +59,12 @@ export function ConfirmAddModalBottom({
       <RowBetween>
         <TYPE.body>Rates</TYPE.body>
         <TYPE.body>
-          {`1 ${currencies[Field.CURRENCY_A]?.symbol} = ${price?.toSignificant(4)} ${
-            currencies[Field.CURRENCY_B]?.symbol
-          }`}
+          {`1 ${symbolA} = ${price?.toSignificant(4)} ${symbolB}`}
         </TYPE.body>
       </RowBetween>
       <RowBetween style={{ justifyContent: 'flex-end' }}>
         <TYPE.body>
-          {`1 ${currencies[Field.CURRENCY_B]?.symbol} = ${price?.invert().toSignificant(4)} ${
-            currencies[Field.CURRENCY_A]?.symbol
-          }`}
+          {`1 ${symbolB} = ${price?.invert().toSignificant(4)} ${symbolA}`}
         </TYPE.body>
       </RowBetween>
       <RowBetween>

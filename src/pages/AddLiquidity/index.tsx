@@ -1,11 +1,11 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { TransactionResponse } from '@ethersproject/providers';
-import { Currency, ETHER, TokenAmount } from '@uniswap/sdk';
+import { ChainId, Currency, ETHER, TokenAmount } from '@uniswap/sdk';
 import React, { useCallback, useContext, useState } from 'react';
-import { Plus } from 'react-feather';
+import { AlertTriangle, Plus } from 'react-feather';
 import { RouteComponentProps } from 'react-router-dom';
 import { Text } from 'rebass';
-import { ThemeContext } from 'styled-components';
+import styled, { ThemeContext } from 'styled-components';
 import { ButtonError, ButtonPrimary } from '../../components/Button';
 import { LightCard } from '../../components/Card';
 import { AutoColumn, ColumnCenter } from '../../components/Column';
@@ -37,6 +37,33 @@ import { Dots, Wrapper } from '../Pool/styleds';
 import { ConfirmAddModalBottom } from './ConfirmAddModalBottom';
 import { currencyId } from '../../utils/currencyId';
 import { PoolPriceBar } from './PoolPriceBar';
+
+// Error message styled component
+const ErrorCard = styled(LightCard)`
+  padding: 12px;
+  margin-top: 8px;
+  background-color: ${({ theme }) => theme.red1}20;
+  border: 1px solid ${({ theme }) => theme.red1};
+`;
+
+const ErrorText = styled(Text)`
+  color: ${({ theme }) => theme.red1};
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
+/**
+ * Get the display symbol for a currency, showing XCN for native token on Goliath
+ */
+function getCurrencySymbol(currency: Currency | undefined, chainId: ChainId | undefined): string {
+  if (!currency) return '';
+  if (currency === ETHER) {
+    return chainId === ChainId.GOLIATH_TESTNET ? 'XCN' : 'ETH';
+  }
+  return currency.symbol || '';
+}
 
 export default function AddLiquidity({
   match: {
@@ -78,6 +105,7 @@ export default function AddLiquidity({
   // modal and loading
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
   const [attemptingTxn, setAttemptingTxn] = useState<boolean>(false); // clicked confirm
+  const [txError, setTxError] = useState<string | null>(null); // error message for user
 
   // txn values
   const deadline = useTransactionDeadline(); // custom from users settings
@@ -124,34 +152,62 @@ export default function AddLiquidity({
     const { [Field.CURRENCY_A]: parsedAmountA, [Field.CURRENCY_B]: parsedAmountB } = parsedAmounts;
     if (!parsedAmountA || !parsedAmountB || !currencyA || !currencyB || !deadline) return;
 
+    // Clear any previous error
+    setTxError(null);
+
     const amountsMin = {
       [Field.CURRENCY_A]: calculateSlippageAmount(parsedAmountA, noLiquidity ? 0 : allowedSlippage)[0],
       [Field.CURRENCY_B]: calculateSlippageAmount(parsedAmountB, noLiquidity ? 0 : allowedSlippage)[0],
     };
 
+    // Get proper symbols for display (XCN for native on Goliath)
+    const symbolA = getCurrencySymbol(currencyA, chainId);
+    const symbolB = getCurrencySymbol(currencyB, chainId);
+
     let estimate,
       method: (...args: any) => Promise<TransactionResponse>,
       args: Array<string | string[] | number>,
       value: BigNumber | null;
+
+    // Check if either currency is native (XCN on Goliath, ETH on Ethereum)
+    // The router's addLiquidityETH method handles automatic wrapping of the native token
     if (currencyA === ETHER || currencyB === ETHER) {
-      const tokenBIsETH = currencyB === ETHER;
+      const tokenBIsNative = currencyB === ETHER;
       estimate = router.estimateGas.addLiquidityETH;
       method = router.addLiquidityETH;
+
+      // Get the ERC20 token (the one that's not native)
+      const token = wrappedCurrency(tokenBIsNative ? currencyA : currencyB, chainId);
+      if (!token) {
+        setTxError('Invalid token configuration');
+        return;
+      }
+
       args = [
-        wrappedCurrency(tokenBIsETH ? currencyA : currencyB, chainId)?.address ?? '', // token
-        (tokenBIsETH ? parsedAmountA : parsedAmountB).raw.toString(), // token desired
-        amountsMin[tokenBIsETH ? Field.CURRENCY_A : Field.CURRENCY_B].toString(), // token min
-        amountsMin[tokenBIsETH ? Field.CURRENCY_B : Field.CURRENCY_A].toString(), // eth min
+        token.address, // ERC20 token address
+        (tokenBIsNative ? parsedAmountA : parsedAmountB).raw.toString(), // token desired
+        amountsMin[tokenBIsNative ? Field.CURRENCY_A : Field.CURRENCY_B].toString(), // token min
+        amountsMin[tokenBIsNative ? Field.CURRENCY_B : Field.CURRENCY_A].toString(), // native min
         account,
         deadline.toHexString(),
       ];
-      value = BigNumber.from((tokenBIsETH ? parsedAmountB : parsedAmountA).raw.toString());
+      // Native token amount sent as transaction value
+      value = BigNumber.from((tokenBIsNative ? parsedAmountB : parsedAmountA).raw.toString());
     } else {
+      // Both are ERC20 tokens
       estimate = router.estimateGas.addLiquidity;
       method = router.addLiquidity;
+
+      const tokenA = wrappedCurrency(currencyA, chainId);
+      const tokenB = wrappedCurrency(currencyB, chainId);
+      if (!tokenA || !tokenB) {
+        setTxError('Invalid token configuration');
+        return;
+      }
+
       args = [
-        wrappedCurrency(currencyA, chainId)?.address ?? '',
-        wrappedCurrency(currencyB, chainId)?.address ?? '',
+        tokenA.address,
+        tokenB.address,
         parsedAmountA.raw.toString(),
         parsedAmountB.raw.toString(),
         amountsMin[Field.CURRENCY_A].toString(),
@@ -163,34 +219,81 @@ export default function AddLiquidity({
     }
 
     setAttemptingTxn(true);
-    await estimate(...args, value ? { value } : {})
-      .then((estimatedGasLimit) =>
-        method(...args, {
-          ...(value ? { value } : {}),
-          gasLimit: calculateGasMargin(estimatedGasLimit),
-        }).then((response) => {
-          setAttemptingTxn(false);
 
-          addTransaction(response, {
-            summary:
-              'Add ' +
-              parsedAmounts[Field.CURRENCY_A]?.toSignificant(3) +
-              ' ' +
-              currencies[Field.CURRENCY_A]?.symbol +
-              ' and ' +
-              parsedAmounts[Field.CURRENCY_B]?.toSignificant(3) +
-              ' ' +
-              currencies[Field.CURRENCY_B]?.symbol,
-          });
+    try {
+      // First try to estimate gas to catch issues early
+      let estimatedGasLimit: BigNumber;
+      try {
+        estimatedGasLimit = await estimate(...args, value ? { value } : {});
+      } catch (estimateError: any) {
+        console.error('Gas estimation failed:', estimateError);
 
-          setTxHash(response.hash);
-        })
-      )
-      .catch((error) => {
-        setAttemptingTxn(false);
-        console.error('Add liquidity error:', error);
+        // Provide helpful error messages based on common failures
+        if (estimateError?.message?.includes('INSUFFICIENT_')) {
+          throw new Error('Insufficient liquidity or token amounts are too low');
+        }
+        if (estimateError?.message?.includes('EXPIRED')) {
+          throw new Error('Transaction deadline expired. Please try again.');
+        }
+        if (estimateError?.message?.includes('insufficient funds')) {
+          throw new Error(`Insufficient ${symbolA === 'XCN' || symbolB === 'XCN' ? 'XCN' : 'token'} balance`);
+        }
+
+        // Use fallback gas limit for other cases
+        console.warn('Using fallback gas limit');
+        estimatedGasLimit = BigNumber.from(400000);
+      }
+
+      // Execute the transaction
+      const response = await method(...args, {
+        ...(value ? { value } : {}),
+        gasLimit: calculateGasMargin(estimatedGasLimit),
       });
+
+      setAttemptingTxn(false);
+
+      addTransaction(response, {
+        summary: `Add ${parsedAmountA.toSignificant(3)} ${symbolA} and ${parsedAmountB.toSignificant(3)} ${symbolB}`,
+      });
+
+      setTxHash(response.hash);
+    } catch (error: any) {
+      setAttemptingTxn(false);
+
+      // Handle user rejection
+      if (error?.code === 4001 || error?.code === 'ACTION_REJECTED') {
+        console.debug('User rejected transaction');
+        setTxError('Transaction rejected');
+        return;
+      }
+
+      console.error('Add liquidity error:', error);
+
+      // Set user-friendly error message
+      let errorMessage = 'Failed to add liquidity. ';
+      if (error?.message) {
+        if (error.message.includes('insufficient funds')) {
+          errorMessage = `Insufficient ${symbolA === 'XCN' || symbolB === 'XCN' ? 'XCN' : 'token'} balance for this transaction.`;
+        } else if (error.message.includes('INSUFFICIENT_')) {
+          errorMessage = 'Insufficient liquidity or amounts too low.';
+        } else if (error.message.includes('EXPIRED')) {
+          errorMessage = 'Transaction deadline expired. Please try again.';
+        } else if (error.message.includes('user rejected')) {
+          errorMessage = 'Transaction rejected.';
+        } else {
+          errorMessage += error.message.substring(0, 100);
+        }
+      } else {
+        errorMessage += 'Please try again.';
+      }
+
+      setTxError(errorMessage);
+    }
   }
+
+  // Get display symbols (XCN instead of ETH on Goliath)
+  const displaySymbolA = getCurrencySymbol(currencies[Field.CURRENCY_A], chainId);
+  const displaySymbolB = getCurrencySymbol(currencies[Field.CURRENCY_B], chainId);
 
   const modalHeader = () => {
     return noLiquidity ? (
@@ -198,7 +301,7 @@ export default function AddLiquidity({
         <LightCard mt="20px" borderRadius="20px">
           <RowFlat>
             <Text fontSize="48px" fontWeight={500} lineHeight="42px" marginRight={10}>
-              {currencies[Field.CURRENCY_A]?.symbol + '/' + currencies[Field.CURRENCY_B]?.symbol}
+              {displaySymbolA + '/' + displaySymbolB}
             </Text>
             <DoubleCurrencyLogo
               currency0={currencies[Field.CURRENCY_A]}
@@ -222,7 +325,7 @@ export default function AddLiquidity({
         </RowFlat>
         <Row>
           <Text fontSize="24px">
-            {currencies[Field.CURRENCY_A]?.symbol + '/' + currencies[Field.CURRENCY_B]?.symbol + ' Pool Tokens'}
+            {displaySymbolA + '/' + displaySymbolB + ' Pool Tokens'}
           </Text>
         </Row>
         <TYPE.italic fontSize={12} textAlign="left" padding={'8px 0 0 0 '}>
@@ -247,24 +350,25 @@ export default function AddLiquidity({
     );
   };
 
-  const pendingText = `Supplying ${parsedAmounts[Field.CURRENCY_A]?.toSignificant(6)} ${
-    currencies[Field.CURRENCY_A]?.symbol
-  } and ${parsedAmounts[Field.CURRENCY_B]?.toSignificant(6)} ${currencies[Field.CURRENCY_B]?.symbol}`;
+  const pendingText = `Supplying ${parsedAmounts[Field.CURRENCY_A]?.toSignificant(6)} ${displaySymbolA} and ${parsedAmounts[Field.CURRENCY_B]?.toSignificant(6)} ${displaySymbolB}`;
+
+  // Default native currency for URLs (XCN on Goliath, ETH elsewhere)
+  const defaultNativeCurrency = chainId === ChainId.GOLIATH_TESTNET ? 'XCN' : 'ETH';
 
   const handleCurrencyASelect = useCallback(
     (currencyA: Currency) => {
-      const newCurrencyIdA = currencyId(currencyA);
+      const newCurrencyIdA = currencyId(currencyA, chainId);
       if (newCurrencyIdA === currencyIdB) {
         history.push(`/add/${currencyIdB}/${currencyIdA}`);
       } else {
         history.push(`/add/${newCurrencyIdA}/${currencyIdB}`);
       }
     },
-    [currencyIdB, history, currencyIdA]
+    [currencyIdB, history, currencyIdA, chainId]
   );
   const handleCurrencyBSelect = useCallback(
     (currencyB: Currency) => {
-      const newCurrencyIdB = currencyId(currencyB);
+      const newCurrencyIdB = currencyId(currencyB, chainId);
       if (currencyIdA === newCurrencyIdB) {
         if (currencyIdB) {
           history.push(`/add/${currencyIdB}/${newCurrencyIdB}`);
@@ -272,14 +376,15 @@ export default function AddLiquidity({
           history.push(`/add/${newCurrencyIdB}`);
         }
       } else {
-        history.push(`/add/${currencyIdA ? currencyIdA : 'ETH'}/${newCurrencyIdB}`);
+        history.push(`/add/${currencyIdA ? currencyIdA : defaultNativeCurrency}/${newCurrencyIdB}`);
       }
     },
-    [currencyIdA, history, currencyIdB]
+    [currencyIdA, history, currencyIdB, chainId, defaultNativeCurrency]
   );
 
   const handleDismissConfirmation = useCallback(() => {
     setShowConfirm(false);
+    setTxError(null); // Clear any error when dismissing
     // if there was a tx hash, we want to clear the input
     if (txHash) {
       onFieldAInput('');
@@ -408,9 +513,9 @@ export default function AddLiquidity({
                           width={approvalB !== ApprovalState.APPROVED ? '48%' : '100%'}
                         >
                           {approvalA === ApprovalState.PENDING ? (
-                            <Dots>Approving {currencies[Field.CURRENCY_A]?.symbol}</Dots>
+                            <Dots>Approving {displaySymbolA}</Dots>
                           ) : (
-                            'Approve ' + currencies[Field.CURRENCY_A]?.symbol
+                            'Approve ' + displaySymbolA
                           )}
                         </ButtonPrimary>
                       )}
@@ -421,9 +526,9 @@ export default function AddLiquidity({
                           width={approvalA !== ApprovalState.APPROVED ? '48%' : '100%'}
                         >
                           {approvalB === ApprovalState.PENDING ? (
-                            <Dots>Approving {currencies[Field.CURRENCY_B]?.symbol}</Dots>
+                            <Dots>Approving {displaySymbolB}</Dots>
                           ) : (
-                            'Approve ' + currencies[Field.CURRENCY_B]?.symbol
+                            'Approve ' + displaySymbolB
                           )}
                         </ButtonPrimary>
                       )}
@@ -431,6 +536,7 @@ export default function AddLiquidity({
                   )}
                 <ButtonError
                   onClick={() => {
+                    setTxError(null); // Clear previous error
                     expertMode ? onAdd() : setShowConfirm(true);
                   }}
                   disabled={!isValid || approvalA !== ApprovalState.APPROVED || approvalB !== ApprovalState.APPROVED}
@@ -440,6 +546,15 @@ export default function AddLiquidity({
                     {error ?? 'Supply'}
                   </Text>
                 </ButtonError>
+                {/* Display error message if transaction failed */}
+                {txError && (
+                  <ErrorCard>
+                    <ErrorText>
+                      <AlertTriangle size={16} />
+                      {txError}
+                    </ErrorText>
+                  </ErrorCard>
+                )}
               </AutoColumn>
             )}
           </AutoColumn>

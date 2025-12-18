@@ -1,4 +1,4 @@
-import { Currency, ETHER, JSBI, TokenAmount } from '@uniswap/sdk';
+import { ChainId, Currency, ETHER, JSBI, TokenAmount } from '@uniswap/sdk';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Plus } from 'react-feather';
 import { Text } from 'rebass';
@@ -21,19 +21,34 @@ import { Dots } from '../Pool/styleds';
 import { BlueCard } from '../../components/Card';
 import { TYPE } from '../../theme';
 
+/**
+ * Get the display symbol for a currency, showing XCN for native token on Goliath
+ */
+function getCurrencySymbol(currency: Currency | undefined, chainId: ChainId | undefined): string {
+  if (!currency) return '';
+  if (currency === ETHER) {
+    return chainId === ChainId.GOLIATH_TESTNET ? 'XCN' : 'ETH';
+  }
+  return currency.symbol || '';
+}
+
 enum Fields {
   TOKEN0 = 0,
   TOKEN1 = 1,
 }
 
 export default function PoolFinder() {
-  const { account } = useActiveWeb3React();
+  const { account, chainId } = useActiveWeb3React();
 
   const [showSearch, setShowSearch] = useState<boolean>(false);
   const [activeField, setActiveField] = useState<number>(Fields.TOKEN1);
 
   const [currency0, setCurrency0] = useState<Currency | null>(ETHER);
   const [currency1, setCurrency1] = useState<Currency | null>(null);
+
+  // Get display symbols (XCN for native on Goliath)
+  const symbol0 = getCurrencySymbol(currency0 ?? undefined, chainId);
+  const symbol1 = getCurrencySymbol(currency1 ?? undefined, chainId);
 
   const [pairState, pair] = usePair(currency0 ?? undefined, currency1 ?? undefined);
   const addPair = usePairAdder();
@@ -99,7 +114,7 @@ export default function PoolFinder() {
             <Row>
               <CurrencyLogo currency={currency0} />
               <Text fontWeight={500} fontSize={20} marginLeft={'12px'}>
-                {currency0.symbol}
+                {symbol0}
               </Text>
             </Row>
           ) : (
@@ -123,7 +138,7 @@ export default function PoolFinder() {
             <Row>
               <CurrencyLogo currency={currency1} />
               <Text fontWeight={500} fontSize={20} marginLeft={'12px'}>
-                {currency1.symbol}
+                {symbol1}
               </Text>
             </Row>
           ) : (
@@ -153,8 +168,8 @@ export default function PoolFinder() {
             ) : (
               <LightCard padding="45px 10px">
                 <AutoColumn gap="sm" justify="center">
-                  <Text textAlign="center">You don’t have liquidity in this pool yet.</Text>
-                  <StyledInternalLink to={`/add/${currencyId(currency0)}/${currencyId(currency1)}`}>
+                  <Text textAlign="center">You don't have liquidity in this pool yet.</Text>
+                  <StyledInternalLink to={`/add/${currencyId(currency0, chainId)}/${currencyId(currency1, chainId)}`}>
                     <Text textAlign="center">Add liquidity.</Text>
                   </StyledInternalLink>
                 </AutoColumn>
@@ -164,7 +179,7 @@ export default function PoolFinder() {
             <LightCard padding="45px 10px">
               <AutoColumn gap="sm" justify="center">
                 <Text textAlign="center">No pool found.</Text>
-                <StyledInternalLink to={`/add/${currencyId(currency0)}/${currencyId(currency1)}`}>
+                <StyledInternalLink to={`/add/${currencyId(currency0, chainId)}/${currencyId(currency1, chainId)}`}>
                   Create pool.
                 </StyledInternalLink>
               </AutoColumn>
