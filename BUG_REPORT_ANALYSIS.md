@@ -656,7 +656,7 @@ i18next.init({
 
 ---
 
-## Issue #5: Missing Token Logos (BTC) (LOW)
+## Issue #5: Missing Token Logos (BTC) (LOW) - ✅ RESOLVED
 
 ### Description
 BTC token shows question mark "?" icon instead of proper logo in pool list.
@@ -669,14 +669,11 @@ BTC token shows question mark "?" icon instead of proper logo in pool list.
 - `src/components/CurrencyLogo/index.tsx:14-20`
 - `src/components/Logo/index.tsx`
 
-The custom logo mapping doesn't work correctly:
+The custom logo mapping used an unreliable external URL:
 
 ```typescript
-// src/components/CurrencyLogo/index.tsx:14-20
+// src/components/CurrencyLogo/index.tsx (BEFORE)
 const GOLIATH_TOKEN_LOGOS: { [address: string]: string } = {
-  '0xec6Cd1441201e36F7289f0B2729a97d091AcB5b7': 'https://bridge.onyx.org/img/networks/80888.svg', // WXCN
-  '0xEf2B9f754405f52c80B5A67656f14672a00d23b4': '...', // USDC
-  '0x9d318b851a6AF920D467bC5dC9882b5DFD36D65e': '...', // ETH
   '0x3658049f0e9be1D2019652BfBe4EEBB42246Ea10': 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/bitcoin/info/logo.png', // BTC
 };
 ```
@@ -685,25 +682,68 @@ const GOLIATH_TOKEN_LOGOS: { [address: string]: string } = {
 1. All provided `srcs` fail to load
 2. The URL returns 404 or CORS error
 
-The TrustWallet Bitcoin logo URL may be blocked or returning errors.
+The TrustWallet Bitcoin logo URL was blocked or returning errors, causing the fallback question mark to display.
 
-### Recommendations
+### Solution Implemented
 
-1. **Use reliable CDN** for token logos:
+#### 1. Added Local Bitcoin Logo Asset
+
+Downloaded the official Bitcoin logo SVG from [Cryptologos.cc](https://cryptologos.cc/bitcoin) and saved it locally:
+- **File:** `public/images/tokens/btc-logo.svg`
+- **Format:** SVG (scalable, high quality at any size)
+- **License:** Public domain / Open-source
+
+#### 2. Updated Token Logo Configuration with Fallback Sources
+
+**Changed the type signature** to support arrays of fallback URLs:
+
 ```typescript
-const GOLIATH_TOKEN_LOGOS: { [address: string]: string } = {
-  // Use multiple fallback sources
+// src/components/CurrencyLogo/index.tsx (AFTER)
+const GOLIATH_TOKEN_LOGOS: { [address: string]: string | string[] } = {
+  '0xec6Cd1441201e36F7289f0B2729a97d091AcB5b7': 'https://bridge.onyx.org/img/networks/80888.svg', // WXCN
+  '0xEf2B9f754405f52c80B5A67656f14672a00d23b4': '...', // USDC
+  '0x9d318b851a6AF920D467bC5dC9882b5DFD36D65e': '...', // ETH
+  // BTC - local asset with CDN fallbacks for reliability
   '0x3658049f0e9be1D2019652BfBe4EEBB42246Ea10': [
-    '/images/tokens/btc.png', // Local fallback
-    'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',
-    'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/bitcoin/info/logo.png',
+    '/images/tokens/btc-logo.svg', // Local SVG asset (always available)
+    'https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=040', // CDN fallback
+    'https://assets.coingecko.com/coins/images/1/small/bitcoin.png', // CoinGecko fallback
   ],
 };
 ```
 
-2. **Update Logo component** to support multiple fallback URLs (already supported via `srcs` array)
+#### 3. Updated Logo Source Resolution Logic
 
-3. **Add local token logo assets** as final fallback in `/public/images/tokens/`
+```typescript
+// Handle both single string and array of fallback sources
+const goliathLogo = GOLIATH_TOKEN_LOGOS[currency.address];
+if (goliathLogo) {
+  return Array.isArray(goliathLogo) ? goliathLogo : [goliathLogo];
+}
+```
+
+### Files Changed
+
+```
+src/components/CurrencyLogo/index.tsx    - Updated type, added fallback array handling
+public/images/tokens/btc-logo.svg        - NEW: Local Bitcoin logo asset
+```
+
+### Testing Notes
+
+1. Build compiles successfully without TypeScript errors
+2. Bitcoin logo now displays correctly from local asset
+3. If local asset fails, CDN fallbacks are tried in order
+4. The existing `Logo` component already supports multiple `srcs` array - no changes needed
+5. Pattern can be reused for other tokens needing reliable fallbacks
+
+### Why This Works
+
+The `Logo` component iterates through the `srcs` array and tries each URL in order:
+1. First tries local `/images/tokens/btc-logo.svg` (bundled with app, always available)
+2. If that fails, tries Cryptologos.cc CDN
+3. If that fails, tries CoinGecko CDN
+4. Only shows "?" if ALL sources fail (highly unlikely with local asset)
 
 ---
 
@@ -764,7 +804,7 @@ useEffect(() => {
 | #2 White Screen on Small Amounts | HIGH | CurrencyInputPanel | **✅ RESOLVED** | Low |
 | #3 Slingshot First Op Failure | HIGH | SwapCallback | **✅ RESOLVED** | Medium |
 | #4 Language Detection | MEDIUM | i18n/Header | **PARTIAL FIX** | Low |
-| #5 Missing BTC Logo | LOW | CurrencyLogo | Open | Low |
+| #5 Missing BTC Logo | LOW | CurrencyLogo | **✅ RESOLVED** | Low |
 | #6 Bridge Stuck | MEDIUM | Bridge | Open | Medium |
 
 ---
@@ -776,7 +816,7 @@ useEffect(() => {
 3. ~~**Issue #3** - High, affects user experience significantly~~ **✅ RESOLVED**
 4. **Issue #6** - Medium, affects cross-chain operations
 5. **Issue #4** - Medium, localization issue (partially fixed)
-6. **Issue #5** - Low, cosmetic issue
+6. ~~**Issue #5** - Low, cosmetic issue~~ **✅ RESOLVED**
 
 ---
 
@@ -813,11 +853,16 @@ src/hooks/useApproveCallback.ts     - Updated: Added retry logic and provider ch
 src/pages/Swap/index.tsx            - Updated: Added "Connecting..." indicator
 ```
 
+### Issue #5 - ✅ RESOLVED (Files Changed)
+```
+src/components/CurrencyLogo/index.tsx    - Updated: Type changed to support fallback arrays, added array handling
+public/images/tokens/btc-logo.svg        - NEW: Local Bitcoin logo asset (SVG from Cryptologos.cc)
+```
+
 ### Remaining Issues (Files to Change)
 ```
 src/i18n.ts                           - Issue #4
 src/components/Header/index.tsx       - Issue #4 (add language selector)
-src/components/CurrencyLogo/index.tsx - Issue #5
 public/locales/*.json                 - Issue #4
 src/pages/Bridge/*                    - Issue #6
 ```
@@ -825,4 +870,4 @@ src/pages/Bridge/*                    - Issue #6
 ---
 
 *Generated: December 18, 2025*
-*Last Updated: December 18, 2025 - Issue #1, #2 & #3 Resolved*
+*Last Updated: December 18, 2025 - Issues #1, #2, #3 & #5 Resolved*
