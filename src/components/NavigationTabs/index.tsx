@@ -81,20 +81,21 @@ export function SwapPoolBridgeTabs({ active }: { active: 'swap' | 'pool' | 'brid
         {t('pool')}
       </StyledNavLink>
       <StyledNavLink id={`bridge-nav-link`} to={'/bridge'} isActive={() => active === 'bridge'}>
-        Bridge
+        {t('bridge')}
       </StyledNavLink>
     </Tabs>
   );
 }
 
 export function FindPoolTabs() {
+  const { t } = useTranslation();
   return (
     <Tabs>
       <RowBetween style={{ padding: '1rem 1rem 0 1rem' }}>
         <HistoryLink to="/pool">
           <StyledArrowLeft />
         </HistoryLink>
-        <ActiveText>Import Pool</ActiveText>
+        <ActiveText>{t('importPool')}</ActiveText>
         <Settings />
       </RowBetween>
     </Tabs>
@@ -104,6 +105,7 @@ export function FindPoolTabs() {
 export function AddRemoveTabs({ adding, creating }: { adding: boolean; creating: boolean }) {
   // reset states on back
   const dispatch = useDispatch<AppDispatch>();
+  const { t } = useTranslation();
 
   return (
     <Tabs>
@@ -116,7 +118,7 @@ export function AddRemoveTabs({ adding, creating }: { adding: boolean; creating:
         >
           <StyledArrowLeft />
         </HistoryLink>
-        <ActiveText>{creating ? 'Create a pair' : adding ? 'Add Liquidity' : 'Remove Liquidity'}</ActiveText>
+        <ActiveText>{creating ? t('createPair') : adding ? t('addLiquidity') : t('removeLiquidity')}</ActiveText>
         <Settings />
       </RowBetween>
     </Tabs>
