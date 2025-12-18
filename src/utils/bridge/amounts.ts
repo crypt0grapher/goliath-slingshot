@@ -16,16 +16,7 @@ export function parseAmount(
 ): bigint {
   const config = getTokenConfigForChain(token, network);
   const parsed = ethers.utils.parseUnits(amount, config.decimals);
-  const result = parsed.toBigInt();
-
-  // Debug validation
-  console.log('[parseAmount] Input:', amount, 'Decimals:', config.decimals, 'Parsed:', parsed.toString(), 'BigInt:', result.toString());
-
-  if (result === BigInt(0) && parseFloat(amount) > 0) {
-    console.error('[parseAmount] WARNING: Amount parsed to 0 but input was non-zero!', { amount, decimals: config.decimals });
-  }
-
-  return result;
+  return parsed.toBigInt();
 }
 
 /**
