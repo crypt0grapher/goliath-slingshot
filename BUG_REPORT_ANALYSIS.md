@@ -149,7 +149,7 @@ src/hooks/useAddLiquidityCallback.ts              - New reusable hook (created)
 
 ---
 
-## Issue #2: White Screen Crash with Very Small wXCN Amounts (HIGH)
+## Issue #2: White Screen Crash with Very Small wXCN Amounts (HIGH) - ✅ RESOLVED
 
 ### Description
 When the wXCN amount is extremely small (e.g., 0.000000000000418938) and the user presses "Max" to autofill, the page turns completely white and becomes unusable.
@@ -164,55 +164,193 @@ When the wXCN amount is extremely small (e.g., 0.000000000000418938) and the use
 
 The `toSignificant()` method from `@uniswap/sdk` may throw or return unexpected values for extremely small numbers approaching the precision limit of JavaScript numbers.
 
-**Line 185** in CurrencyInputPanel:
+**Problems identified:**
+1. `toExact()` returns scientific notation (e.g., `4.18938e-13`) for tiny values
+2. `NumericalInput` regex `^\\d*(?:\\\\[.])?\\d*$` doesn't handle scientific notation
+3. `toSignificant()` could throw for extremely small values
+4. No error boundary to catch React rendering errors
+
+### Solution Implemented
+
+#### 1. Created Safe Amount Formatting Utilities (`src/utils/safeAmountFormatting.ts`)
+
+**New utility functions for handling edge case amounts:**
 ```typescript
-(customBalanceText ?? 'Balance: ') + selectedCurrencyBalance?.toSignificant(7)
+// Dust threshold - values below this are considered too small to be meaningful
+export const DUST_THRESHOLD = 1e-12;
+export const DUST_DISPLAY = '< 0.0000000001';
+
+// Check if amount is dust
+export function isDustAmount(amount: CurrencyAmount | TokenAmount | undefined): boolean {
+  if (!amount) return true;
+  try {
+    const exactValue = amount.toExact();
+    const numValue = parseFloat(exactValue);
+    return !isFinite(numValue) || isNaN(numValue) || numValue < DUST_THRESHOLD;
+  } catch {
+    return true;
+  }
+}
+
+// Safely format amount with toSignificant - handles edge cases
+export function safeToSignificant(
+  amount: CurrencyAmount | TokenAmount | Price | undefined | null,
+  sigFigs: number = 6,
+  fallback: string = '0'
+): string {
+  // Returns DUST_DISPLAY for tiny amounts, handles scientific notation, catches errors
+}
+
+// Safely format amount with toExact - handles edge cases
+export function safeToExact(
+  amount: CurrencyAmount | TokenAmount | undefined | null,
+  fallback: string = '0'
+): string {
+  // Returns fallback for dust amounts, converts scientific notation, catches errors
+}
+
+// Sanitize input values to prevent scientific notation
+export function sanitizeInputValue(value: string, maxDecimals: number = 18): string {
+  // Converts scientific notation to decimal, truncates long decimals
+}
 ```
 
-When `toSignificant(7)` is called on values like `0.000000000000418938`, it may:
-1. Return scientific notation (e.g., `4.18938e-13`)
-2. Cause rendering issues with the NumericalInput regex validation
-3. Overflow the input field causing React render errors
+#### 2. Updated NumericalInput Component (`src/components/NumericalInput/index.tsx`)
 
-**Line 40** in NumericalInput:
+**Added value sanitization and edge case handling:**
 ```typescript
-const inputRegex = RegExp(`^\\d*(?:\\\\[.])?\\d*$`);
-```
-This regex doesn't handle scientific notation or extremely long decimal strings.
+// Sanitize the value prop to prevent rendering issues
+const safeValue = useMemo(() => {
+  try {
+    return sanitizeDisplayValue(value);
+  } catch (error) {
+    console.warn('NumericalInput: Failed to sanitize value', value, error);
+    return '';
+  }
+}, [value]);
 
-### Recommendations
-
-1. **Add minimum threshold check** before MAX operation:
-```typescript
-const handleMaxInput = useCallback(() => {
-  if (maxAmountInput) {
-    const exactValue = maxAmountInput.toExact();
-    // Prevent crash with extremely small values
-    if (parseFloat(exactValue) < 1e-12) {
-      onUserInput(Field.INPUT, '0');
-      // Optionally show warning toast
+// Updated enforcer to handle dust amounts
+const enforcer = (nextUserInput: string) => {
+  const sanitized = sanitizeInputValue(nextUserInput, MAX_DECIMALS);
+  if (!isValidInputValue(sanitized)) {
+    const numValue = parseFloat(sanitized);
+    if (numValue > 0 && numValue < DUST_THRESHOLD) {
+      onUserInput('0');
       return;
     }
-    onUserInput(Field.INPUT, exactValue);
   }
-}, [maxAmountInput, onUserInput]);
+  // Continue with standard validation...
+};
 ```
 
-2. **Add safe formatting utility**:
+#### 3. Added Error Boundary Component (`src/components/ErrorBoundary/index.tsx`)
+
+**Created `CurrencyInputErrorBoundary` to prevent white screen crashes:**
 ```typescript
-export function safeToSignificant(amount: CurrencyAmount | undefined, sigFigs: number): string {
-  if (!amount) return '0';
-  try {
-    const value = parseFloat(amount.toExact());
-    if (value < 1e-10) return '< 0.0000000001';
-    return amount.toSignificant(sigFigs);
-  } catch {
-    return '0';
+export class CurrencyInputErrorBoundary extends Component<Props, State> {
+  public static getDerivedStateFromError(error: Error): State {
+    return { hasError: true, error };
+  }
+
+  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error('CurrencyInputErrorBoundary caught an error:', error, errorInfo);
+  }
+
+  public render() {
+    if (this.state.hasError) {
+      return (
+        <ErrorContainer>
+          <ErrorMessage>Input error - please refresh</ErrorMessage>
+          <RetryButton onClick={this.handleReset}>Reset</RetryButton>
+        </ErrorContainer>
+      );
+    }
+    return this.props.children;
   }
 }
 ```
 
-3. **Add error boundary** around CurrencyInputPanel to prevent full app crash
+#### 4. Updated CurrencyInputPanel (`src/components/CurrencyInputPanel/index.tsx`)
+
+**Wrapped with Error Boundary and using safe formatting:**
+```typescript
+// Safe balance display
+{!hideBalance && !!currency && selectedCurrencyBalance
+  ? (customBalanceText ?? 'Balance: ') + safeToSignificant(selectedCurrencyBalance, 7)
+  : ' -'}
+
+// Error boundary wrapper
+return (
+  <CurrencyInputErrorBoundary fallbackMessage="Error displaying currency input">
+    <InputPanel id={id}>
+      {/* ... content ... */}
+    </InputPanel>
+  </CurrencyInputErrorBoundary>
+);
+```
+
+#### 5. Updated MAX Handlers in Swap and AddLiquidity
+
+**Swap page (`src/pages/Swap/index.tsx`):**
+```typescript
+const handleMaxInput = useCallback(() => {
+  if (maxAmountInput) {
+    // Handle dust amounts to prevent white screen crash
+    if (isDustAmount(maxAmountInput)) {
+      onUserInput(Field.INPUT, '0');
+      return;
+    }
+    // Use safe formatting to prevent scientific notation issues
+    const safeValue = safeToExact(maxAmountInput, '0');
+    onUserInput(Field.INPUT, safeValue);
+  }
+}, [maxAmountInput, onUserInput]);
+```
+
+**AddLiquidity page (`src/pages/AddLiquidity/index.tsx`):**
+```typescript
+onMax={() => {
+  const maxA = maxAmounts[Field.CURRENCY_A];
+  if (!maxA || isDustAmount(maxA)) {
+    onFieldAInput('0');
+    return;
+  }
+  onFieldAInput(safeToExact(maxA, '0'));
+}}
+```
+
+#### 6. Updated CurrencyList Balance Display (`src/components/SearchModal/CurrencyList.tsx`)
+
+```typescript
+function Balance({ balance }: { balance: CurrencyAmount }) {
+  return (
+    <StyledBalanceText title={safeToExact(balance)}>
+      {safeToSignificant(balance, 7)}
+    </StyledBalanceText>
+  );
+}
+```
+
+### Files Changed
+
+```
+src/utils/safeAmountFormatting.ts              - New: Safe amount formatting utilities
+src/components/ErrorBoundary/index.tsx         - New: Error boundary components
+src/components/NumericalInput/index.tsx        - Updated: Value sanitization, edge case handling
+src/components/CurrencyInputPanel/index.tsx    - Updated: Error boundary, safe balance display
+src/pages/Swap/index.tsx                       - Updated: Safe MAX handler
+src/pages/AddLiquidity/index.tsx               - Updated: Safe MAX handlers
+src/components/SearchModal/CurrencyList.tsx    - Updated: Safe balance display
+```
+
+### Testing Notes
+
+1. Build compiles successfully without TypeScript errors
+2. Dust amounts (< 1e-12) now display as "< 0.0000000001"
+3. MAX button on dust amounts safely sets value to "0" instead of crashing
+4. Scientific notation is automatically converted to decimal notation
+5. Error boundary catches any remaining edge cases, preventing white screen
+6. Input values are truncated to 18 decimal places maximum
 
 ---
 
@@ -463,7 +601,7 @@ useEffect(() => {
 | Issue | Severity | Component | Status | Est. Effort |
 |-------|----------|-----------|--------|-------------|
 | #1 XCN Liquidity Blocked | CRITICAL | AddLiquidity | **✅ RESOLVED** | Medium |
-| #2 White Screen on Small Amounts | HIGH | CurrencyInputPanel | Open | Low |
+| #2 White Screen on Small Amounts | HIGH | CurrencyInputPanel | **✅ RESOLVED** | Low |
 | #3 Slingshot First Op Failure | HIGH | SwapCallback | Open | Medium |
 | #4 Language Detection | MEDIUM | i18n/Header | **PARTIAL FIX** | Low |
 | #5 Missing BTC Logo | LOW | CurrencyLogo | Open | Low |
@@ -474,7 +612,7 @@ useEffect(() => {
 ## Recommended Priority Order
 
 1. ~~**Issue #1** - Critical, blocks core functionality~~ **✅ RESOLVED**
-2. **Issue #2** - High, causes app crash
+2. ~~**Issue #2** - High, causes app crash~~ **✅ RESOLVED**
 3. **Issue #3** - High, affects user experience significantly
 4. **Issue #6** - Medium, affects cross-chain operations
 5. **Issue #4** - Medium, localization issue (partially fixed)
@@ -496,10 +634,19 @@ src/components/PositionCard/index.tsx             - XCN symbol display, URL upda
 src/hooks/useAddLiquidityCallback.ts              - New reusable hook (created)
 ```
 
+### Issue #2 - ✅ RESOLVED (Files Changed)
+```
+src/utils/safeAmountFormatting.ts              - New: Safe amount formatting utilities
+src/components/ErrorBoundary/index.tsx         - New: Error boundary components
+src/components/NumericalInput/index.tsx        - Updated: Value sanitization, edge case handling
+src/components/CurrencyInputPanel/index.tsx    - Updated: Error boundary, safe balance display
+src/pages/Swap/index.tsx                       - Updated: Safe MAX handler
+src/pages/AddLiquidity/index.tsx               - Updated: Safe MAX handlers
+src/components/SearchModal/CurrencyList.tsx    - Updated: Safe balance display
+```
+
 ### Remaining Issues (Files to Change)
 ```
-src/components/CurrencyInputPanel/index.tsx - Issue #2
-src/components/NumericalInput/index.tsx     - Issue #2
 src/hooks/useSwapCallback.ts          - Issue #3
 src/connectors/index.ts               - Issue #3
 src/i18n.ts                           - Issue #4
@@ -512,4 +659,4 @@ src/pages/Bridge/*                    - Issue #6
 ---
 
 *Generated: December 18, 2025*
-*Last Updated: December 18, 2025 - Issue #1 Resolved*
+*Last Updated: December 18, 2025 - Issue #1 & #2 Resolved*
