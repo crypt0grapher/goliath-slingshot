@@ -19,6 +19,7 @@ import ProgressSteps from '../../components/ProgressSteps';
 import SwapHeader from '../../components/swap/SwapHeader';
 import AdvancedSwapDetailsDropdown from '../../components/swap/AdvancedSwapDetailsDropdown';
 import { useActiveWeb3React } from '../../hooks';
+import { useProviderReady } from '../../hooks/useProviderReady';
 import { useNetworkSwitch, GOLIATH_TESTNET_CHAIN_ID } from '../../hooks/useNetworkSwitch';
 import { useCurrency, useAllTokens } from '../../hooks/Tokens';
 import { ApprovalState, useApproveCallbackFromTrade } from '../../hooks/useApproveCallback';
@@ -68,6 +69,7 @@ export default function Swap() {
 
   const { account, chainId } = useActiveWeb3React();
   const theme = useContext(ThemeContext);
+  const { isReady: providerReady, isChecking: isCheckingProvider } = useProviderReady();
   const { switchToGoliath, isLoading: isSwitchingNetwork } = useNetworkSwitch();
   const isWrongNetwork = account && chainId !== GOLIATH_TESTNET_CHAIN_ID;
 
@@ -366,6 +368,12 @@ export default function Swap() {
             ) : isWrongNetwork ? (
               <ButtonPrimary onClick={switchToGoliath} disabled={isSwitchingNetwork}>
                 {isSwitchingNetwork ? 'Switching...' : 'Switch to Goliath'}
+              </ButtonPrimary>
+            ) : account && !providerReady && isCheckingProvider ? (
+              <ButtonPrimary disabled>
+                <AutoRow gap="6px" justify="center">
+                  Connecting <Loader stroke="white" />
+                </AutoRow>
               </ButtonPrimary>
             ) : showWrap ? (
               <ButtonPrimary disabled={Boolean(wrapInputError)} onClick={onWrap}>
