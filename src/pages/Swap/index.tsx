@@ -36,6 +36,7 @@ import { useExpertModeManager, useUserSlippageTolerance, useUserSingleHopOnly } 
 import { LinkStyledButton, TYPE } from '../../theme';
 import { maxAmountSpend } from '../../utils/maxAmountSpend';
 import { computeTradePriceBreakdown, warningSeverity } from '../../utils/prices';
+import { safeToExact, isDustAmount } from '../../utils/safeAmountFormatting';
 import AppBody from '../AppBody';
 import { ClickableText } from '../Pool/styleds';
 import Loader from '../../components/Loader';
@@ -234,7 +235,14 @@ export default function Swap() {
 
   const handleMaxInput = useCallback(() => {
     if (maxAmountInput) {
-      onUserInput(Field.INPUT, maxAmountInput.toExact());
+      // Handle dust amounts to prevent white screen crash
+      if (isDustAmount(maxAmountInput)) {
+        onUserInput(Field.INPUT, '0');
+        return;
+      }
+      // Use safe formatting to prevent scientific notation issues
+      const safeValue = safeToExact(maxAmountInput, '0');
+      onUserInput(Field.INPUT, safeValue);
     }
   }, [maxAmountInput, onUserInput]);
 

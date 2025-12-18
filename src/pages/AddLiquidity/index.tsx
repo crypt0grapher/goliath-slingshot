@@ -32,6 +32,7 @@ import { TYPE } from '../../theme';
 import { calculateGasMargin, calculateSlippageAmount, getRouterContract } from '../../utils';
 import { maxAmountSpend } from '../../utils/maxAmountSpend';
 import { wrappedCurrency } from '../../utils/wrappedCurrency';
+import { safeToExact, isDustAmount } from '../../utils/safeAmountFormatting';
 import AppBody from '../AppBody';
 import { Dots, Wrapper } from '../Pool/styleds';
 import { ConfirmAddModalBottom } from './ConfirmAddModalBottom';
@@ -449,7 +450,12 @@ export default function AddLiquidity({
               value={formattedAmounts[Field.CURRENCY_A]}
               onUserInput={onFieldAInput}
               onMax={() => {
-                onFieldAInput(maxAmounts[Field.CURRENCY_A]?.toExact() ?? '');
+                const maxA = maxAmounts[Field.CURRENCY_A];
+                if (!maxA || isDustAmount(maxA)) {
+                  onFieldAInput('0');
+                  return;
+                }
+                onFieldAInput(safeToExact(maxA, '0'));
               }}
               onCurrencySelect={handleCurrencyASelect}
               showMaxButton={!atMaxAmounts[Field.CURRENCY_A]}
@@ -465,7 +471,12 @@ export default function AddLiquidity({
               onUserInput={onFieldBInput}
               onCurrencySelect={handleCurrencyBSelect}
               onMax={() => {
-                onFieldBInput(maxAmounts[Field.CURRENCY_B]?.toExact() ?? '');
+                const maxB = maxAmounts[Field.CURRENCY_B];
+                if (!maxB || isDustAmount(maxB)) {
+                  onFieldBInput('0');
+                  return;
+                }
+                onFieldBInput(safeToExact(maxB, '0'));
               }}
               showMaxButton={!atMaxAmounts[Field.CURRENCY_B]}
               currency={currencies[Field.CURRENCY_B]}

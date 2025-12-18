@@ -10,6 +10,8 @@ import { RowBetween } from '../Row';
 import { TYPE } from '../../theme';
 import { Input as NumericalInput } from '../NumericalInput';
 import { ReactComponent as DropDown } from '../../assets/images/dropdown.svg';
+import { CurrencyInputErrorBoundary } from '../ErrorBoundary';
+import { safeToSignificant } from '../../utils/safeAmountFormatting';
 
 import { useActiveWeb3React } from '../../hooks';
 import { useTranslation } from 'react-i18next';
@@ -165,6 +167,7 @@ export default function CurrencyInputPanel({
   }, [setModalOpen]);
 
   return (
+    <CurrencyInputErrorBoundary fallbackMessage="Error displaying currency input">
     <InputPanel id={id}>
       <Container hideInput={hideInput}>
         {!hideInput && (
@@ -182,7 +185,7 @@ export default function CurrencyInputPanel({
                   style={{ display: 'inline', cursor: 'pointer' }}
                 >
                   {!hideBalance && !!currency && selectedCurrencyBalance
-                    ? (customBalanceText ?? 'Balance: ') + selectedCurrencyBalance?.toSignificant(7)
+                    ? (customBalanceText ?? 'Balance: ') + safeToSignificant(selectedCurrencyBalance, 7)
                     : ' -'}
                 </TYPE.body>
               )}
@@ -249,5 +252,6 @@ export default function CurrencyInputPanel({
         />
       )}
     </InputPanel>
+    </CurrencyInputErrorBoundary>
   );
 }

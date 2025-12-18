@@ -17,6 +17,7 @@ import Loader from '../Loader';
 import { isTokenOnList } from '../../utils';
 import ImportRow from './ImportRow';
 import { wrappedCurrency } from 'utils/wrappedCurrency';
+import { safeToSignificant, safeToExact } from '../../utils/safeAmountFormatting';
 
 function currencyKey(currency: Currency): string {
   return currency instanceof Token ? currency.address : currency === ETHER ? 'ETHER' : '';
@@ -44,7 +45,7 @@ const Tag = styled.div`
 `;
 
 function Balance({ balance }: { balance: CurrencyAmount }) {
-  return <StyledBalanceText title={balance.toExact()}>{balance.toSignificant(7)}</StyledBalanceText>;
+  return <StyledBalanceText title={safeToExact(balance)}>{safeToSignificant(balance, 7)}</StyledBalanceText>;
 }
 
 const TagContainer = styled.div`
