@@ -45,8 +45,8 @@ export const ETH_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x9d318b851a6AF920D467bC
 export const BTC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xF568bE1D688353d2813810aA6DaF1cB1dCe38D7E', 8, 'BTC', 'Bitcoin');
 
 // Onyx Metals tokens (precious metal-backed tokens)
-export const XAUX_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xDd18e3D481efF42F4e678FaB401dc23db0827E8f', 8, 'XAUX', 'Onyx Gold');
-export const XAGX_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x782E7E60a5264ff4733a1949EdCe29D9b1cEa83C', 8, 'XAGX', 'Onyx Silver');
+export const XAUX_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xEC3507BAF55C241e44036a94Cb9c02b15A78E863', 8, 'XAUX', 'Onyx Gold');
+export const XAGX_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x820037622659fF123a01bB94A720854C8A7609C0', 8, 'XAGX', 'Onyx Silver');
 
 // Block time here is slightly higher (~1s) than average in order to avoid ongoing proposals past the displayed time
 export const AVERAGE_BLOCK_TIME_IN_SECS = 13;
