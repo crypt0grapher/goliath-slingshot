@@ -157,7 +157,7 @@ export class BridgeApiClient {
     }
 
     try {
-      return await this.fetch<BridgeStatusResponse>(`/bridge/status?${queryParams.toString()}`);
+      return await this.fetch<BridgeStatusResponse>(`/status?${queryParams.toString()}`);
     } catch (error) {
       if (error instanceof BridgeApiError && error.status === 404) {
         return null;
@@ -189,14 +189,15 @@ export class BridgeApiClient {
       queryParams.set('direction', params.direction);
     }
 
-    return this.fetch<BridgeHistoryResponse>(`/bridge/history?${queryParams.toString()}`);
+    return this.fetch<BridgeHistoryResponse>(`/history?${queryParams.toString()}`);
   }
 
   /**
    * Check bridge health status
+   * Note: Health endpoint is at /api/v1/health, not under /bridge
    */
   async getHealth(): Promise<BridgeHealthResponse> {
-    return this.fetch<BridgeHealthResponse>('/health');
+    return this.fetch<BridgeHealthResponse>('/../health');
   }
 
   /**

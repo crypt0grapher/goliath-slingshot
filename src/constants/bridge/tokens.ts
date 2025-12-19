@@ -1,4 +1,5 @@
 import { BridgeNetwork } from './networks';
+import { bridgeConfig } from '../../config/bridgeConfig';
 
 // v1.0: USDC and ETH. Future versions will add 'XCN' | 'BTC'
 export type BridgeTokenSymbol = 'USDC' | 'ETH';
@@ -18,6 +19,7 @@ export interface BridgeTokenConfig {
 }
 
 // v1.0: USDC and ETH configuration
+// Token addresses are loaded from bridgeConfig (environment variables) for consistency with backend
 export const BRIDGE_TOKENS: Record<BridgeTokenSymbol, BridgeTokenConfig> = {
   USDC: {
     symbol: 'USDC',
@@ -25,12 +27,12 @@ export const BRIDGE_TOKENS: Record<BridgeTokenSymbol, BridgeTokenConfig> = {
     logoUrl: '/images/tokens/usdc.svg',
     sepolia: {
       // Circle's official Sepolia USDC
-      address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+      address: bridgeConfig.tokens.sepolia.usdc,
       decimals: 6,
       isNative: false,
     },
     goliath: {
-      address: '0xEf2B9f754405f52c80B5A67656f14672a00d23b4',
+      address: bridgeConfig.tokens.goliath.usdc,
       decimals: 6,
       isNative: false,
     },
@@ -46,8 +48,8 @@ export const BRIDGE_TOKENS: Record<BridgeTokenSymbol, BridgeTokenConfig> = {
       isNative: true,
     },
     goliath: {
-      // ETH is ERC-20 on Goliath
-      address: '0x9d318b851a6AF920D467bC5dC9882b5DFD36D65e',
+      // ETH is ERC-20 on Goliath - address from env for consistency with backend
+      address: bridgeConfig.tokens.goliath.eth,
       decimals: 18,
       isNative: false,
     },
