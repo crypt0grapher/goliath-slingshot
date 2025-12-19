@@ -51,7 +51,7 @@ function loadBridgeConfig(): BridgeConfig {
         usdc: process.env.REACT_APP_USDC_ADDRESS || '0xEf2B9f754405f52c80B5A67656f14672a00d23b4',
       },
     },
-    statusApiBaseUrl: process.env.REACT_APP_BRIDGE_STATUS_API_URL || 'https://testnet.mirrornode.goliath.net/api/v1/bridge',
+    statusApiBaseUrl: process.env.REACT_APP_BRIDGE_STATUS_API_URL || 'https://testnet.mirrornode.goliath.net/bridge/api/v1',
     bridgeEnabled: process.env.REACT_APP_BRIDGE_ENABLED === 'true',
     allowCustomRecipient: process.env.REACT_APP_BRIDGE_ALLOW_CUSTOM_RECIPIENT === 'true',
     minAmount: process.env.REACT_APP_BRIDGE_MIN_AMOUNT || '0.000001',

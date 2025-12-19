@@ -194,10 +194,9 @@ export class BridgeApiClient {
 
   /**
    * Check bridge health status
-   * Note: Health endpoint is at /api/v1/health, not under /bridge
    */
   async getHealth(): Promise<BridgeHealthResponse> {
-    return this.fetch<BridgeHealthResponse>('/../health');
+    return this.fetch<BridgeHealthResponse>('/health');
   }
 
   /**
