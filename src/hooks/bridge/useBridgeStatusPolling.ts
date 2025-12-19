@@ -23,11 +23,17 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
       });
 
       if (response) {
+        // Defensive check: never decrease confirmations (prevents UI flicker if API returns stale data)
+        const safeConfirmations = Math.max(
+          response.originConfirmations,
+          operation.originConfirmations
+        );
+
         dispatch(
           bridgeActions.updateOperationStatus({
             id: operation.id,
             status: response.status,
-            originConfirmations: response.originConfirmations,
+            originConfirmations: safeConfirmations,
             destinationTxHash: response.destinationTxHash ?? undefined,
             estimatedCompletionTime: response.estimatedCompletionTime ?? undefined,
             errorMessage: response.error ?? undefined,
