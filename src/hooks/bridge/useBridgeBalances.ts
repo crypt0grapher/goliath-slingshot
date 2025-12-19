@@ -36,12 +36,22 @@ export function useBridgeBalances(
     try {
       const tokenConfig = getTokenConfigForChain(token, network);
 
+      // Debug: log token config to identify balance fetch issues
+      console.log('[Bridge Balance]', {
+        token,
+        network,
+        tokenAddress: tokenConfig.address,
+        isNative: tokenConfig.isNative,
+        account,
+      });
+
       let balance: bigint;
       if (tokenConfig.isNative) {
         balance = await getNativeBalance(account, network);
       } else if (tokenConfig.address) {
         balance = await getTokenBalance(tokenConfig.address, account, network);
       } else {
+        console.warn('[Bridge Balance] No token address configured for', token, 'on', network);
         balance = BigInt(0);
       }
 
