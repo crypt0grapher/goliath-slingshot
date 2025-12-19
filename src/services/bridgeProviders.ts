@@ -3,20 +3,40 @@ import { bridgeConfig } from '../config/bridgeConfig';
 import { BridgeNetwork } from '../constants/bridge/networks';
 
 /**
- * Read-only providers for both chains
+ * Read-only providers for both chains (lazy-loaded)
  * Used for balance queries and tx monitoring independent of wallet connection
  */
-export const readonlyProviders: Record<BridgeNetwork, ethers.providers.JsonRpcProvider> = {
-  [BridgeNetwork.SEPOLIA]: new ethers.providers.JsonRpcProvider(bridgeConfig.sepolia.rpcUrl),
-  [BridgeNetwork.GOLIATH]: new ethers.providers.JsonRpcProvider(bridgeConfig.goliath.rpcUrl),
-};
+let _sepoliaProvider: ethers.providers.JsonRpcProvider | null = null;
+let _goliathProvider: ethers.providers.JsonRpcProvider | null = null;
+
+function getSepoliaProvider(): ethers.providers.JsonRpcProvider {
+  if (!_sepoliaProvider) {
+    console.log('[BridgeProviders] Creating Sepolia provider:', bridgeConfig.sepolia.rpcUrl);
+    _sepoliaProvider = new ethers.providers.JsonRpcProvider(bridgeConfig.sepolia.rpcUrl);
+  }
+  return _sepoliaProvider;
+}
+
+function getGoliathProvider(): ethers.providers.JsonRpcProvider {
+  if (!_goliathProvider) {
+    console.log('[BridgeProviders] Creating Goliath provider:', bridgeConfig.goliath.rpcUrl);
+    _goliathProvider = new ethers.providers.JsonRpcProvider(bridgeConfig.goliath.rpcUrl);
+  }
+  return _goliathProvider;
+}
 
 /**
  * Get provider for a specific network
  */
 export function getReadonlyProvider(network: BridgeNetwork): ethers.providers.JsonRpcProvider {
-  return readonlyProviders[network];
+  return network === BridgeNetwork.SEPOLIA ? getSepoliaProvider() : getGoliathProvider();
 }
+
+// For backwards compatibility
+export const readonlyProviders = {
+  get [BridgeNetwork.SEPOLIA]() { return getSepoliaProvider(); },
+  get [BridgeNetwork.GOLIATH]() { return getGoliathProvider(); },
+};
 
 /**
  * Get balance for an address on a specific network
