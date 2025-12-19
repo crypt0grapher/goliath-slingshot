@@ -5,8 +5,8 @@ import { BridgeOperation, BridgeDirection, BridgeStatus } from '../../state/brid
 // ============================================
 
 const STATIC_ESTIMATES: Record<BridgeDirection, { min: number; max: number }> = {
-  SEPOLIA_TO_GOLIATH: { min: 3, max: 5 }, // 3-5 minutes
-  GOLIATH_TO_SEPOLIA: { min: 3, max: 5 }, // 3-5 minutes
+  SEPOLIA_TO_GOLIATH: { min: 1, max: 2 }, // 1-2 minutes
+  GOLIATH_TO_SEPOLIA: { min: 1, max: 2 }, // 1-2 minutes
 };
 
 // ============================================

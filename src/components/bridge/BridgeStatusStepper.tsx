@@ -102,6 +102,7 @@ const SEPOLIA_TO_GOLIATH_STEPS: StepConfig[] = [
   { label: 'Complete', stepIndex: 3 },
 ];
 
+// For Goliath→Sepolia with 0 required confirmations, skip the finality step
 const GOLIATH_TO_SEPOLIA_STEPS: StepConfig[] = [
   { label: 'Burn on Goliath', stepIndex: 0 },
   { label: 'Waiting for finality', stepIndex: 1 },
@@ -109,13 +110,25 @@ const GOLIATH_TO_SEPOLIA_STEPS: StepConfig[] = [
   { label: 'Complete', stepIndex: 3 },
 ];
 
+const GOLIATH_TO_SEPOLIA_STEPS_NO_FINALITY: StepConfig[] = [
+  { label: 'Burn on Goliath', stepIndex: 0 },
+  { label: 'Releasing on Sepolia', stepIndex: 2 },
+  { label: 'Complete', stepIndex: 3 },
+];
+
 function getStepStatus(
   stepIndex: number,
-  operationStatus: BridgeStatus
+  operationStatus: BridgeStatus,
+  originConfirmations: number,
+  requiredConfirmations: number
 ): 'pending' | 'active' | 'completed' | 'error' {
+  // Check if finality is reached (confirmations >= required)
+  // This allows the UI to progress even if backend status hasn't updated yet
+  const finalityReached = originConfirmations >= requiredConfirmations && requiredConfirmations >= 0;
+
   const statusToStep: Record<BridgeStatus, number> = {
     PENDING_ORIGIN_TX: 0,
-    CONFIRMING: 1,
+    CONFIRMING: finalityReached ? 2 : 1, // Skip to step 2 if finality reached
     AWAITING_RELAY: 2,
     PROCESSING_DESTINATION: 2,
     COMPLETED: 4,
@@ -157,13 +170,32 @@ interface BridgeStatusStepperProps {
 }
 
 export default function BridgeStatusStepper({ operation }: BridgeStatusStepperProps) {
-  const steps =
-    operation.direction === 'SEPOLIA_TO_GOLIATH' ? SEPOLIA_TO_GOLIATH_STEPS : GOLIATH_TO_SEPOLIA_STEPS;
+  // For Goliath→Sepolia, we don't require finality confirmations (instant finality)
+  // Override requiredConfirmations to 0 regardless of what backend returns
+  const effectiveRequiredConfirmations =
+    operation.direction === 'GOLIATH_TO_SEPOLIA' ? 0 : operation.requiredConfirmations;
+
+  // Choose steps based on direction - always skip finality step for Goliath→Sepolia
+  const skipFinalityStep = operation.direction === 'GOLIATH_TO_SEPOLIA';
+
+  let steps: StepConfig[];
+  if (operation.direction === 'SEPOLIA_TO_GOLIATH') {
+    steps = SEPOLIA_TO_GOLIATH_STEPS;
+  } else if (skipFinalityStep) {
+    steps = GOLIATH_TO_SEPOLIA_STEPS_NO_FINALITY;
+  } else {
+    steps = GOLIATH_TO_SEPOLIA_STEPS;
+  }
 
   return (
     <StepperContainer>
       {steps.map((step, index) => {
-        const status = getStepStatus(step.stepIndex, operation.status);
+        const status = getStepStatus(
+          step.stepIndex,
+          operation.status,
+          operation.originConfirmations,
+          effectiveRequiredConfirmations
+        );
         const isLast = index === steps.length - 1;
         const description = getStepDescription(step.stepIndex, operation);
 

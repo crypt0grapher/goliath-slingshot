@@ -7,14 +7,32 @@ import { bridgeConfig } from '../../config/bridgeConfig';
 
 const TERMINAL_STATUSES: BridgeStatus[] = ['COMPLETED', 'FAILED', 'EXPIRED'];
 
+// Max additional polls after COMPLETED to fetch destination tx hash
+const MAX_DESTINATION_TX_POLLS = 10;
+
 export function useBridgeStatusPolling(operation: BridgeOperation | null) {
   const dispatch = useDispatch();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const apiClient = useRef(new BridgeApiClient(bridgeConfig.statusApiBaseUrl));
+  const destinationPollCountRef = useRef(0);
 
   const pollStatus = useCallback(async () => {
-    if (!operation || TERMINAL_STATUSES.includes(operation.status) || !operation.originTxHash) {
+    if (!operation || !operation.originTxHash) {
       return;
+    }
+
+    // Stop polling if terminal status AND we have the destination tx hash (or we've tried enough times)
+    const isTerminal = TERMINAL_STATUSES.includes(operation.status);
+    const hasDestinationTx = !!operation.destinationTxHash;
+    const exhaustedDestinationPolls = destinationPollCountRef.current >= MAX_DESTINATION_TX_POLLS;
+
+    if (isTerminal && (hasDestinationTx || exhaustedDestinationPolls)) {
+      return;
+    }
+
+    // Track additional polls after COMPLETED to get destination tx hash
+    if (isTerminal && !hasDestinationTx) {
+      destinationPollCountRef.current += 1;
     }
 
     try {
@@ -45,6 +63,11 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
     }
   }, [operation, dispatch]);
 
+  // Reset destination poll counter when operation changes
+  useEffect(() => {
+    destinationPollCountRef.current = 0;
+  }, [operation?.id]);
+
   // Start/stop polling based on operation state
   useEffect(() => {
     if (!operation) {
@@ -55,7 +78,19 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
       return;
     }
 
-    if (TERMINAL_STATUSES.includes(operation.status)) {
+    const isTerminal = TERMINAL_STATUSES.includes(operation.status);
+    const hasDestinationTx = !!operation.destinationTxHash;
+    const exhaustedDestinationPolls = destinationPollCountRef.current >= MAX_DESTINATION_TX_POLLS;
+
+    // Stop polling only if:
+    // - Failed/Expired status, OR
+    // - Completed AND (has destination tx OR exhausted polls)
+    const shouldStopPolling =
+      operation.status === 'FAILED' ||
+      operation.status === 'EXPIRED' ||
+      (isTerminal && (hasDestinationTx || exhaustedDestinationPolls));
+
+    if (shouldStopPolling) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
@@ -75,5 +110,5 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
         intervalRef.current = null;
       }
     };
-  }, [operation?.id, operation?.status, pollStatus]);
+  }, [operation?.id, operation?.status, operation?.destinationTxHash, pollStatus]);
 }

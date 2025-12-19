@@ -55,7 +55,7 @@ function loadBridgeConfig(): BridgeConfig {
     bridgeEnabled: process.env.REACT_APP_BRIDGE_ENABLED === 'true',
     allowCustomRecipient: process.env.REACT_APP_BRIDGE_ALLOW_CUSTOM_RECIPIENT === 'true',
     minAmount: process.env.REACT_APP_BRIDGE_MIN_AMOUNT || '0.000001',
-    statusPollInterval: parseInt(process.env.REACT_APP_BRIDGE_STATUS_POLL_INTERVAL || '5000', 10),
+    statusPollInterval: parseInt(process.env.REACT_APP_BRIDGE_STATUS_POLL_INTERVAL || '500', 10),
   };
 }
 
