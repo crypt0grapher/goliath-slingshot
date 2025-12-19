@@ -137,7 +137,7 @@ export function useBridgeDeposit(): UseDepositReturn {
           createdAt: Date.now(),
           updatedAt: Date.now(),
           originConfirmations: 0,
-          requiredConfirmations: 10,
+          requiredConfirmations: 3,
           errorMessage: null,
           estimatedCompletionTime: null,
         };

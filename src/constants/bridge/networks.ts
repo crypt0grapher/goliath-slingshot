@@ -29,7 +29,7 @@ export const NETWORK_METADATA: Record<BridgeNetwork, NetworkMetadata> = {
     rpcUrl: bridgeConfig.sepolia.rpcUrl,
     explorerUrl: bridgeConfig.sepolia.explorerUrl,
     blockTime: 12,
-    finalityBlocks: 12,
+    finalityBlocks: 3,
     iconUrl: '/images/chains/ethereum.svg',
     nativeCurrency: {
       name: 'Sepolia ETH',
@@ -44,7 +44,7 @@ export const NETWORK_METADATA: Record<BridgeNetwork, NetworkMetadata> = {
     rpcUrl: bridgeConfig.goliath.rpcUrl,
     explorerUrl: bridgeConfig.goliath.explorerUrl,
     blockTime: 2,
-    finalityBlocks: 6,
+    finalityBlocks: 1,
     iconUrl: '/images/chains/goliath.svg',
     nativeCurrency: {
       name: 'XCN',
