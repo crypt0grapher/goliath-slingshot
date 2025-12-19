@@ -1,8 +1,21 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { Check, Clock, AlertCircle, Loader } from 'react-feather';
 import { BridgeOperation, BridgeStatus } from '../../state/bridge/types';
 import { getStepDescription } from '../../utils/bridge/eta';
+
+const spin = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
+const SpinningLoader = styled(Loader)`
+  animation: ${spin} 1s linear infinite;
+`;
 
 const StepperContainer = styled.div`
   display: flex;
@@ -131,7 +144,7 @@ function StepIcon({ status }: { status: 'pending' | 'active' | 'completed' | 'er
     case 'completed':
       return <Check size={16} />;
     case 'active':
-      return <Loader size={16} className="spin" />;
+      return <SpinningLoader size={16} />;
     case 'error':
       return <AlertCircle size={16} />;
     default:
