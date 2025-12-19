@@ -56,6 +56,15 @@ export async function getTokenBalance(
   network: BridgeNetwork
 ): Promise<bigint> {
   const provider = readonlyProviders[network];
+
+  // Debug: verify provider network
+  try {
+    const providerNetwork = await provider.getNetwork();
+    console.log('[BridgeProviders] getTokenBalance - provider chainId:', providerNetwork.chainId, 'expected:', network);
+  } catch (e) {
+    console.error('[BridgeProviders] Failed to get provider network:', e);
+  }
+
   const erc20Abi = ['function balanceOf(address) view returns (uint256)'];
   const contract = new ethers.Contract(tokenAddress, erc20Abi, provider);
   const balance = await contract.balanceOf(ownerAddress);

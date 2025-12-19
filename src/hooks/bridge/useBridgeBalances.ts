@@ -48,8 +48,11 @@ export function useBridgeBalances(
       let balance: bigint;
       if (tokenConfig.isNative) {
         balance = await getNativeBalance(account, network);
+        console.log('[Bridge Balance] Native balance:', balance.toString());
       } else if (tokenConfig.address) {
+        console.log('[Bridge Balance] Fetching ERC20 balance from:', tokenConfig.address, 'on', network);
         balance = await getTokenBalance(tokenConfig.address, account, network);
+        console.log('[Bridge Balance] ERC20 balance:', balance.toString());
       } else {
         console.warn('[Bridge Balance] No token address configured for', token, 'on', network);
         balance = BigInt(0);
