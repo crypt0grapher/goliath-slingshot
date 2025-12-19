@@ -140,7 +140,7 @@ export function useBridgeBurn(): UseBurnReturn {
           createdAt: Date.now(),
           updatedAt: Date.now(),
           originConfirmations: 0,
-          requiredConfirmations: 1,
+          requiredConfirmations: 0,
           errorMessage: null,
           estimatedCompletionTime: null,
         };

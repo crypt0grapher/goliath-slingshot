@@ -44,7 +44,7 @@ export const NETWORK_METADATA: Record<BridgeNetwork, NetworkMetadata> = {
     rpcUrl: bridgeConfig.goliath.rpcUrl,
     explorerUrl: bridgeConfig.goliath.explorerUrl,
     blockTime: 2,
-    finalityBlocks: 1,
+    finalityBlocks: 0,
     iconUrl: '/images/chains/goliath.svg',
     nativeCurrency: {
       name: 'XCN',
