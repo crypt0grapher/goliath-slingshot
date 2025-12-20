@@ -196,16 +196,40 @@ export default function WalletModal({
   // get wallets user can switch too, depending on device/browser
   function getOptions() {
     const isMetamask = window.ethereum && window.ethereum.isMetaMask;
+    const hasInjectedProvider = window.web3 || window.ethereum;
+
     return Object.keys(SUPPORTED_WALLETS).map((key) => {
       const option = SUPPORTED_WALLETS[key];
       // check for mobile options
       if (isMobile) {
-        //disable portis on mobile for now
-        // if (option.connector === portis) {
-        //   return null;
-        // }
+        // If we have an injected provider (e.g., MetaMask mobile browser), show the injected option
+        if (hasInjectedProvider && option.connector === injected) {
+          // Only show MetaMask option if provider is MetaMask, or show Injected as fallback
+          if (option.name === 'MetaMask' && !isMetamask) {
+            return null;
+          }
+          if (option.name === 'Injected' && isMetamask) {
+            return null;
+          }
+          return (
+            <Option
+              onClick={() => {
+                option.connector !== connector && !option.href && tryActivation(option.connector);
+              }}
+              id={`connect-${key}`}
+              key={key}
+              active={option.connector && option.connector === connector}
+              color={option.color}
+              link={option.href}
+              header={option.name}
+              subheader={null}
+              icon={require('../../assets/images/' + option.iconName)}
+            />
+          );
+        }
 
-        if (!window.web3 && !window.ethereum && option.mobile) {
+        // If no injected provider, show mobile-friendly options (WalletConnect, etc.)
+        if (!hasInjectedProvider && option.mobile) {
           return (
             <Option
               onClick={() => {
