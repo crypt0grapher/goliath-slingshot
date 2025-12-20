@@ -176,14 +176,72 @@ export default function WalletModal({
       connector.walletConnectProvider = undefined;
     }
 
-    connector &&
-      activate(connector, undefined, true).catch((error) => {
-        if (error instanceof UnsupportedChainIdError) {
-          activate(connector); // a little janky...can't use setError because the connector isn't set
+    if (!connector) return;
+
+    try {
+      await activate(connector, undefined, true);
+    } catch (error) {
+      if (error instanceof UnsupportedChainIdError) {
+        // Try to switch to Goliath Testnet
+        const switched = await switchToGoliathNetwork();
+        if (switched) {
+          // Retry activation after network switch
+          try {
+            await activate(connector, undefined, true);
+          } catch (retryError) {
+            setPendingError(true);
+          }
         } else {
           setPendingError(true);
         }
+      } else {
+        setPendingError(true);
+      }
+    }
+  };
+
+  // Helper function to switch network directly via window.ethereum
+  const switchToGoliathNetwork = async (): Promise<boolean> => {
+    const provider = window.ethereum as any;
+    if (!provider?.request) return false;
+
+    const GOLIATH_CHAIN_ID = '0x22c5'; // 8901 in hex
+
+    try {
+      await provider.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId: GOLIATH_CHAIN_ID }],
       });
+      return true;
+    } catch (switchError: any) {
+      // Chain not added (error 4902), try to add it
+      if (switchError.code === 4902) {
+        try {
+          await provider.request({
+            method: 'wallet_addEthereumChain',
+            params: [
+              {
+                chainId: GOLIATH_CHAIN_ID,
+                chainName: 'Goliath Testnet',
+                nativeCurrency: {
+                  name: 'Onyxcoin',
+                  symbol: 'XCN',
+                  decimals: 18,
+                },
+                rpcUrls: ['https://testnet.rpc.goliath.net'],
+                blockExplorerUrls: ['https://testnet.explorer.goliath.net'],
+              },
+            ],
+          });
+          return true;
+        } catch (addError) {
+          console.error('Failed to add Goliath network:', addError);
+          return false;
+        }
+      }
+      console.error('Failed to switch network:', switchError);
+      return false;
+    }
   };
 
   // close wallet modal if fortmatic modal is active
