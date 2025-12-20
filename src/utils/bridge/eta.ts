@@ -30,6 +30,11 @@ export function formatEta(operation: BridgeOperation): string {
     return 'Expired';
   }
 
+  // When at final processing step (releasing/minting), show shorter estimate
+  if (status === 'AWAITING_RELAY' || status === 'PROCESSING_DESTINATION') {
+    return '~1 minute remaining';
+  }
+
   // Use backend ETA if available
   if (estimatedCompletionTime) {
     return formatRelativeEta(estimatedCompletionTime, status);
