@@ -1,6 +1,7 @@
 import React, { useCallback, useContext } from 'react';
 import { useDispatch } from 'react-redux';
 import styled, { ThemeContext } from 'styled-components';
+import { useWeb3React } from '@web3-react/core';
 import { useActiveWeb3React } from '../../hooks';
 import { AppDispatch } from '../../state';
 import { clearAllTransactions } from '../../state/transactions/actions';
@@ -231,8 +232,20 @@ export default function AccountDetails({
   openOptions,
 }: AccountDetailsProps) {
   const { chainId, account, connector } = useActiveWeb3React();
+  const { deactivate } = useWeb3React();
   const theme = useContext(ThemeContext);
   const dispatch = useDispatch<AppDispatch>();
+
+  const handleDisconnect = useCallback(() => {
+    // For WalletConnect, close the connector to clear the session
+    if (connector === walletconnect) {
+      (connector as any).close();
+    }
+    // Deactivate the web3 connection
+    deactivate();
+    // Close the modal
+    toggleWalletModal();
+  }, [connector, deactivate, toggleWalletModal]);
 
   function formatConnectorName() {
     const { ethereum } = window;
@@ -308,16 +321,12 @@ export default function AccountDetails({
               <AccountGroupingRow>
                 {formatConnectorName()}
                 <div>
-                  {connector !== injected && connector !== walletlink && (
-                    <WalletAction
-                      style={{ fontSize: '.825rem', fontWeight: 400, marginRight: '8px' }}
-                      onClick={() => {
-                        (connector as any).close();
-                      }}
-                    >
-                      Disconnect
-                    </WalletAction>
-                  )}
+                  <WalletAction
+                    style={{ fontSize: '.825rem', fontWeight: 400, marginRight: '8px' }}
+                    onClick={handleDisconnect}
+                  >
+                    Disconnect
+                  </WalletAction>
                   <WalletAction
                     style={{ fontSize: '.825rem', fontWeight: 400 }}
                     onClick={() => {
