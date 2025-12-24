@@ -23,6 +23,9 @@ const GOLIATH_TOKEN_LOGOS: { [address: string]: string | string[] } = {
     'https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=040', // CDN fallback
     'https://assets.coingecko.com/coins/images/1/small/bitcoin.png', // CoinGecko fallback
   ],
+  // Onyx Metals tokens
+  '0xEC3507BAF55C241e44036a94Cb9c02b15A78E863': '/images/tokens/gold.png', // XAUX (Onyx Gold)
+  '0x820037622659fF123a01bB94A720854C8A7609C0': '/images/tokens/silver.png', // XAGX (Onyx Silver)
 };
 
 const StyledEthereumLogo = styled.img<{ size: string }>`

@@ -300,8 +300,8 @@ export default function AddLiquidity({
     return noLiquidity ? (
       <AutoColumn gap="20px">
         <LightCard mt="20px" borderRadius="20px">
-          <RowFlat>
-            <Text fontSize="48px" fontWeight={500} lineHeight="42px" marginRight={10}>
+          <RowFlat style={{ justifyContent: 'center' }}>
+            <Text fontSize="24px" fontWeight={500} lineHeight="28px" marginRight={10}>
               {displaySymbolA + '/' + displaySymbolB}
             </Text>
             <DoubleCurrencyLogo

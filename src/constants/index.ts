@@ -44,6 +44,10 @@ export const WXCN = new Token(GOLIATH_CHAIN_ID, '0xec6Cd1441201e36F7289f0B2729a9
 export const ETH_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x9d318b851a6AF920D467bC5dC9882b5DFD36D65e', 18, 'ETH', 'Ethereum');
 export const BTC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xF568bE1D688353d2813810aA6DaF1cB1dCe38D7E', 8, 'BTC', 'Bitcoin');
 
+// Onyx Metals tokens (precious metal-backed tokens)
+export const XAUX_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xEC3507BAF55C241e44036a94Cb9c02b15A78E863', 8, 'XAUX', 'Onyx Gold');
+export const XAGX_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x820037622659fF123a01bB94A720854C8A7609C0', 8, 'XAGX', 'Onyx Silver');
+
 // Block time here is slightly higher (~1s) than average in order to avoid ongoing proposals past the displayed time
 export const AVERAGE_BLOCK_TIME_IN_SECS = 13;
 export const PROPOSAL_LENGTH_IN_BLOCKS = 40_320;
@@ -67,7 +71,7 @@ const WETH_ONLY: ChainTokenList = {
 export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
   ...WETH_ONLY,
   [ChainId.MAINNET]: [...WETH_ONLY[ChainId.MAINNET], DAI, USDC, USDT, COMP, MKR, WBTC],
-  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH, ETH_GOLIATH, BTC_GOLIATH],
+  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH, ETH_GOLIATH, BTC_GOLIATH, XAUX_GOLIATH, XAGX_GOLIATH],
 };
 
 /**
@@ -84,7 +88,7 @@ export const CUSTOM_BASES: { [chainId: number]: { [tokenAddress: string]: Token[
 export const SUGGESTED_BASES: ChainTokenList = {
   ...WETH_ONLY,
   [ChainId.MAINNET]: [...WETH_ONLY[ChainId.MAINNET], DAI, USDC, USDT, WBTC],
-  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH, ETH_GOLIATH, BTC_GOLIATH],
+  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH, ETH_GOLIATH, BTC_GOLIATH, XAUX_GOLIATH, XAGX_GOLIATH],
 };
 
 // used to construct the list of all pairs we consider by default in the frontend
@@ -95,7 +99,7 @@ export const BASES_TO_TRACK_LIQUIDITY_FOR: ChainTokenList = {
   [ChainId.RINKEBY]: [...WETH_ONLY[ChainId.RINKEBY]],
   [ChainId.GÖRLI]: [...WETH_ONLY[ChainId.GÖRLI]],
   [ChainId.KOVAN]: [...WETH_ONLY[ChainId.KOVAN]],
-  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH, ETH_GOLIATH, BTC_GOLIATH],
+  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH, ETH_GOLIATH, BTC_GOLIATH, XAUX_GOLIATH, XAGX_GOLIATH],
 };
 
 export const PINNED_PAIRS: { readonly [chainId: number]: [Token, Token][] | undefined } = {

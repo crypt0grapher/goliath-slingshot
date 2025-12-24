@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { AppState } from '../index';
 import sortByListPriority from 'utils/listSort';
-import { WXCN, USDC_GOLIATH, ETH_GOLIATH, BTC_GOLIATH } from '../../constants';
+import { WXCN, USDC_GOLIATH, ETH_GOLIATH, BTC_GOLIATH, XAUX_GOLIATH, XAGX_GOLIATH } from '../../constants';
 import { useActiveWeb3React } from '../../hooks';
 
 type TagDetails = Tags[keyof Tags];
@@ -77,6 +77,22 @@ const GOLIATH_TOKEN_LIST: TokenList = {
       symbol: BTC_GOLIATH.symbol!,
       name: BTC_GOLIATH.name!,
       logoURI: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/bitcoin/info/logo.png',
+    },
+    {
+      chainId: 8901,
+      address: XAUX_GOLIATH.address,
+      decimals: XAUX_GOLIATH.decimals,
+      symbol: XAUX_GOLIATH.symbol!,
+      name: XAUX_GOLIATH.name!,
+      logoURI: '/images/tokens/gold.png',
+    },
+    {
+      chainId: 8901,
+      address: XAGX_GOLIATH.address,
+      decimals: XAGX_GOLIATH.decimals,
+      symbol: XAGX_GOLIATH.symbol!,
+      name: XAGX_GOLIATH.name!,
+      logoURI: '/images/tokens/silver.png',
     },
   ],
 };
