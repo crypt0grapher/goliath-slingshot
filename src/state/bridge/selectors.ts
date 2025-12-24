@@ -80,5 +80,6 @@ export const selectDirection = createSelector([selectBridgeForm], (form) => {
 export const selectIsSubmitting = (state: AppState) => state.bridge.isSubmitting;
 export const selectIsApproving = (state: AppState) => state.bridge.isApproving;
 export const selectBridgeError = (state: AppState) => state.bridge.error;
+export const selectPollingError = (state: AppState) => state.bridge.pollingError;
 export const selectIsConfirmModalOpen = (state: AppState) => state.bridge.isConfirmModalOpen;
 export const selectIsStatusModalOpen = (state: AppState) => state.bridge.isStatusModalOpen;

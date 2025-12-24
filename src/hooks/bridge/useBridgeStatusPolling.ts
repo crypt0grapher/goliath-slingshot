@@ -10,11 +10,18 @@ const TERMINAL_STATUSES: BridgeStatus[] = ['COMPLETED', 'FAILED', 'EXPIRED'];
 // Max additional polls after COMPLETED to fetch destination tx hash
 const MAX_DESTINATION_TX_POLLS = 10;
 
+// Threshold for marking a transaction as "stuck" (5 minutes in PENDING_ORIGIN_TX)
+const TX_STUCK_THRESHOLD_MS = 5 * 60 * 1000;
+
+// Max consecutive polling errors before showing warning
+const MAX_CONSECUTIVE_ERRORS = 3;
+
 export function useBridgeStatusPolling(operation: BridgeOperation | null) {
   const dispatch = useDispatch();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const apiClient = useRef(new BridgeApiClient(bridgeConfig.statusApiBaseUrl));
   const destinationPollCountRef = useRef(0);
+  const consecutiveErrorsRef = useRef(0);
 
   const pollStatus = useCallback(async () => {
     if (!operation || !operation.originTxHash) {
@@ -35,10 +42,28 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
       destinationPollCountRef.current += 1;
     }
 
+    // Check for stuck transaction (pending for too long without any status update)
+    if (
+      operation.status === 'PENDING_ORIGIN_TX' &&
+      Date.now() - operation.createdAt > TX_STUCK_THRESHOLD_MS
+    ) {
+      dispatch(
+        bridgeActions.updateOperationStatus({
+          id: operation.id,
+          status: 'DELAYED',
+          errorMessage: 'Transaction is taking longer than expected. It may still complete - check your wallet for pending transactions.',
+        })
+      );
+    }
+
     try {
       const response = await apiClient.current.getStatus({
         originTxHash: operation.originTxHash,
       });
+
+      // Reset consecutive error counter on success
+      consecutiveErrorsRef.current = 0;
+      dispatch(bridgeActions.clearPollingError());
 
       if (response) {
         // Defensive check: never decrease confirmations (prevents UI flicker if API returns stale data)
@@ -60,13 +85,25 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
       }
     } catch (error) {
       console.error('[Bridge Polling] Status polling error:', error);
+      consecutiveErrorsRef.current += 1;
+
+      // Show warning to user after multiple consecutive failures
+      if (consecutiveErrorsRef.current >= MAX_CONSECUTIVE_ERRORS) {
+        dispatch(
+          bridgeActions.setPollingError(
+            'Unable to fetch bridge status. The bridge may still be processing - please check again later.'
+          )
+        );
+      }
     }
   }, [operation, dispatch]);
 
-  // Reset destination poll counter when operation changes
+  // Reset counters when operation changes
   useEffect(() => {
     destinationPollCountRef.current = 0;
-  }, [operation?.id]);
+    consecutiveErrorsRef.current = 0;
+    dispatch(bridgeActions.clearPollingError());
+  }, [operation?.id, dispatch]);
 
   // Start/stop polling based on operation state
   useEffect(() => {

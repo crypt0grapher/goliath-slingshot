@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { ExternalLink } from 'react-feather';
 import Modal from '../../components/Modal';
 import { ButtonPrimary, ButtonOutlined } from '../../components/Button';
-import { selectActiveOperation, selectIsStatusModalOpen } from '../../state/bridge/selectors';
+import { selectActiveOperation, selectIsStatusModalOpen, selectPollingError } from '../../state/bridge/selectors';
 import { bridgeActions } from '../../state/bridge/reducer';
 import { BridgeStatusStepper } from '../../components/bridge';
 import { BridgeNetwork, getExplorerTxUrl } from '../../constants/bridge/networks';
@@ -109,10 +109,22 @@ const ErrorSection = styled.div`
   text-align: center;
 `;
 
+const WarningSection = styled.div`
+  padding: 12px;
+  background-color: ${({ theme }) => theme.yellow2 + '20'};
+  border: 1px solid ${({ theme }) => theme.yellow2};
+  border-radius: 12px;
+  color: ${({ theme }) => theme.yellow2};
+  font-size: 13px;
+  margin-bottom: 16px;
+  text-align: center;
+`;
+
 export default function BridgeStatusModal() {
   const dispatch = useDispatch();
   const isOpen = useSelector(selectIsStatusModalOpen);
   const operation = useSelector(selectActiveOperation);
+  const pollingError = useSelector(selectPollingError);
 
   // Start polling for status updates
   useBridgeStatusPolling(operation);
@@ -165,6 +177,14 @@ export default function BridgeStatusModal() {
 
         {isFailed && operation.errorMessage && (
           <ErrorSection>{operation.errorMessage}</ErrorSection>
+        )}
+
+        {!isFailed && pollingError && (
+          <WarningSection>{pollingError}</WarningSection>
+        )}
+
+        {!isFailed && operation.status === 'DELAYED' && operation.errorMessage && (
+          <WarningSection>{operation.errorMessage}</WarningSection>
         )}
 
         <StepperSection>

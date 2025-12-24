@@ -27,6 +27,7 @@ const initialState: BridgeState = {
   isSubmitting: false,
   isApproving: false,
   error: null,
+  pollingError: null,
 };
 
 const bridgeSlice = createSlice({
@@ -179,6 +180,14 @@ const bridgeSlice = createSlice({
 
     clearError(state) {
       state.error = null;
+    },
+
+    setPollingError(state, action: PayloadAction<string | null>) {
+      state.pollingError = action.payload;
+    },
+
+    clearPollingError(state) {
+      state.pollingError = null;
     },
   },
 });

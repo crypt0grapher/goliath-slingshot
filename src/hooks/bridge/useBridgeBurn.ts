@@ -31,7 +31,53 @@ const BURN_RETRY_CONFIG = {
   },
 };
 
+// Timeout for tx.wait() to prevent indefinite hanging
+const TX_WAIT_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
+
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Wait for transaction with timeout to prevent indefinite hanging
+const waitForTxWithTimeout = async (
+  tx: ethers.ContractTransaction,
+  timeoutMs: number
+): Promise<ethers.ContractReceipt> => {
+  return Promise.race([
+    tx.wait(),
+    new Promise<never>((_, reject) =>
+      setTimeout(
+        () => reject(new Error('Transaction is taking too long. It may still complete - check your wallet for pending transactions.')),
+        timeoutMs
+      )
+    ),
+  ]);
+};
+
+// Check for pending transactions that could block new ones
+const checkPendingTransactions = async (
+  provider: { getTransactionCount: (address: string, blockTag: string) => Promise<number> },
+  account: string
+): Promise<void> => {
+  try {
+    const [pendingNonce, confirmedNonce] = await Promise.all([
+      provider.getTransactionCount(account, 'pending'),
+      provider.getTransactionCount(account, 'latest'),
+    ]);
+
+    if (pendingNonce > confirmedNonce) {
+      const pendingCount = pendingNonce - confirmedNonce;
+      throw new Error(
+        `You have ${pendingCount} pending transaction${pendingCount > 1 ? 's' : ''}. Please wait for ${pendingCount > 1 ? 'them' : 'it'} to confirm before starting a new bridge.`
+      );
+    }
+  } catch (err: any) {
+    // If the error is our pending tx warning, rethrow it
+    if (err.message?.includes('pending transaction')) {
+      throw err;
+    }
+    // Otherwise log and continue - don't block on nonce check failures
+    console.debug('Bridge: Could not check pending transactions:', err.message);
+  }
+};
 
 interface UseBurnReturn {
   burn: (token: BridgeTokenSymbol, amountHuman: string, recipient: string) => Promise<string>;
@@ -62,6 +108,9 @@ export function useBridgeBurn(): UseBurnReturn {
         recheckProvider();
         await wait(300);
       }
+
+      // Check for pending transactions that could block this one
+      await checkPendingTransactions(library, account);
 
       const tokenConfig = getTokenConfigForChain(token, BridgeNetwork.GOLIATH);
       const amountAtomic = parseAmount(amountHuman, token, BridgeNetwork.GOLIATH);
@@ -149,8 +198,22 @@ export function useBridgeBurn(): UseBurnReturn {
         dispatch(bridgeActions.closeConfirmModal());
         dispatch(bridgeActions.openStatusModal(operationId));
 
-        // Wait for tx to be mined
-        const receipt = await tx.wait();
+        // Wait for tx to be mined with timeout to prevent indefinite hanging
+        let receipt: ethers.ContractReceipt;
+        try {
+          receipt = await waitForTxWithTimeout(tx, TX_WAIT_TIMEOUT_MS);
+        } catch (timeoutErr: any) {
+          // Transaction timed out but may still complete - mark as DELAYED, not FAILED
+          dispatch(
+            bridgeActions.updateOperationStatus({
+              id: operationId,
+              status: 'DELAYED',
+              errorMessage: timeoutErr.message,
+            })
+          );
+          // Don't throw - the operation is still tracked and will be polled
+          return operationId;
+        }
 
         if (receipt.status === 0) {
           dispatch(

@@ -86,4 +86,7 @@ export interface BridgeState {
 
   // Error state
   error: string | null;
+
+  // Polling error (transient, for status polling failures)
+  pollingError: string | null;
 }
