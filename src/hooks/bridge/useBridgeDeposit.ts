@@ -102,40 +102,39 @@ export function useBridgeDeposit(): UseDepositReturn {
       setError(null);
       dispatch(bridgeActions.setSubmitting(true));
 
-      // If provider is not ready, wait a moment and recheck
-      if (!providerReady) {
-        console.debug('Bridge: Provider not ready, waiting before deposit...');
-        recheckProvider();
-        await wait(300);
-      }
-
-      // Check for pending transactions that could block this one
-      await checkPendingTransactions(library, account);
-
-      const tokenConfig = getTokenConfigForChain(token, BridgeNetwork.SEPOLIA);
-      const amountAtomic = parseAmount(amountHuman, token, BridgeNetwork.SEPOLIA);
-      const bridgeAddress = getBridgeContractAddress(BridgeNetwork.SEPOLIA);
-
-      // Core deposit execution logic
-      const executeDeposit = async (): Promise<ethers.ContractTransaction> => {
-        const signer = library.getSigner(account);
-        const bridgeContract = new ethers.Contract(bridgeAddress, BRIDGE_SEPOLIA_ABI, signer as any);
-
-        if (tokenConfig.isNative) {
-          // Native ETH deposit - use depositNative function
-          return bridgeContract.depositNative(recipient, {
-            value: amountAtomic.toString(),
-          });
-        } else {
-          // ERC-20 deposit
-          return bridgeContract.deposit(tokenConfig.address, amountAtomic.toString(), recipient);
-        }
-      };
-
-      let tx: ethers.ContractTransaction;
-      let lastError: Error | null = null;
-
       try {
+        // If provider is not ready, wait a moment and recheck
+        if (!providerReady) {
+          console.debug('Bridge: Provider not ready, waiting before deposit...');
+          recheckProvider();
+          await wait(300);
+        }
+
+        // Check for pending transactions that could block this one
+        await checkPendingTransactions(library, account);
+
+        const tokenConfig = getTokenConfigForChain(token, BridgeNetwork.SEPOLIA);
+        const amountAtomic = parseAmount(amountHuman, token, BridgeNetwork.SEPOLIA);
+        const bridgeAddress = getBridgeContractAddress(BridgeNetwork.SEPOLIA);
+
+        // Core deposit execution logic
+        const executeDeposit = async (): Promise<ethers.ContractTransaction> => {
+          const signer = library.getSigner(account);
+          const bridgeContract = new ethers.Contract(bridgeAddress, BRIDGE_SEPOLIA_ABI, signer as any);
+
+          if (tokenConfig.isNative) {
+            // Native ETH deposit - use depositNative function
+            return bridgeContract.depositNative(recipient, {
+              value: amountAtomic.toString(),
+            });
+          } else {
+            // ERC-20 deposit
+            return bridgeContract.deposit(tokenConfig.address, amountAtomic.toString(), recipient);
+          }
+        };
+
+        let tx: ethers.ContractTransaction;
+        let lastError: Error | null = null;
         for (let attempt = 0; attempt <= DEPOSIT_RETRY_CONFIG.maxRetries; attempt++) {
           try {
             if (attempt > 0) {

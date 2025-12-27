@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useActiveWeb3React } from '../index';
 import { bridgeActions } from '../../state/bridge/reducer';
@@ -65,6 +65,33 @@ export function useBridgeForm(): UseBridgeFormReturn {
   const direction = useSelector(selectDirection);
   const isSubmitting = useSelector(selectIsSubmitting);
   const isApproving = useSelector(selectIsApproving);
+
+  // Safety timeout: auto-reset isSubmitting after 7 minutes to recover from any stuck state
+  // This is a defense-in-depth mechanism in case the primary try-finally blocks fail
+  const submittingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const SAFETY_TIMEOUT_MS = 7 * 60 * 1000; // 7 minutes
+
+  useEffect(() => {
+    if (isSubmitting) {
+      // Start safety timeout when submitting begins
+      submittingTimeoutRef.current = setTimeout(() => {
+        console.warn('Bridge: Safety timeout triggered - resetting stuck isSubmitting state');
+        dispatch(bridgeActions.setSubmitting(false));
+      }, SAFETY_TIMEOUT_MS);
+    } else {
+      // Clear timeout when submitting ends normally
+      if (submittingTimeoutRef.current) {
+        clearTimeout(submittingTimeoutRef.current);
+        submittingTimeoutRef.current = null;
+      }
+    }
+
+    return () => {
+      if (submittingTimeoutRef.current) {
+        clearTimeout(submittingTimeoutRef.current);
+      }
+    };
+  }, [isSubmitting, dispatch]);
 
   // Balances
   const { balance: originBalance, balanceAtomic, isLoading: isBalanceLoading } = useBridgeBalances(

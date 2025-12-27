@@ -25,6 +25,13 @@ export default function Bridge() {
   const operations = useSelector(selectOperations);
   const operationIds = useSelector(selectOperationIds);
 
+  // Reset stuck loading states on mount - these should never persist across page loads
+  // This fixes the "Bridging..." stuck button issue when localStorage persists isSubmitting: true
+  useEffect(() => {
+    dispatch(bridgeActions.setSubmitting(false));
+    dispatch(bridgeActions.setApproving(false));
+  }, [dispatch]);
+
   // Load operations from localStorage on mount
   useEffect(() => {
     const stored = loadOperationsFromStorage();

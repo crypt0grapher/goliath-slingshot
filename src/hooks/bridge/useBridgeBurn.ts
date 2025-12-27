@@ -102,43 +102,42 @@ export function useBridgeBurn(): UseBurnReturn {
       setError(null);
       dispatch(bridgeActions.setSubmitting(true));
 
-      // If provider is not ready, wait a moment and recheck
-      if (!providerReady) {
-        console.debug('Bridge: Provider not ready, waiting before burn...');
-        recheckProvider();
-        await wait(300);
-      }
-
-      // Check for pending transactions that could block this one
-      await checkPendingTransactions(library, account);
-
-      const tokenConfig = getTokenConfigForChain(token, BridgeNetwork.GOLIATH);
-      const amountAtomic = parseAmount(amountHuman, token, BridgeNetwork.GOLIATH);
-      const bridgeAddress = getBridgeContractAddress(BridgeNetwork.GOLIATH);
-
-      // Debug: log amount conversion
-      console.log('[Bridge] Amount conversion:', {
-        amountHuman,
-        amountAtomic: amountAtomic.toString(),
-        token,
-        decimals: tokenConfig.decimals,
-      });
-
-      if (tokenConfig.isNative) {
-        throw new Error('Native token burning is not supported. Please use wrapped token.');
-      }
-
-      // Core burn execution logic
-      const executeBurn = async (): Promise<ethers.ContractTransaction> => {
-        const signer = library.getSigner(account);
-        const bridgeContract = new ethers.Contract(bridgeAddress, BRIDGE_GOLIATH_ABI, signer as any);
-        return bridgeContract.burn(tokenConfig.address, amountAtomic.toString(), recipient);
-      };
-
-      let tx: ethers.ContractTransaction;
-      let lastError: Error | null = null;
-
       try {
+        // If provider is not ready, wait a moment and recheck
+        if (!providerReady) {
+          console.debug('Bridge: Provider not ready, waiting before burn...');
+          recheckProvider();
+          await wait(300);
+        }
+
+        // Check for pending transactions that could block this one
+        await checkPendingTransactions(library, account);
+
+        const tokenConfig = getTokenConfigForChain(token, BridgeNetwork.GOLIATH);
+        const amountAtomic = parseAmount(amountHuman, token, BridgeNetwork.GOLIATH);
+        const bridgeAddress = getBridgeContractAddress(BridgeNetwork.GOLIATH);
+
+        // Debug: log amount conversion
+        console.log('[Bridge] Amount conversion:', {
+          amountHuman,
+          amountAtomic: amountAtomic.toString(),
+          token,
+          decimals: tokenConfig.decimals,
+        });
+
+        if (tokenConfig.isNative) {
+          throw new Error('Native token burning is not supported. Please use wrapped token.');
+        }
+
+        // Core burn execution logic
+        const executeBurn = async (): Promise<ethers.ContractTransaction> => {
+          const signer = library.getSigner(account);
+          const bridgeContract = new ethers.Contract(bridgeAddress, BRIDGE_GOLIATH_ABI, signer as any);
+          return bridgeContract.burn(tokenConfig.address, amountAtomic.toString(), recipient);
+        };
+
+        let tx: ethers.ContractTransaction;
+        let lastError: Error | null = null;
         for (let attempt = 0; attempt <= BURN_RETRY_CONFIG.maxRetries; attempt++) {
           try {
             if (attempt > 0) {
