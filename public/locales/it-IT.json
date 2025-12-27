@@ -95,7 +95,7 @@
   "youWillReceiveBridge": "Riceverai",
   "balanceLabel": "Saldo:",
   "max": "MAX",
-  "testnetLimitMessage": "Limite testnet: Massimo {{ amount }} ETH per transazione quando si fa bridge da Goliath a Sepolia per prevenire abusi del minting di token testnet.",
+  "testnetLimitMessage": "Per prevenire abusi del minting dei token testnet, quando si effettua il bridge da Goliath a Sepolia, il limite testnet è di massimo {{ amount }} ETH per transazione.",
   "confirmBridge": "Conferma Bridge",
   "fromNetwork": "Rete di origine",
   "toNetwork": "Rete di destinazione",
@@ -266,5 +266,11 @@
   "addLiquidityDot": "Aggiungi liquidità.",
   "noPoolFound": "Nessun pool trovato.",
   "createPoolDot": "Crea pool.",
-  "poolFinderTip": "Usa questo strumento per trovare coppie che non appaiono automaticamente nell'interfaccia."
+  "poolFinderTip": "Usa questo strumento per trovare coppie che non appaiono automaticamente nell'interfaccia.",
+  "shareOfPool": "Quota del Pool",
+  "done": "Fatto",
+  "deposited": "Depositato",
+  "tokenDeposited": "{{token}} Depositato",
+  "rates": "Tassi",
+  "confirmSupply": "Conferma Fornitura"
 }
