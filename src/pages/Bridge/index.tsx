@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import styled from 'styled-components';
+import { useTranslation } from 'react-i18next';
 import AppBody from '../AppBody';
 import { SwapPoolBridgeTabs } from '../../components/NavigationTabs';
 import BridgeForm from './BridgeForm';
@@ -21,6 +22,7 @@ const PageWrapper = styled.div`
 `;
 
 export default function Bridge() {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const operations = useSelector(selectOperations);
   const operationIds = useSelector(selectOperationIds);
@@ -52,7 +54,7 @@ export default function Bridge() {
       <SwapPoolBridgeTabs active="bridge" />
       <AppBody>
         <BridgeHeader>
-          <BridgeTitle>Bridge</BridgeTitle>
+          <BridgeTitle>{t('bridge')}</BridgeTitle>
           <Settings />
         </BridgeHeader>
         <BridgeForm />

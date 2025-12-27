@@ -22,11 +22,16 @@ export type ValidationState =
 // Maximum amount for bridging FROM Goliath (to prevent testnet token abuse)
 export const GOLIATH_TO_SEPOLIA_MAX_ETH = '0.05';
 
+export interface TranslatableText {
+  key: string;
+  params?: Record<string, string | number>;
+}
+
 export interface ValidationResult {
   state: ValidationState;
   isValid: boolean;
-  buttonText: string;
-  errorMessage: string | null;
+  buttonText: TranslatableText;
+  errorMessage: TranslatableText | null;
   disableButton: boolean;
 }
 
@@ -62,7 +67,7 @@ export function validateBridgeInput(input: ValidationInput): ValidationResult {
     return {
       state: 'NOT_CONNECTED',
       isValid: false,
-      buttonText: 'Connect Wallet',
+      buttonText: { key: 'connectWallet' },
       errorMessage: null,
       disableButton: false,
     };
@@ -73,8 +78,8 @@ export function validateBridgeInput(input: ValidationInput): ValidationResult {
     return {
       state: 'BRIDGE_UNAVAILABLE',
       isValid: false,
-      buttonText: 'Bridge Unavailable',
-      errorMessage: 'Bridge is temporarily unavailable',
+      buttonText: { key: 'bridgeUnavailable' },
+      errorMessage: { key: 'bridgeTemporarilyUnavailable' },
       disableButton: true,
     };
   }
@@ -85,7 +90,7 @@ export function validateBridgeInput(input: ValidationInput): ValidationResult {
     return {
       state: 'WRONG_NETWORK',
       isValid: false,
-      buttonText: `Switch to ${NETWORK_METADATA[originNetwork].shortName}`,
+      buttonText: { key: 'switchTo', params: { network: NETWORK_METADATA[originNetwork].shortName } },
       errorMessage: null,
       disableButton: false,
     };
@@ -96,7 +101,7 @@ export function validateBridgeInput(input: ValidationInput): ValidationResult {
     return {
       state: 'EMPTY_AMOUNT',
       isValid: false,
-      buttonText: 'Enter an amount',
+      buttonText: { key: 'enterAnAmount' },
       errorMessage: null,
       disableButton: true,
     };
@@ -107,8 +112,8 @@ export function validateBridgeInput(input: ValidationInput): ValidationResult {
     return {
       state: 'INVALID_AMOUNT',
       isValid: false,
-      buttonText: 'Invalid amount',
-      errorMessage: 'Please enter a valid number',
+      buttonText: { key: 'invalidAmount' },
+      errorMessage: { key: 'pleaseEnterValidNumber' },
       disableButton: true,
     };
   }
@@ -118,7 +123,7 @@ export function validateBridgeInput(input: ValidationInput): ValidationResult {
     return {
       state: 'EMPTY_AMOUNT',
       isValid: false,
-      buttonText: 'Enter an amount',
+      buttonText: { key: 'enterAnAmount' },
       errorMessage: null,
       disableButton: true,
     };
@@ -129,8 +134,8 @@ export function validateBridgeInput(input: ValidationInput): ValidationResult {
     return {
       state: 'AMOUNT_TOO_SMALL',
       isValid: false,
-      buttonText: 'Amount too small',
-      errorMessage: `Minimum amount is ${minAmount} ${selectedToken}`,
+      buttonText: { key: 'amountTooSmall' },
+      errorMessage: { key: 'minimumAmountIs', params: { amount: minAmount, token: selectedToken } },
       disableButton: true,
     };
   }
@@ -144,8 +149,8 @@ export function validateBridgeInput(input: ValidationInput): ValidationResult {
     return {
       state: 'AMOUNT_TOO_LARGE',
       isValid: false,
-      buttonText: 'Amount exceeds limit',
-      errorMessage: `Maximum ${GOLIATH_TO_SEPOLIA_MAX_ETH} ETH per transaction (testnet limit)`,
+      buttonText: { key: 'amountExceedsLimit' },
+      errorMessage: { key: 'maximumAmountTestnet', params: { amount: GOLIATH_TO_SEPOLIA_MAX_ETH } },
       disableButton: true,
     };
   }
@@ -158,7 +163,7 @@ export function validateBridgeInput(input: ValidationInput): ValidationResult {
     return {
       state: 'INSUFFICIENT_BALANCE',
       isValid: false,
-      buttonText: `Insufficient ${selectedToken} balance`,
+      buttonText: { key: 'insufficientTokenBalance', params: { token: selectedToken } },
       errorMessage: null,
       disableButton: true,
     };
@@ -168,7 +173,7 @@ export function validateBridgeInput(input: ValidationInput): ValidationResult {
   return {
     state: 'READY',
     isValid: true,
-    buttonText: `Bridge ${selectedToken}`,
+    buttonText: { key: 'bridgeToken', params: { token: selectedToken } },
     errorMessage: null,
     disableButton: false,
   };
@@ -184,11 +189,11 @@ export function getButtonState(
   isApproving: boolean,
   isSubmitting: boolean,
   selectedToken: BridgeTokenSymbol
-): { text: string; disabled: boolean; variant: 'primary' | 'error' | 'secondary' } {
+): { text: TranslatableText; disabled: boolean; variant: 'primary' | 'error' | 'secondary' } {
   // Loading states
   if (isApproving) {
     return {
-      text: `Approving ${selectedToken}...`,
+      text: { key: 'approvingToken', params: { token: selectedToken } },
       disabled: true,
       variant: 'primary',
     };
@@ -196,7 +201,7 @@ export function getButtonState(
 
   if (isSubmitting) {
     return {
-      text: 'Bridging...',
+      text: { key: 'bridging' },
       disabled: true,
       variant: 'primary',
     };
@@ -205,7 +210,7 @@ export function getButtonState(
   // Special states from validation
   if (validation.state === 'NOT_CONNECTED') {
     return {
-      text: 'Connect Wallet',
+      text: { key: 'connectWallet' },
       disabled: false,
       variant: 'primary',
     };
@@ -222,7 +227,7 @@ export function getButtonState(
   // Approval needed
   if (validation.isValid && needsApproval) {
     return {
-      text: `Approve ${selectedToken}`,
+      text: { key: 'approveToken', params: { token: selectedToken } },
       disabled: false,
       variant: 'primary',
     };

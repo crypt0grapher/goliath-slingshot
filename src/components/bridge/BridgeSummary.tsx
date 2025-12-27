@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { useTranslation } from 'react-i18next';
 import { BridgeDirection } from '../../state/bridge/types';
 import { getStaticEtaEstimate } from '../../utils/bridge/eta';
 
@@ -61,26 +62,27 @@ interface BridgeSummaryProps {
 }
 
 export default function BridgeSummary({ direction, recipient, account }: BridgeSummaryProps) {
+  const { t } = useTranslation();
   const eta = getStaticEtaEstimate(direction);
   const displayRecipient = recipient || account;
 
   const truncateAddress = (address: string | null | undefined) => {
-    if (!address) return 'Connect wallet';
+    if (!address) return t('connectWalletShort');
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
   return (
     <SummaryContainer>
       <SummaryRow>
-        <Label>Bridge Fee</Label>
-        <FreeLabel>Free</FreeLabel>
+        <Label>{t('bridgeFee')}</Label>
+        <FreeLabel>{t('free')}</FreeLabel>
       </SummaryRow>
       <SummaryRow>
-        <Label>Estimated Time</Label>
+        <Label>{t('estimatedTime')}</Label>
         <Value>{eta}</Value>
       </SummaryRow>
       <SummaryRow>
-        <Label>Recipient</Label>
+        <Label>{t('recipient')}</Label>
         <Value>{truncateAddress(displayRecipient)}</Value>
       </SummaryRow>
     </SummaryContainer>

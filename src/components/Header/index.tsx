@@ -58,11 +58,6 @@ const HeaderElement = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
-
-  ${({ theme }) => theme.mediaWidth.upToLarge`
-   flex-direction: row-reverse;
-    align-items: center;
-  `};
 `;
 
 const HeaderElementWrap = styled.div`
@@ -77,6 +72,11 @@ const HeaderRow = styled(RowFixed)`
   ${({ theme }) => theme.mediaWidth.upToLarge`
     width: auto;
     grid-row: 1;
+  `};
+
+  ${({ theme }) => theme.mediaWidth.upToSmall`
+    overflow: hidden;
+    min-width: 0;
   `};
 `;
 
@@ -215,6 +215,11 @@ const Icon = styled.div`
 
 const LogoImg = styled.img<{ invert?: boolean }>`
   ${({ invert }) => invert && `filter: invert(1);`}
+
+  ${({ theme }) => theme.mediaWidth.upToSmall`
+    max-width: 60px;
+    height: auto;
+  `};
 `;
 
 const activeClassName = 'ACTIVE';
@@ -367,10 +372,10 @@ export default function Header() {
           {t('pool')}
         </StyledNavLink>
         <StyledNavLink id={`bridge-nav-link`} to={'/bridge'}>
-          Bridge
+          {t('bridge')}
         </StyledNavLink>
         <DisabledNavLink id={`yield-nav-link`}>
-          Yield
+          {t('yield')}
         </DisabledNavLink>
       </HeaderLinks>
 

@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import styled from 'styled-components';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { ButtonPrimary, ButtonError } from '../../components/Button';
 import { AutoColumn } from '../../components/Column';
 import {
@@ -13,7 +14,7 @@ import { useBridgeForm, useBridgeApprove, useBridgeNetworkSwitch } from '../../h
 import { useActiveWeb3React } from '../../hooks';
 import { useWalletModalToggle } from '../../state/application/hooks';
 import { bridgeActions } from '../../state/bridge/reducer';
-import { getButtonState, GOLIATH_TO_SEPOLIA_MAX_ETH } from '../../utils/bridge/validation';
+import { getButtonState, GOLIATH_TO_SEPOLIA_MAX_ETH, TranslatableText } from '../../utils/bridge/validation';
 import { BridgeNetwork } from '../../constants/bridge/networks';
 import { Wrapper, FormContainer, NetworkRow, OutputContainer, OutputLabel, OutputAmount, OutputBalance, ErrorMessage } from './styleds';
 
@@ -36,10 +37,17 @@ const InfoMessage = styled.div`
 `;
 
 export default function BridgeForm() {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { account } = useActiveWeb3React();
   const toggleWalletModal = useWalletModalToggle();
   const bridgeForm = useBridgeForm();
+
+  // Helper to translate TranslatableText objects
+  const translateText = (text: TranslatableText | null): string | null => {
+    if (!text) return null;
+    return t(text.key, text.params);
+  };
   const { approve, isLoading: isApproveLoading } = useBridgeApprove(
     bridgeForm.selectedToken,
     bridgeForm.originNetwork
@@ -116,7 +124,7 @@ export default function BridgeForm() {
             <NetworkSelector
               selectedNetwork={originNetwork}
               onSelect={setOriginNetwork}
-              label="From"
+              label={t('from')}
             />
           </NetworkRow>
 
@@ -136,18 +144,18 @@ export default function BridgeForm() {
             <NetworkSelector
               selectedNetwork={destinationNetwork}
               onSelect={() => {}}
-              label="To"
+              label={t('toLabel')}
               disabled
             />
           </NetworkRow>
 
           <OutputContainer>
-            <OutputLabel>You will receive</OutputLabel>
+            <OutputLabel>{t('youWillReceiveBridge')}</OutputLabel>
             <OutputAmount>
               {outputAmount || '0'} {selectedToken}
             </OutputAmount>
             <OutputBalance>
-              Balance: {destinationBalance} {selectedToken}
+              {t('balanceLabel')} {destinationBalance} {selectedToken}
             </OutputBalance>
           </OutputContainer>
         </FormContainer>
@@ -156,19 +164,19 @@ export default function BridgeForm() {
 
         {originNetwork === BridgeNetwork.GOLIATH && (
           <InfoMessage>
-            Testnet limit: Maximum {GOLIATH_TO_SEPOLIA_MAX_ETH} ETH per transaction when bridging from Goliath to Sepolia to prevent abuse of testnet token minting.
+            {t('testnetLimitMessage', { amount: GOLIATH_TO_SEPOLIA_MAX_ETH })}
           </InfoMessage>
         )}
 
-        {validation.errorMessage && <ErrorMessage>{validation.errorMessage}</ErrorMessage>}
+        {validation.errorMessage && <ErrorMessage>{translateText(validation.errorMessage)}</ErrorMessage>}
 
         {buttonState.variant === 'error' ? (
           <ErrorButton onClick={handleButtonClick} disabled={buttonState.disabled}>
-            {buttonState.text}
+            {translateText(buttonState.text)}
           </ErrorButton>
         ) : (
           <ActionButton onClick={handleButtonClick} disabled={buttonState.disabled}>
-            {buttonState.text}
+            {translateText(buttonState.text)}
           </ActionButton>
         )}
       </AutoColumn>
