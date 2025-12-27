@@ -1,6 +1,7 @@
 import React, { Suspense } from 'react';
 import { Route, Switch } from 'react-router-dom';
 import styled from 'styled-components';
+import { Analytics } from '@vercel/analytics/react';
 import Header from '../components/Header';
 import Polling from '../components/Header/Polling';
 import Popups from '../components/Popups';
@@ -79,6 +80,7 @@ export default function App() {
             </Switch>
           </Web3ReactManager>
         </BodyWrapper>
+        <Analytics />
       </AppWrapper>
     </Suspense>
   );
