@@ -7,6 +7,7 @@ import styled, {
   DefaultTheme,
 } from 'styled-components';
 import { useIsDarkMode } from '../state/user/hooks';
+import { useDirection } from '../contexts/DirectionContext';
 import { Text, TextProps } from 'rebass';
 import { Colors } from './styled';
 
@@ -84,7 +85,7 @@ export function colors(darkMode: boolean): Colors {
   };
 }
 
-export function theme(darkMode: boolean): DefaultTheme {
+export function theme(darkMode: boolean, direction: 'ltr' | 'rtl' = 'ltr'): DefaultTheme {
   return {
     ...colors(darkMode),
 
@@ -109,13 +110,18 @@ export function theme(darkMode: boolean): DefaultTheme {
       display: flex;
       flex-flow: row nowrap;
     `,
+
+    // RTL Support
+    direction,
+    isRTL: direction === 'rtl',
   };
 }
 
 export default function ThemeProvider({ children }: { children: React.ReactNode }) {
   const darkMode = useIsDarkMode();
+  const { direction } = useDirection();
 
-  const themeObject = useMemo(() => theme(darkMode), [darkMode]);
+  const themeObject = useMemo(() => theme(darkMode, direction), [darkMode, direction]);
 
   return <StyledComponentsThemeProvider theme={themeObject}>{children}</StyledComponentsThemeProvider>;
 }
@@ -221,5 +227,24 @@ body {
       1,
       theme.bg1
     )} 100%)`};
+}
+
+/* Arabic font stack for RTL languages */
+html[lang="ar"],
+html[lang="ar"] input,
+html[lang="ar"] textarea,
+html[lang="ar"] button {
+  font-family: 'Noto Sans Arabic', 'Inter', sans-serif;
+}
+
+html[lang="he"],
+html[lang="iw"],
+html[lang="he"] input,
+html[lang="iw"] input,
+html[lang="he"] textarea,
+html[lang="iw"] textarea,
+html[lang="he"] button,
+html[lang="iw"] button {
+  font-family: 'Noto Sans Hebrew', 'Inter', sans-serif;
 }
 `;

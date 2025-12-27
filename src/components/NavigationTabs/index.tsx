@@ -4,13 +4,14 @@ import { darken } from 'polished';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Link as HistoryLink } from 'react-router-dom';
 
-import { ArrowLeft } from 'react-feather';
+import { ArrowLeft, ArrowRight } from 'react-feather';
 import { RowBetween } from '../Row';
 // import QuestionHelper from '../QuestionHelper'
 import Settings from '../Settings';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from 'state';
 import { resetMintState } from 'state/mint/actions';
+import { useDirection } from '../../hooks/useDirection';
 
 const Tabs = styled.div`
   ${({ theme }) => theme.flexRowNoWrap}
@@ -56,6 +57,15 @@ const StyledArrowLeft = styled(ArrowLeft)`
   color: ${({ theme }) => theme.text1};
 `;
 
+const StyledArrowRight = styled(ArrowRight)`
+  color: ${({ theme }) => theme.text1};
+`;
+
+function BackArrow() {
+  const { isRTL } = useDirection();
+  return isRTL ? <StyledArrowRight /> : <StyledArrowLeft />;
+}
+
 export function SwapPoolTabs({ active }: { active: 'swap' | 'pool' }) {
   const { t } = useTranslation();
   return (
@@ -93,7 +103,7 @@ export function FindPoolTabs() {
     <Tabs>
       <RowBetween style={{ padding: '1rem 1rem 0 1rem' }}>
         <HistoryLink to="/pool">
-          <StyledArrowLeft />
+          <BackArrow />
         </HistoryLink>
         <ActiveText>{t('importPool')}</ActiveText>
         <Settings />
@@ -116,7 +126,7 @@ export function AddRemoveTabs({ adding, creating }: { adding: boolean; creating:
             adding && dispatch(resetMintState());
           }}
         >
-          <StyledArrowLeft />
+          <BackArrow />
         </HistoryLink>
         <ActiveText>{creating ? t('createPair') : adding ? t('addLiquidity') : t('removeLiquidity')}</ActiveText>
         <Settings />

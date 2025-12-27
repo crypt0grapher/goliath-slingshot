@@ -58,18 +58,18 @@ const Arrow = styled.div`
   }
 
   &.arrow-left {
-    right: -5px;
+    inset-inline-end: -5px;
 
     ::before {
       border-bottom: none;
-      border-left: none;
+      border-inline-start: none;
     }
   }
 
   &.arrow-right {
-    left: -5px;
+    inset-inline-start: -5px;
     ::before {
-      border-right: none;
+      border-inline-end: none;
       border-top: none;
     }
   }

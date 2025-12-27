@@ -144,7 +144,7 @@ const NetworkCard = styled(LightCard)`
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
     margin: 0;
-    margin-right: 0.5rem;
+    margin-inline-end: 0.5rem;
     width: initial;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -178,7 +178,7 @@ const WrongNetworkButton = styled.button`
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
     margin: 0;
-    margin-right: 0.5rem;
+    margin-inline-end: 0.5rem;
     width: initial;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -197,7 +197,7 @@ const Title = styled.a`
   align-items: center;
   pointer-events: auto;
   justify-self: flex-start;
-  margin-right: 12px;
+  margin-inline-end: 12px;
   ${({ theme }) => theme.mediaWidth.upToSmall`
     justify-self: center;
   `};
@@ -228,7 +228,7 @@ const StyledNavLink = styled(NavLink).attrs({
   activeClassName,
 })`
   ${({ theme }) => theme.flexRowNoWrap}
-  align-items: left;
+  align-items: center;
   border-radius: 12px;
   outline: none;
   cursor: pointer;
@@ -241,7 +241,7 @@ const StyledNavLink = styled(NavLink).attrs({
   transition: 0.3s;
 
   &:not(:last-child) {
-    margin-right: 0.16rem;
+    margin-inline-end: 0.16rem;
   }
 
   &.${activeClassName} {
@@ -260,14 +260,14 @@ const StyledNavLink = styled(NavLink).attrs({
     border: 1px solid ${({ theme }) => theme.bg3};
 
     &:not(:last-child) {
-      margin-right: 2%;
+      margin-inline-end: 2%;
     }
   `};
 `;
 
 const DisabledNavLink = styled.span`
   ${({ theme }) => theme.flexRowNoWrap}
-  align-items: left;
+  align-items: center;
   border-radius: 12px;
   outline: none;
   cursor: not-allowed;
@@ -280,7 +280,7 @@ const DisabledNavLink = styled.span`
   opacity: 0.5;
 
   &:not(:last-child) {
-    margin-right: 0.16rem;
+    margin-inline-end: 0.16rem;
   }
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
@@ -289,7 +289,7 @@ const DisabledNavLink = styled.span`
     border: 1px solid ${({ theme }) => theme.bg3};
 
     &:not(:last-child) {
-      margin-right: 2%;
+      margin-inline-end: 2%;
     }
   `};
 `;
@@ -304,7 +304,7 @@ export const StyledMenuButton = styled.button`
   padding: 0;
   height: 35px;
   background-color: ${({ theme }) => theme.bg3};
-  margin-left: 8px;
+  margin-inline-start: 8px;
   padding: 0.15rem 0.5rem;
   border-radius: 0.5rem;
   box-shadow: rgba(0, 0, 0, 0.01) 0px 0px 1px, rgba(0, 0, 0, 0.04) 0px 4px 8px, rgba(0, 0, 0, 0.04) 0px 16px 24px,
@@ -331,7 +331,7 @@ const StyledDocsLink = styled.a`
   justify-content: center;
   height: 35px;
   background-color: ${({ theme }) => theme.bg3};
-  margin-left: 8px;
+  margin-inline-start: 8px;
   padding: 0.15rem 0.5rem;
   border-radius: 0.5rem;
   box-shadow: rgba(0, 0, 0, 0.01) 0px 0px 1px, rgba(0, 0, 0, 0.04) 0px 4px 8px, rgba(0, 0, 0, 0.04) 0px 16px 24px,

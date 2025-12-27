@@ -105,8 +105,8 @@ const LowerSection = styled.div`
   flex-grow: 1;
   overflow: auto;
   background-color: ${({ theme }) => theme.bg2};
-  border-bottom-left-radius: 20px;
-  border-bottom-right-radius: 20px;
+  border-end-start-radius: 20px;
+  border-end-end-radius: 20px;
 
   h5 {
     margin: 0;
@@ -140,7 +140,7 @@ const AccountControl = styled.div`
 const AddressLink = styled(ExternalLink)<{ hasENS: boolean; isENS: boolean }>`
   font-size: 0.825rem;
   color: ${({ theme }) => theme.text3};
-  margin-left: 1rem;
+  margin-inline-start: 1rem;
   font-size: 0.825rem;
   display: flex;
   :hover {
@@ -150,7 +150,7 @@ const AddressLink = styled(ExternalLink)<{ hasENS: boolean; isENS: boolean }>`
 
 const CloseIcon = styled.div`
   position: absolute;
-  right: 1rem;
+  inset-inline-end: 1rem;
   top: 14px;
   &:hover {
     cursor: pointer;
@@ -175,7 +175,7 @@ const IconWrapper = styled.div<{ size?: number }>`
   ${({ theme }) => theme.flexColumnNoWrap};
   align-items: center;
   justify-content: center;
-  margin-right: 8px;
+  margin-inline-end: 8px;
   & > img,
   span {
     height: ${({ size }) => (size ? size + 'px' : '32px')};
@@ -193,7 +193,7 @@ const TransactionListWrapper = styled.div`
 const WalletAction = styled(ButtonSecondary)`
   width: fit-content;
   font-weight: 400;
-  margin-left: 8px;
+  margin-inline-start: 8px;
   font-size: 0.825rem;
   padding: 4px 6px;
   :hover {
@@ -322,7 +322,7 @@ export default function AccountDetails({
                 {formatConnectorName()}
                 <div>
                   <WalletAction
-                    style={{ fontSize: '.825rem', fontWeight: 400, marginRight: '8px' }}
+                    style={{ fontSize: '.825rem', fontWeight: 400, marginInlineEnd: '8px' }}
                     onClick={handleDisconnect}
                   >
                     Disconnect
@@ -363,7 +363,7 @@ export default function AccountDetails({
                       <div>
                         {account && (
                           <Copy toCopy={account}>
-                            <span style={{ marginLeft: '4px' }}>Copy Address</span>
+                            <span style={{ marginInlineStart: '4px' }}>Copy Address</span>
                           </Copy>
                         )}
                         {chainId && account && (
@@ -373,7 +373,7 @@ export default function AccountDetails({
                             href={chainId && getEtherscanLink(chainId, ENSName, 'address')}
                           >
                             <LinkIcon size={16} />
-                            <span style={{ marginLeft: '4px' }}>Goliath Explorer</span>
+                            <span style={{ marginInlineStart: '4px' }}>Goliath Explorer</span>
                           </AddressLink>
                         )}
                       </div>
@@ -385,7 +385,7 @@ export default function AccountDetails({
                       <div>
                         {account && (
                           <Copy toCopy={account}>
-                            <span style={{ marginLeft: '4px' }}>Copy Address</span>
+                            <span style={{ marginInlineStart: '4px' }}>Copy Address</span>
                           </Copy>
                         )}
                         {chainId && account && (
@@ -395,7 +395,7 @@ export default function AccountDetails({
                             href={getEtherscanLink(chainId, account, 'address')}
                           >
                             <LinkIcon size={16} />
-                            <span style={{ marginLeft: '4px' }}>Goliath Explorer</span>
+                            <span style={{ marginInlineStart: '4px' }}>Goliath Explorer</span>
                           </AddressLink>
                         )}
                       </div>

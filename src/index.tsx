@@ -1,6 +1,9 @@
 import { createWeb3ReactRoot, Web3ReactProvider } from '@web3-react/core';
 import 'inter-ui';
-import React, { StrictMode } from 'react';
+import '@fontsource/noto-sans-arabic/400.css';
+import '@fontsource/noto-sans-arabic/500.css';
+import '@fontsource/noto-sans-arabic/600.css';
+import React, { StrictMode, Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
 import { HashRouter } from 'react-router-dom';
@@ -14,6 +17,7 @@ import MulticallUpdater from './state/multicall/updater';
 import TransactionUpdater from './state/transactions/updater';
 import UserUpdater from './state/user/updater';
 import ThemeProvider, { FixedGlobalStyle, ThemedGlobalStyle } from './theme';
+import { DirectionProvider } from './contexts/DirectionContext';
 import getLibrary from './utils/getLibrary';
 
 const Web3ProviderNetwork = createWeb3ReactRoot(NetworkContextName);
@@ -41,12 +45,16 @@ ReactDOM.render(
       <Web3ProviderNetwork getLibrary={getLibrary}>
         <Provider store={store}>
           <Updaters />
-          <ThemeProvider>
-            <ThemedGlobalStyle />
-            <HashRouter>
-              <App />
-            </HashRouter>
-          </ThemeProvider>
+          <Suspense fallback={null}>
+            <DirectionProvider>
+              <ThemeProvider>
+                <ThemedGlobalStyle />
+                <HashRouter>
+                  <App />
+                </HashRouter>
+              </ThemeProvider>
+            </DirectionProvider>
+          </Suspense>
         </Provider>
       </Web3ProviderNetwork>
     </Web3ReactProvider>

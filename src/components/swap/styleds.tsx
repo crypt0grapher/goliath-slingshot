@@ -54,13 +54,13 @@ export const StyledBalanceMaxMini = styled.button`
   padding: 0.2rem;
   font-size: 0.875rem;
   font-weight: 400;
-  margin-left: 0.4rem;
+  margin-inline-start: 0.4rem;
   cursor: pointer;
   color: ${({ theme }) => theme.text2};
   display: flex;
   justify-content: center;
   align-items: center;
-  float: right;
+  float: inline-end;
 
   :hover {
     background-color: ${({ theme }) => theme.bg3};
@@ -84,7 +84,7 @@ export const Dots = styled.span`
     animation: ellipsis 1.25s infinite;
     content: '.';
     width: 1em;
-    text-align: left;
+    text-align: start;
   }
   @keyframes ellipsis {
     0% {
@@ -122,7 +122,7 @@ const SwapCallbackErrorInnerAlertTriangle = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-right: 12px;
+  margin-inline-end: 12px;
   border-radius: 12px;
   min-width: 48px;
   height: 48px;

@@ -102,7 +102,7 @@ const StyledBalanceMax = styled.button`
 
   font-weight: 500;
   cursor: pointer;
-  margin-right: 0.5rem;
+  margin-inline-end: 0.5rem;
   color: ${({ theme }) => theme.primaryText1};
 
   :hover {
@@ -113,7 +113,7 @@ const StyledBalanceMax = styled.button`
   }
 
   ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-    margin-right: 0.5rem;
+    margin-inline-end: 0.5rem;
   `};
 `;
 

@@ -71,5 +71,9 @@ declare module 'styled-components' {
     // css snippets
     flexColumnNoWrap: FlattenSimpleInterpolation;
     flexRowNoWrap: FlattenSimpleInterpolation;
+
+    // RTL Support
+    direction: 'ltr' | 'rtl';
+    isRTL: boolean;
   }
 }
