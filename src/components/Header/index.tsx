@@ -12,7 +12,7 @@ import { useDarkModeManager } from '../../state/user/hooks';
 import { useETHBalances } from '../../state/wallet/hooks';
 
 import { LightCard } from '../Card';
-import { Moon, Sun } from 'react-feather';
+import { Moon, Sun, HelpCircle } from 'react-feather';
 import Row, { RowFixed } from '../Row';
 import Web3Status from '../Web3Status';
 
@@ -325,6 +325,32 @@ export const StyledMenuButton = styled.button`
   }
 `;
 
+const StyledDocsLink = styled.a`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px;
+  background-color: ${({ theme }) => theme.bg3};
+  margin-left: 8px;
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.5rem;
+  box-shadow: rgba(0, 0, 0, 0.01) 0px 0px 1px, rgba(0, 0, 0, 0.04) 0px 4px 8px, rgba(0, 0, 0, 0.04) 0px 16px 24px,
+    rgba(0, 0, 0, 0.01) 0px 24px 32px;
+  text-decoration: none;
+
+  :hover,
+  :focus {
+    cursor: pointer;
+    outline: none;
+    background-color: ${({ theme }) => theme.bg4};
+  }
+
+  svg {
+    margin-top: 2px;
+    stroke: ${({ theme }) => theme.text1};
+  }
+`;
+
 const NETWORK_LABELS: { [chainId: number]: string } = {
   [ChainId.RINKEBY]: 'Rinkeby',
   [ChainId.ROPSTEN]: 'Ropsten',
@@ -406,6 +432,9 @@ export default function Header() {
           </AccountElement>
         </HeaderElement>
         <HeaderElementWrap>
+          <StyledDocsLink href="https://docs.goliath.net" target="_blank" rel="noopener noreferrer" title="Documentation">
+            <HelpCircle size={20} />
+          </StyledDocsLink>
           <StyledMenuButton onClick={toggleDarkMode}>
             {darkMode ? <Moon size={20} /> : <Sun size={20} />}
           </StyledMenuButton>
