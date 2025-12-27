@@ -6,6 +6,7 @@ import { AlertTriangle, Plus } from 'react-feather';
 import { RouteComponentProps } from 'react-router-dom';
 import { Text } from 'rebass';
 import styled, { ThemeContext } from 'styled-components';
+import { useTranslation } from 'react-i18next';
 import { ButtonError, ButtonPrimary } from '../../components/Button';
 import { LightCard } from '../../components/Card';
 import { AutoColumn, ColumnCenter } from '../../components/Column';
@@ -72,6 +73,7 @@ export default function AddLiquidity({
   },
   history,
 }: RouteComponentProps<{ currencyIdA?: string; currencyIdB?: string }>) {
+  const { t } = useTranslation();
   const { account, chainId, library } = useActiveWeb3React();
   const theme = useContext(ThemeContext);
   const { switchToGoliath, isLoading: isSwitchingNetwork } = useNetworkSwitch();
@@ -407,7 +409,7 @@ export default function AddLiquidity({
             hash={txHash}
             content={() => (
               <ConfirmationModalContent
-                title={noLiquidity ? 'You are creating a pool' : 'You will receive'}
+                title={noLiquidity ? t('youAreCreatingPool') : t('youWillReceiveTitle')}
                 onDismiss={handleDismissConfirmation}
                 topContent={modalHeader}
                 bottomContent={modalBottom}
@@ -422,13 +424,13 @@ export default function AddLiquidity({
                   <LightCard>
                     <AutoColumn gap="10px">
                       <TYPE.link fontWeight={600} color={'primaryText1'}>
-                        You are the first liquidity provider.
+                        {t('firstLiquidityProvider')}
                       </TYPE.link>
                       <TYPE.link fontWeight={400} color={'primaryText1'}>
-                        The ratio of tokens you add will set the price of this pool.
+                        {t('ratioWillSetPrice')}
                       </TYPE.link>
                       <TYPE.link fontWeight={400} color={'primaryText1'}>
-                        Once you are happy with the rate click supply to review.
+                        {t('clickSupplyToReview')}
                       </TYPE.link>
                     </AutoColumn>
                   </LightCard>
@@ -438,9 +440,7 @@ export default function AddLiquidity({
                   <LightCard>
                     <AutoColumn gap="10px">
                       <TYPE.link fontWeight={400} color={'primaryText1'}>
-                        <b>Tip:</b> When you add liquidity, you will receive pool tokens representing your position.
-                        These tokens automatically earn fees proportional to your share of the pool, and can be redeemed
-                        at any time.
+                        <b>{t('tip')}</b> {t('poolTip')}
                       </TYPE.link>
                     </AutoColumn>
                   </LightCard>
@@ -488,7 +488,7 @@ export default function AddLiquidity({
                 <LightCard padding="0px" borderRadius={'20px'}>
                   <RowBetween padding="1rem">
                     <TYPE.subHeader fontWeight={500} fontSize={14}>
-                      {noLiquidity ? 'Initial prices' : 'Prices'} and pool share
+                      {noLiquidity ? t('initialPrices') : t('prices')} {t('andPoolShare')}
                     </TYPE.subHeader>
                   </RowBetween>{' '}
                   <LightCard padding="1rem" borderRadius={'20px'}>
@@ -504,10 +504,10 @@ export default function AddLiquidity({
             )}
 
             {!account ? (
-              <ButtonPrimary onClick={toggleWalletModal}>Connect Wallet</ButtonPrimary>
+              <ButtonPrimary onClick={toggleWalletModal}>{t('connectWallet')}</ButtonPrimary>
             ) : isWrongNetwork ? (
               <ButtonPrimary onClick={switchToGoliath} disabled={isSwitchingNetwork}>
-                {isSwitchingNetwork ? 'Switching...' : 'Switch to Goliath'}
+                {isSwitchingNetwork ? t('switching') : t('switchToGoliath')}
               </ButtonPrimary>
             ) : (
               <AutoColumn gap={'md'}>
@@ -554,7 +554,7 @@ export default function AddLiquidity({
                   error={!isValid && !!parsedAmounts[Field.CURRENCY_A] && !!parsedAmounts[Field.CURRENCY_B]}
                 >
                   <Text fontSize={20} fontWeight={500}>
-                    {error ?? 'Supply'}
+                    {error ?? t('supply')}
                   </Text>
                 </ButtonError>
                 {/* Display error message if transaction failed */}

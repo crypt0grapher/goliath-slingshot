@@ -140,7 +140,7 @@ export default function CurrencyInputPanel({
   onUserInput,
   onMax,
   showMaxButton,
-  label = 'Input',
+  label,
   onCurrencySelect,
   currency,
   disableCurrencySelect = false,
@@ -153,6 +153,7 @@ export default function CurrencyInputPanel({
   customBalanceText,
 }: CurrencyInputPanelProps) {
   const { t } = useTranslation();
+  const displayLabel = label ?? t('input');
 
   const [modalOpen, setModalOpen] = useState(false);
   const { account, chainId } = useActiveWeb3React();
@@ -174,7 +175,7 @@ export default function CurrencyInputPanel({
           <LabelRow>
             <RowBetween>
               <TYPE.body color={theme.text2} fontWeight={500} fontSize={14}>
-                {label}
+                {displayLabel}
               </TYPE.body>
               {account && (
                 <TYPE.body
@@ -185,7 +186,7 @@ export default function CurrencyInputPanel({
                   style={{ display: 'inline', cursor: 'pointer' }}
                 >
                   {!hideBalance && !!currency && selectedCurrencyBalance
-                    ? (customBalanceText ?? 'Balance: ') + safeToSignificant(selectedCurrencyBalance, 7)
+                    ? (customBalanceText ?? t('balanceLabel') + ' ') + safeToSignificant(selectedCurrencyBalance, 7)
                     : ' -'}
                 </TYPE.body>
               )}
@@ -202,8 +203,8 @@ export default function CurrencyInputPanel({
                   onUserInput(val);
                 }}
               />
-              {account && currency && showMaxButton && label !== 'To' && (
-                <StyledBalanceMax onClick={onMax}>MAX</StyledBalanceMax>
+              {account && currency && showMaxButton && displayLabel !== t('toLabel') && (
+                <StyledBalanceMax onClick={onMax}>{t('max')}</StyledBalanceMax>
               )}
             </>
           )}

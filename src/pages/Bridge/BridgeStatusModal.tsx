@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
 import { ExternalLink } from 'react-feather';
+import { useTranslation } from 'react-i18next';
 import Modal from '../../components/Modal';
 import { ButtonPrimary, ButtonOutlined } from '../../components/Button';
 import { selectActiveOperation, selectIsStatusModalOpen, selectPollingError } from '../../state/bridge/selectors';
@@ -121,6 +122,7 @@ const WarningSection = styled.div`
 `;
 
 export default function BridgeStatusModal() {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const isOpen = useSelector(selectIsStatusModalOpen);
   const operation = useSelector(selectActiveOperation);
@@ -165,7 +167,7 @@ export default function BridgeStatusModal() {
     <Modal isOpen={isOpen} onDismiss={handleClose}>
       <ContentWrapper>
         <Title>
-          {isCompleted ? 'Bridge Complete!' : isFailed ? 'Bridge Failed' : 'Bridge in Progress'}
+          {isCompleted ? t('bridgeComplete') : isFailed ? t('bridgeFailed') : t('bridgeInProgress')}
         </Title>
 
         <AmountSection>
@@ -193,21 +195,21 @@ export default function BridgeStatusModal() {
 
         {!isCompleted && !isFailed && (
           <EtaSection>
-            <EtaLabel>Estimated:</EtaLabel>
-            <EtaValue>{formatEta(operation)}</EtaValue>
+            <EtaLabel>{t('estimatedLabel')}</EtaLabel>
+            <EtaValue>{formatEta(operation, t)}</EtaValue>
           </EtaSection>
         )}
 
         <LinksSection>
           {originExplorerUrl && (
             <ExplorerLinkStyled href={originExplorerUrl} target="_blank" rel="noopener noreferrer">
-              View on {originNetwork === BridgeNetwork.SEPOLIA ? 'Sepolia' : 'Goliath'} Explorer
+              {t('viewOnExplorer', { network: originNetwork === BridgeNetwork.SEPOLIA ? 'Sepolia' : 'Goliath' })}
               <ExternalLink size={14} />
             </ExplorerLinkStyled>
           )}
           {destExplorerUrl && (
             <ExplorerLinkStyled href={destExplorerUrl} target="_blank" rel="noopener noreferrer">
-              View on {destNetwork === BridgeNetwork.SEPOLIA ? 'Sepolia' : 'Goliath'} Explorer
+              {t('viewOnExplorer', { network: destNetwork === BridgeNetwork.SEPOLIA ? 'Sepolia' : 'Goliath' })}
               <ExternalLink size={14} />
             </ExplorerLinkStyled>
           )}
@@ -215,10 +217,10 @@ export default function BridgeStatusModal() {
 
         <ButtonsContainer>
           {isCompleted && (
-            <ButtonPrimary onClick={handleBridgeMore}>Bridge More</ButtonPrimary>
+            <ButtonPrimary onClick={handleBridgeMore}>{t('bridgeMore')}</ButtonPrimary>
           )}
           <ButtonOutlined onClick={handleClose}>
-            {isCompleted ? 'Close' : 'Close (Bridge continues in background)'}
+            {isCompleted ? t('close') : t('closeBridgeContinues')}
           </ButtonOutlined>
         </ButtonsContainer>
       </ContentWrapper>

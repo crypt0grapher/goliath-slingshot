@@ -1,6 +1,7 @@
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 import { Check, Clock, AlertCircle, Loader } from 'react-feather';
+import { useTranslation } from 'react-i18next';
 import { BridgeOperation, BridgeStatus } from '../../state/bridge/types';
 import { getStepDescription } from '../../utils/bridge/eta';
 
@@ -91,29 +92,29 @@ const StepDescription = styled.div`
 `;
 
 interface StepConfig {
-  label: string;
+  labelKey: string;
   stepIndex: number;
 }
 
 const SEPOLIA_TO_GOLIATH_STEPS: StepConfig[] = [
-  { label: 'Deposit on Sepolia', stepIndex: 0 },
-  { label: 'Waiting for confirmations', stepIndex: 1 },
-  { label: 'Minting on Goliath', stepIndex: 2 },
-  { label: 'Complete', stepIndex: 3 },
+  { labelKey: 'depositOnSepolia', stepIndex: 0 },
+  { labelKey: 'waitingForConfirmations', stepIndex: 1 },
+  { labelKey: 'mintingOnGoliath', stepIndex: 2 },
+  { labelKey: 'complete', stepIndex: 3 },
 ];
 
 // For Goliath→Sepolia with 0 required confirmations, skip the finality step
 const GOLIATH_TO_SEPOLIA_STEPS: StepConfig[] = [
-  { label: 'Burn on Goliath', stepIndex: 0 },
-  { label: 'Waiting for finality', stepIndex: 1 },
-  { label: 'Releasing on Sepolia', stepIndex: 2 },
-  { label: 'Complete', stepIndex: 3 },
+  { labelKey: 'burnOnGoliath', stepIndex: 0 },
+  { labelKey: 'waitingForFinality', stepIndex: 1 },
+  { labelKey: 'releasingOnSepolia', stepIndex: 2 },
+  { labelKey: 'complete', stepIndex: 3 },
 ];
 
 const GOLIATH_TO_SEPOLIA_STEPS_NO_FINALITY: StepConfig[] = [
-  { label: 'Burn on Goliath', stepIndex: 0 },
-  { label: 'Releasing on Sepolia', stepIndex: 2 },
-  { label: 'Complete', stepIndex: 3 },
+  { labelKey: 'burnOnGoliath', stepIndex: 0 },
+  { labelKey: 'releasingOnSepolia', stepIndex: 2 },
+  { labelKey: 'complete', stepIndex: 3 },
 ];
 
 function getStepStatus(
@@ -170,6 +171,7 @@ interface BridgeStatusStepperProps {
 }
 
 export default function BridgeStatusStepper({ operation }: BridgeStatusStepperProps) {
+  const { t } = useTranslation();
   // For Goliath→Sepolia, we don't require finality confirmations (instant finality)
   // Override requiredConfirmations to 0 regardless of what backend returns
   const effectiveRequiredConfirmations =
@@ -197,7 +199,7 @@ export default function BridgeStatusStepper({ operation }: BridgeStatusStepperPr
           effectiveRequiredConfirmations
         );
         const isLast = index === steps.length - 1;
-        const description = getStepDescription(step.stepIndex, operation);
+        const description = getStepDescription(step.stepIndex, operation, t);
 
         return (
           <StepRow key={step.stepIndex} showLine={!isLast} lineActive={status === 'completed'}>
@@ -206,7 +208,7 @@ export default function BridgeStatusStepper({ operation }: BridgeStatusStepperPr
             </StepIconContainer>
             <StepContent>
               <StepLabel active={status === 'active' || status === 'completed'}>
-                {step.label}
+                {t(step.labelKey)}
               </StepLabel>
               {description && <StepDescription>{description}</StepDescription>}
             </StepContent>

@@ -2,6 +2,7 @@ import React, { useContext, useMemo } from 'react';
 import styled, { ThemeContext } from 'styled-components';
 import { Pair } from '@uniswap/sdk';
 import { Link } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { SwapPoolTabs } from '../../components/NavigationTabs';
 import AppBody from '../AppBody';
 import FullPositionCard from '../../components/PositionCard';
@@ -61,6 +62,7 @@ const EmptyProposals = styled.div`
 `;
 
 export default function Pool() {
+  const { t } = useTranslation();
   const theme = useContext(ThemeContext);
   const { account, chainId } = useActiveWeb3React();
   const { switchToGoliath, isLoading: isSwitchingNetwork } = useNetworkSwitch();
@@ -106,16 +108,16 @@ export default function Pool() {
             <TitleRow style={{ marginTop: '1rem' }} padding={'0'}>
               <HideSmall>
                 <TYPE.mediumHeader style={{ justifySelf: 'flex-start' }}>
-                  Your liquidity
+                  {t('yourLiquidity')}
                 </TYPE.mediumHeader>
               </HideSmall>
               <ButtonRow>
                 <ResponsiveButtonPrimary as={Link} padding="6px 10px" to="/create/ETH">
-                  Create a pair
+                  {t('createPair')}
                 </ResponsiveButtonPrimary>
                 <ResponsiveButtonPrimary id="join-pool-button" as={Link} padding="6px 10px" to="/add/ETH">
                   <Text fontWeight={500} fontSize={16}>
-                    Add Liquidity
+                    {t('addLiquidity')}
                   </Text>
                 </ResponsiveButtonPrimary>
               </ButtonRow>
@@ -124,24 +126,24 @@ export default function Pool() {
             {!account ? (
               <Card padding="40px">
                 <TYPE.body color={theme.text3} textAlign="center">
-                  Connect to a wallet to view your liquidity.
+                  {t('connectWalletToViewLiquidity')}
                 </TYPE.body>
               </Card>
             ) : isWrongNetwork ? (
               <Card padding="40px">
                 <AutoColumn gap="md" justify="center">
                   <TYPE.body color={theme.text3} textAlign="center">
-                    Please switch to Goliath Testnet to view your liquidity.
+                    {t('switchToGoliathToViewLiquidity')}
                   </TYPE.body>
                   <ButtonPrimary onClick={switchToGoliath} disabled={isSwitchingNetwork} style={{ maxWidth: '200px' }}>
-                    {isSwitchingNetwork ? 'Switching...' : 'Switch to Goliath'}
+                    {isSwitchingNetwork ? t('switching') : t('switchToGoliath')}
                   </ButtonPrimary>
                 </AutoColumn>
               </Card>
             ) : v2IsLoading ? (
               <EmptyProposals>
                 <TYPE.body color={theme.text3} textAlign="center">
-                  <Dots>Loading</Dots>
+                  <Dots>{t('loading')}</Dots>
                 </TYPE.body>
               </EmptyProposals>
             ) : allV2PairsWithLiquidity?.length > 0 ? (
@@ -153,7 +155,7 @@ export default function Pool() {
             ) : (
               <EmptyProposals>
                 <TYPE.body color={theme.text3} textAlign="center">
-                  No Liquidity found
+                  {t('noLiquidityFound')}
                 </TYPE.body>
               </EmptyProposals>
             )}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { bridgeActions } from '../../state/bridge/reducer';
 import { BridgeApiClient } from '../../services/bridgeApi';
 import { BridgeOperation, BridgeStatus } from '../../state/bridge/types';
@@ -17,6 +18,7 @@ const TX_STUCK_THRESHOLD_MS = 5 * 60 * 1000;
 const MAX_CONSECUTIVE_ERRORS = 3;
 
 export function useBridgeStatusPolling(operation: BridgeOperation | null) {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const apiClient = useRef(new BridgeApiClient(bridgeConfig.statusApiBaseUrl));
@@ -51,7 +53,7 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
         bridgeActions.updateOperationStatus({
           id: operation.id,
           status: 'DELAYED',
-          errorMessage: 'Transaction is taking longer than expected. It may still complete - check your wallet for pending transactions.',
+          errorMessage: t('transactionTakingLonger'),
         })
       );
     }
@@ -90,13 +92,11 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
       // Show warning to user after multiple consecutive failures
       if (consecutiveErrorsRef.current >= MAX_CONSECUTIVE_ERRORS) {
         dispatch(
-          bridgeActions.setPollingError(
-            'Unable to fetch bridge status. The bridge may still be processing - please check again later.'
-          )
+          bridgeActions.setPollingError(t('unableFetchBridgeStatus'))
         );
       }
     }
-  }, [operation, dispatch]);
+  }, [operation, dispatch, t]);
 
   // Reset counters when operation changes
   useEffect(() => {

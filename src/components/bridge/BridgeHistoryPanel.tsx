@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import styled from 'styled-components';
 import { ChevronDown, ChevronUp } from 'react-feather';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import { selectRecentOperations } from '../../state/bridge/selectors';
 import { bridgeActions } from '../../state/bridge/reducer';
 import BridgeHistoryItem from './BridgeHistoryItem';
@@ -57,6 +58,7 @@ interface BridgeHistoryPanelProps {
 }
 
 export default function BridgeHistoryPanel({ maxItems = 5 }: BridgeHistoryPanelProps) {
+  const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const dispatch = useDispatch();
   const operations = useSelector(selectRecentOperations);
@@ -83,7 +85,7 @@ export default function BridgeHistoryPanel({ maxItems = 5 }: BridgeHistoryPanelP
     <PanelContainer>
       <PanelHeader onClick={toggleOpen}>
         <div>
-          <HeaderTitle>Recent Transactions</HeaderTitle>
+          <HeaderTitle>{t('recentTransactions')}</HeaderTitle>
           <HeaderCount>({displayedOperations.length})</HeaderCount>
         </div>
         {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
@@ -91,7 +93,7 @@ export default function BridgeHistoryPanel({ maxItems = 5 }: BridgeHistoryPanelP
 
       <PanelContent isOpen={isOpen}>
         {displayedOperations.length === 0 ? (
-          <EmptyState>No recent bridge transactions</EmptyState>
+          <EmptyState>{t('noRecentBridgeTransactions')}</EmptyState>
         ) : (
           displayedOperations.map((operation) => (
             <BridgeHistoryItem

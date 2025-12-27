@@ -1,3 +1,4 @@
+import { TFunction } from 'i18next';
 import { BridgeOperation, BridgeDirection, BridgeStatus } from '../../state/bridge/types';
 
 // ============================================
@@ -16,39 +17,39 @@ const STATIC_ESTIMATES: Record<BridgeDirection, { min: number; max: number }> = 
 /**
  * Format ETA for display in UI
  */
-export function formatEta(operation: BridgeOperation): string {
+export function formatEta(operation: BridgeOperation, t?: TFunction): string {
   const { status, estimatedCompletionTime, direction } = operation;
 
   // Terminal states
   if (status === 'COMPLETED') {
-    return 'Completed';
+    return t ? t('etaCompleted') : 'Completed';
   }
   if (status === 'FAILED') {
-    return 'Failed';
+    return t ? t('etaFailed') : 'Failed';
   }
   if (status === 'EXPIRED') {
-    return 'Expired';
+    return t ? t('etaExpired') : 'Expired';
   }
 
   // When at final processing step (releasing/minting), show shorter estimate
   if (status === 'AWAITING_RELAY' || status === 'PROCESSING_DESTINATION') {
-    return '~1 minute remaining';
+    return t ? t('etaOneMinuteRemaining') : '~1 minute remaining';
   }
 
   // Use backend ETA if available
   if (estimatedCompletionTime) {
-    return formatRelativeEta(estimatedCompletionTime, status);
+    return formatRelativeEta(estimatedCompletionTime, status, t);
   }
 
   // Fallback to static estimate
   const estimate = STATIC_ESTIMATES[direction];
-  return `~${estimate.min}-${estimate.max} minutes`;
+  return t ? t('etaMinutes', { min: estimate.min, max: estimate.max }) : `~${estimate.min}-${estimate.max} minutes`;
 }
 
 /**
  * Format relative ETA from ISO timestamp
  */
-function formatRelativeEta(isoTimestamp: string, status: BridgeStatus): string {
+function formatRelativeEta(isoTimestamp: string, status: BridgeStatus, t?: TFunction): string {
   const eta = new Date(isoTimestamp);
   const now = new Date();
   const diffMs = eta.getTime() - now.getTime();
@@ -56,68 +57,66 @@ function formatRelativeEta(isoTimestamp: string, status: BridgeStatus): string {
   // ETA is in the past but not completed
   if (diffMs < 0) {
     if (status === 'DELAYED') {
-      return 'Taking longer than expected...';
+      return t ? t('etaTakingLonger') : 'Taking longer than expected...';
     }
-    return 'Processing...';
+    return t ? t('etaProcessing') : 'Processing...';
   }
 
   const diffMinutes = Math.ceil(diffMs / (1000 * 60));
 
   if (diffMinutes < 1) {
-    return 'Less than 1 minute';
+    return t ? t('etaLessThanOneMinute') : 'Less than 1 minute';
   }
   if (diffMinutes === 1) {
-    return '~1 minute remaining';
+    return t ? t('etaOneMinuteRemaining') : '~1 minute remaining';
   }
   if (diffMinutes < 60) {
-    return `~${diffMinutes} minutes remaining`;
+    return t ? t('etaMinutesRemaining', { count: diffMinutes }) : `~${diffMinutes} minutes remaining`;
   }
 
   const diffHours = Math.ceil(diffMinutes / 60);
-  return `~${diffHours} hour${diffHours > 1 ? 's' : ''} remaining`;
+  return t ? t('etaHoursRemaining', { count: diffHours }) : `~${diffHours} hour${diffHours > 1 ? 's' : ''} remaining`;
 }
 
 /**
  * Get status step description with ETA context
  */
-export function getStepDescription(stepIndex: number, operation: BridgeOperation): string {
+export function getStepDescription(stepIndex: number, operation: BridgeOperation, t?: TFunction): string {
   const { status, originConfirmations, requiredConfirmations, direction } = operation;
 
   switch (stepIndex) {
     case 0: // Origin tx submitted
       if (status === 'PENDING_ORIGIN_TX') {
-        return 'Waiting for transaction to be mined...';
+        return t ? t('waitingForTxMined') : 'Waiting for transaction to be mined...';
       }
-      return 'Transaction submitted';
+      return t ? t('transactionSubmitted') : 'Transaction submitted';
 
     case 1: // Confirmations
       if (status === 'CONFIRMING') {
-        return `${originConfirmations}/${requiredConfirmations} confirmations`;
+        return t ? t('confirmationsProgress', { current: originConfirmations, required: requiredConfirmations }) : `${originConfirmations}/${requiredConfirmations} confirmations`;
       }
       if (['AWAITING_RELAY', 'PROCESSING_DESTINATION', 'COMPLETED'].includes(status)) {
-        return `${requiredConfirmations}/${requiredConfirmations} confirmations`;
+        return t ? t('confirmationsProgress', { current: requiredConfirmations, required: requiredConfirmations }) : `${requiredConfirmations}/${requiredConfirmations} confirmations`;
       }
-      return 'Waiting for confirmations';
+      return t ? t('waitingForConfirmations') : 'Waiting for confirmations';
 
     case 2: // Processing on destination
       if (status === 'AWAITING_RELAY') {
-        return 'Waiting for relayer...';
+        return t ? t('waitingForRelayer') : 'Waiting for relayer...';
       }
       if (status === 'PROCESSING_DESTINATION') {
-        const action = direction === 'SEPOLIA_TO_GOLIATH' ? 'Minting' : 'Releasing';
-        return `${action} on destination chain...`;
+        return t ? (direction === 'SEPOLIA_TO_GOLIATH' ? t('mintingOnDestination') : t('releasingOnDestination')) : (direction === 'SEPOLIA_TO_GOLIATH' ? 'Minting on destination chain...' : 'Releasing on destination chain...');
       }
       if (status === 'COMPLETED') {
-        const action = direction === 'SEPOLIA_TO_GOLIATH' ? 'Minted' : 'Released';
-        return `${action} successfully`;
+        return t ? (direction === 'SEPOLIA_TO_GOLIATH' ? t('mintedSuccessfully') : t('releasedSuccessfully')) : (direction === 'SEPOLIA_TO_GOLIATH' ? 'Minted successfully' : 'Released successfully');
       }
-      return direction === 'SEPOLIA_TO_GOLIATH' ? 'Minting' : 'Releasing';
+      return t ? (direction === 'SEPOLIA_TO_GOLIATH' ? t('minting') : t('releasing')) : (direction === 'SEPOLIA_TO_GOLIATH' ? 'Minting' : 'Releasing');
 
     case 3: // Completed
       if (status === 'COMPLETED') {
-        return 'Bridge complete!';
+        return t ? t('bridgeCompleteStep') : 'Bridge complete!';
       }
-      return 'Pending completion';
+      return t ? t('pendingCompletion') : 'Pending completion';
 
     default:
       return '';

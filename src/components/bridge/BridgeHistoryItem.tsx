@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { ExternalLink } from 'react-feather';
+import { useTranslation } from 'react-i18next';
 import { BridgeOperation, BridgeStatus } from '../../state/bridge/types';
 import { BridgeNetwork, getExplorerTxUrl } from '../../constants/bridge/networks';
 
@@ -99,30 +100,30 @@ const ExplorerLink = styled.a`
   }
 `;
 
-function getStatusLabel(status: BridgeStatus): string {
+function getStatusLabelKey(status: BridgeStatus): string {
   switch (status) {
     case 'PENDING_ORIGIN_TX':
-      return 'Pending';
+      return 'statusPending';
     case 'CONFIRMING':
-      return 'Confirming';
+      return 'statusConfirming';
     case 'AWAITING_RELAY':
-      return 'Processing';
+      return 'statusProcessing';
     case 'PROCESSING_DESTINATION':
-      return 'Processing';
+      return 'statusProcessing';
     case 'COMPLETED':
-      return 'Completed';
+      return 'statusCompleted';
     case 'FAILED':
-      return 'Failed';
+      return 'statusFailed';
     case 'EXPIRED':
-      return 'Expired';
+      return 'statusExpired';
     case 'DELAYED':
-      return 'Delayed';
+      return 'statusDelayed';
     default:
-      return 'Unknown';
+      return 'statusUnknown';
   }
 }
 
-function formatTimeAgo(timestamp: number): string {
+function formatTimeAgo(timestamp: number, t: (key: string, options?: Record<string, unknown>) => string): string {
   const now = Date.now();
   const diff = now - timestamp;
   const minutes = Math.floor(diff / 60000);
@@ -130,15 +131,15 @@ function formatTimeAgo(timestamp: number): string {
   const days = Math.floor(hours / 24);
 
   if (days > 0) {
-    return `${days}d ago`;
+    return t('timeDaysAgo', { count: days });
   }
   if (hours > 0) {
-    return `${hours}h ago`;
+    return t('timeHoursAgo', { count: hours });
   }
   if (minutes > 0) {
-    return `${minutes}m ago`;
+    return t('timeMinutesAgo', { count: minutes });
   }
-  return 'Just now';
+  return t('timeJustNow');
 }
 
 interface BridgeHistoryItemProps {
@@ -147,6 +148,7 @@ interface BridgeHistoryItemProps {
 }
 
 export default function BridgeHistoryItem({ operation, onClick }: BridgeHistoryItemProps) {
+  const { t } = useTranslation();
   const directionText =
     operation.direction === 'SEPOLIA_TO_GOLIATH' ? 'Sepolia → Goliath' : 'Goliath → Sepolia';
 
@@ -168,8 +170,8 @@ export default function BridgeHistoryItem({ operation, onClick }: BridgeHistoryI
         <Direction>{directionText}</Direction>
       </LeftSection>
       <RightSection>
-        <StatusBadge status={operation.status}>{getStatusLabel(operation.status)}</StatusBadge>
-        <TimeInfo>{formatTimeAgo(operation.createdAt)}</TimeInfo>
+        <StatusBadge status={operation.status}>{t(getStatusLabelKey(operation.status))}</StatusBadge>
+        <TimeInfo>{formatTimeAgo(operation.createdAt, t)}</TimeInfo>
         {explorerUrl && (
           <ExplorerLink
             href={explorerUrl}
@@ -177,7 +179,7 @@ export default function BridgeHistoryItem({ operation, onClick }: BridgeHistoryI
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
           >
-            View <ExternalLink size={12} />
+            {t('view')} <ExternalLink size={12} />
           </ExplorerLink>
         )}
       </RightSection>
