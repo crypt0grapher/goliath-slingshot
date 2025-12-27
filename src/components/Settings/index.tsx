@@ -72,18 +72,18 @@ const StyledMenuButton = styled.button`
 const EmojiWrapper = styled.div`
   position: absolute;
   bottom: -6px;
-  right: 0px;
+  inset-inline-end: 0px;
   font-size: 14px;
 `;
 
 const StyledMenu = styled.div`
-  margin-left: 0.5rem;
+  margin-inline-start: 0.5rem;
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
   border: none;
-  text-align: left;
+  text-align: start;
 `;
 
 const MenuFlyout = styled.span`
@@ -98,7 +98,7 @@ const MenuFlyout = styled.span`
   font-size: 1rem;
   position: absolute;
   top: 3rem;
-  right: 0rem;
+  inset-inline-end: 0rem;
   z-index: 100;
 
   ${({ theme }) => theme.mediaWidth.upToMedium`

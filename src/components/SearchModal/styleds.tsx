@@ -35,7 +35,7 @@ export const PopoverContainer = styled.div<{ show: boolean }>`
   grid-template-rows: 1fr;
   grid-gap: 8px;
   font-size: 1rem;
-  text-align: left;
+  text-align: start;
   top: 80px;
 `;
 

@@ -64,8 +64,8 @@ export const IconWrapper = styled.div<{ stroke?: string; size?: string; marginRi
   justify-content: center;
   width: ${({ size }) => size ?? '20px'};
   height: ${({ size }) => size ?? '20px'};
-  margin-right: ${({ marginRight }) => marginRight ?? 0};
-  margin-left: ${({ marginLeft }) => marginLeft ?? 0};
+  margin-inline-end: ${({ marginRight }) => marginRight ?? 0};
+  margin-inline-start: ${({ marginLeft }) => marginLeft ?? 0};
   & > * {
     stroke: ${({ theme, stroke }) => stroke ?? theme.blue1};
   }
@@ -161,14 +161,14 @@ const LinkIconWrapper = styled.a`
 export const LinkIcon = styled(LinkIconFeather)`
   height: 16px;
   width: 18px;
-  margin-left: 10px;
+  margin-inline-start: 10px;
   stroke: ${({ theme }) => theme.blue1};
 `;
 
 export const TrashIcon = styled(Trash)`
   height: 16px;
   width: 18px;
-  margin-left: 10px;
+  margin-inline-start: 10px;
   stroke: ${({ theme }) => theme.text3};
 
   cursor: pointer;
