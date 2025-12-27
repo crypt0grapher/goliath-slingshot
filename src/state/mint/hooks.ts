@@ -57,6 +57,7 @@ export function useDerivedMintInfo(
   liquidityMinted?: TokenAmount;
   poolTokenPercentage?: Percent;
   error?: string;
+  errorParams?: Record<string, string>;
 } {
   const { account, chainId } = useActiveWeb3React();
 
@@ -166,26 +167,29 @@ export function useDerivedMintInfo(
   }, [liquidityMinted, totalSupply]);
 
   let error: string | undefined;
+  let errorParams: Record<string, string> | undefined;
   if (!account) {
-    error = 'Connect Wallet';
+    error = 'connectWallet';
   }
 
   if (pairState === PairState.INVALID) {
-    error = error ?? 'Invalid pair';
+    error = error ?? 'invalidPair';
   }
 
   if (!parsedAmounts[Field.CURRENCY_A] || !parsedAmounts[Field.CURRENCY_B]) {
-    error = error ?? 'Enter an amount';
+    error = error ?? 'enterAnAmount';
   }
 
   const { [Field.CURRENCY_A]: currencyAAmount, [Field.CURRENCY_B]: currencyBAmount } = parsedAmounts;
 
   if (currencyAAmount && currencyBalances?.[Field.CURRENCY_A]?.lessThan(currencyAAmount)) {
-    error = 'Insufficient ' + currencies[Field.CURRENCY_A]?.symbol + ' balance';
+    error = 'insufficientSymbolBalance';
+    errorParams = { symbol: currencies[Field.CURRENCY_A]?.symbol ?? '' };
   }
 
   if (currencyBAmount && currencyBalances?.[Field.CURRENCY_B]?.lessThan(currencyBAmount)) {
-    error = 'Insufficient ' + currencies[Field.CURRENCY_B]?.symbol + ' balance';
+    error = 'insufficientSymbolBalance';
+    errorParams = { symbol: currencies[Field.CURRENCY_B]?.symbol ?? '' };
   }
 
   return {
@@ -200,5 +204,6 @@ export function useDerivedMintInfo(
     liquidityMinted,
     poolTokenPercentage,
     error,
+    errorParams,
   };
 }

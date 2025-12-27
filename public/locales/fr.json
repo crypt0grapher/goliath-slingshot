@@ -252,5 +252,19 @@
   "andPoolShare": "et part du pool",
   "outputEstimatedRevert": "La sortie est estimée. Si le prix change de plus de {{slippage}}%, votre transaction sera annulée.",
   "supplying": "Fourniture de {{amountA}} {{symbolA}} et {{amountB}} {{symbolB}}",
-  "transactionTakingLonger": "La transaction prend plus de temps que prévu. Elle peut encore aboutir - vérifiez les transactions en attente dans votre portefeuille."
+  "transactionTakingLonger": "La transaction prend plus de temps que prévu. Elle peut encore aboutir - vérifiez les transactions en attente dans votre portefeuille.",
+  "selectAToken": "Sélectionner un jeton",
+  "invalidPair": "Paire invalide",
+  "enterARecipient": "Entrez un destinataire",
+  "invalidRecipientAddress": "Destinataire invalide",
+  "insufficientSymbolBalance": "Solde {{symbol}} insuffisant",
+  "connectToWalletToFindPools": "Connectez un portefeuille pour trouver des pools",
+  "selectTokenToFindLiquidity": "Sélectionnez un jeton pour trouver votre liquidité.",
+  "poolFound": "Pool trouvé !",
+  "manageThisPool": "Gérer ce pool.",
+  "noLiquidityInPoolYet": "Vous n'avez pas encore de liquidité dans ce pool.",
+  "addLiquidityDot": "Ajouter de la liquidité.",
+  "noPoolFound": "Aucun pool trouvé.",
+  "createPoolDot": "Créer un pool.",
+  "poolFinderTip": "Utilisez cet outil pour trouver des paires qui n'apparaissent pas automatiquement dans l'interface."
 }

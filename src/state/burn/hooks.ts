@@ -119,11 +119,11 @@ export function useDerivedBurnInfo(
 
   let error: string | undefined;
   if (!account) {
-    error = 'Connect Wallet';
+    error = 'connectWallet';
   }
 
   if (!parsedAmounts[Field.LIQUIDITY] || !parsedAmounts[Field.CURRENCY_A] || !parsedAmounts[Field.CURRENCY_B]) {
-    error = error ?? 'Enter an amount';
+    error = error ?? 'enterAnAmount';
   }
 
   return { pair, parsedAmounts, error };

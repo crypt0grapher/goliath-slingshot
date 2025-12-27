@@ -252,5 +252,19 @@
   "andPoolShare": "및 풀 지분",
   "outputEstimatedRevert": "출력은 예상치입니다. 가격이 {{slippage}}% 이상 변경되면 거래가 되돌려집니다.",
   "supplying": "{{amountA}} {{symbolA}} 및 {{amountB}} {{symbolB}} 공급 중",
-  "transactionTakingLonger": "거래가 예상보다 오래 걸리고 있습니다. 아직 완료될 수 있습니다 - 지갑에서 대기 중인 거래를 확인하세요."
+  "transactionTakingLonger": "거래가 예상보다 오래 걸리고 있습니다. 아직 완료될 수 있습니다 - 지갑에서 대기 중인 거래를 확인하세요.",
+  "selectAToken": "토큰 선택",
+  "invalidPair": "유효하지 않은 페어",
+  "enterARecipient": "수신자 입력",
+  "invalidRecipientAddress": "유효하지 않은 수신자",
+  "insufficientSymbolBalance": "{{symbol}} 잔액 부족",
+  "connectToWalletToFindPools": "풀을 찾으려면 지갑을 연결하세요",
+  "selectTokenToFindLiquidity": "유동성을 찾으려면 토큰을 선택하세요.",
+  "poolFound": "풀을 찾았습니다!",
+  "manageThisPool": "이 풀을 관리합니다.",
+  "noLiquidityInPoolYet": "이 풀에 아직 유동성이 없습니다.",
+  "addLiquidityDot": "유동성을 추가합니다.",
+  "noPoolFound": "풀을 찾을 수 없습니다.",
+  "createPoolDot": "풀을 생성합니다.",
+  "poolFinderTip": "이 도구를 사용하여 인터페이스에 자동으로 표시되지 않는 페어를 찾으세요."
 }

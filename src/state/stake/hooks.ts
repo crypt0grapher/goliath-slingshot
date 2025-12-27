@@ -81,10 +81,10 @@ export function useDerivedStakeInfo(
 
   let error: string | undefined;
   if (!account) {
-    error = 'Connect Wallet';
+    error = 'connectWallet';
   }
   if (!parsedAmount) {
-    error = error ?? 'Enter an amount';
+    error = error ?? 'enterAnAmount';
   }
 
   return {
@@ -110,10 +110,10 @@ export function useDerivedUnstakeInfo(
 
   let error: string | undefined;
   if (!account) {
-    error = 'Connect Wallet';
+    error = 'connectWallet';
   }
   if (!parsedAmount) {
-    error = error ?? 'Enter an amount';
+    error = error ?? 'enterAnAmount';
   }
 
   return {

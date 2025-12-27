@@ -252,5 +252,19 @@
   "andPoolShare": "和池份额",
   "outputEstimatedRevert": "输出是预估的。如果价格变化超过{{slippage}}%，您的交易将被撤销。",
   "supplying": "正在供应 {{amountA}} {{symbolA}} 和 {{amountB}} {{symbolB}}",
-  "transactionTakingLonger": "交易耗时超出预期。它可能仍会完成 - 请检查您钱包中的待处理交易。"
+  "transactionTakingLonger": "交易耗时超出预期。它可能仍会完成 - 请检查您钱包中的待处理交易。",
+  "selectAToken": "选择代币",
+  "invalidPair": "无效交易对",
+  "enterARecipient": "输入接收者",
+  "invalidRecipientAddress": "无效接收者",
+  "insufficientSymbolBalance": "{{symbol}}余额不足",
+  "connectToWalletToFindPools": "连接钱包以查找池",
+  "selectTokenToFindLiquidity": "选择代币以查找您的流动性。",
+  "poolFound": "找到池！",
+  "manageThisPool": "管理此池。",
+  "noLiquidityInPoolYet": "您在此池中还没有流动性。",
+  "addLiquidityDot": "添加流动性。",
+  "noPoolFound": "未找到池。",
+  "createPoolDot": "创建池。",
+  "poolFinderTip": "使用此工具查找界面中未自动显示的交易对。"
 }

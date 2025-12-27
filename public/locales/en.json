@@ -252,5 +252,19 @@
   "andPoolShare": "and pool share",
   "outputEstimatedRevert": "Output is estimated. If the price changes by more than {{slippage}}% your transaction will revert.",
   "supplying": "Supplying {{amountA}} {{symbolA}} and {{amountB}} {{symbolB}}",
-  "transactionTakingLonger": "Transaction is taking longer than expected. It may still complete - check your wallet for pending transactions."
+  "transactionTakingLonger": "Transaction is taking longer than expected. It may still complete - check your wallet for pending transactions.",
+  "selectAToken": "Select a token",
+  "invalidPair": "Invalid pair",
+  "enterARecipient": "Enter a recipient",
+  "invalidRecipientAddress": "Invalid recipient",
+  "insufficientSymbolBalance": "Insufficient {{symbol}} balance",
+  "connectToWalletToFindPools": "Connect to a wallet to find pools",
+  "selectTokenToFindLiquidity": "Select a token to find your liquidity.",
+  "poolFound": "Pool Found!",
+  "manageThisPool": "Manage this pool.",
+  "noLiquidityInPoolYet": "You don't have liquidity in this pool yet.",
+  "addLiquidityDot": "Add liquidity.",
+  "noPoolFound": "No pool found.",
+  "createPoolDot": "Create pool.",
+  "poolFinderTip": "Use this tool to find pairs that don't automatically appear in the interface."
 }

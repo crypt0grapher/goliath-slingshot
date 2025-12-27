@@ -252,5 +252,19 @@
   "andPoolShare": "ve havuz payı",
   "outputEstimatedRevert": "Çıktı tahmindir. Fiyat %{{slippage}}'den fazla değişirse işleminiz geri alınır.",
   "supplying": "{{amountA}} {{symbolA}} ve {{amountB}} {{symbolB}} arz ediliyor",
-  "transactionTakingLonger": "İşlem beklenenden uzun sürüyor. Hâlâ tamamlanabilir - cüzdanınızdaki bekleyen işlemleri kontrol edin."
+  "transactionTakingLonger": "İşlem beklenenden uzun sürüyor. Hâlâ tamamlanabilir - cüzdanınızdaki bekleyen işlemleri kontrol edin.",
+  "selectAToken": "Bir token seçin",
+  "invalidPair": "Geçersiz çift",
+  "enterARecipient": "Bir alıcı girin",
+  "invalidRecipientAddress": "Geçersiz alıcı",
+  "insufficientSymbolBalance": "Yetersiz {{symbol}} bakiyesi",
+  "connectToWalletToFindPools": "Havuzları bulmak için cüzdan bağlayın",
+  "selectTokenToFindLiquidity": "Likiditenizi bulmak için bir token seçin.",
+  "poolFound": "Havuz bulundu!",
+  "manageThisPool": "Bu havuzu yönet.",
+  "noLiquidityInPoolYet": "Bu havuzda henüz likiditeniz yok.",
+  "addLiquidityDot": "Likidite ekle.",
+  "noPoolFound": "Havuz bulunamadı.",
+  "createPoolDot": "Havuz oluştur.",
+  "poolFinderTip": "Arayüzde otomatik olarak görünmeyen çiftleri bulmak için bu aracı kullanın."
 }

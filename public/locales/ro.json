@@ -87,5 +87,21 @@
   "forAtLeast": "pentru cel puțin ",
   "brokenToken": "Jetonul selectat nu este compatibil cu Uniswap V1. Depunerea de lichiditate îți va bloca fondurile pe vecie.",
   "toleranceExplanation": "Micșorând această limită, vei reduce riscul de frontrunning. În același timp, devine mai probabil că tranzacția va eșua din cauza variațiilor normale de preț.",
-  "tokenSearchPlaceholder": "Caută nume sau lipește adresă"
+  "tokenSearchPlaceholder": "Caută nume sau lipește adresă",
+  "selectAToken": "Selectează un jeton",
+  "invalidPair": "Pereche invalidă",
+  "enterARecipient": "Introdu un destinatar",
+  "invalidRecipientAddress": "Destinatar invalid",
+  "insufficientSymbolBalance": "Balanță {{symbol}} insuficientă",
+  "connectToWalletToFindPools": "Conectează un portofel pentru a găsi fonduri",
+  "selectTokenToFindLiquidity": "Selectează un jeton pentru a găsi lichiditatea ta.",
+  "poolFound": "Fond găsit!",
+  "manageThisPool": "Administrează acest fond.",
+  "noLiquidityInPoolYet": "Nu ai lichiditate în acest fond încă.",
+  "addLiquidityDot": "Adaugă lichiditate.",
+  "noPoolFound": "Niciun fond găsit.",
+  "createPoolDot": "Creează fond.",
+  "poolFinderTip": "Folosește acest instrument pentru a găsi perechi care nu apar automat în interfață.",
+  "enterAnAmount": "Introdu o sumă",
+  "connectWallet": "Conectează portofelul"
 }

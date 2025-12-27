@@ -98,12 +98,15 @@ export default function AddLiquidity({
     noLiquidity,
     liquidityMinted,
     poolTokenPercentage,
-    error,
+    error: errorKey,
+    errorParams,
   } = useDerivedMintInfo(currencyA ?? undefined, currencyB ?? undefined);
+
+  const error = errorKey ? t(errorKey, errorParams) : undefined;
 
   const { onFieldAInput, onFieldBInput } = useMintActionHandlers(noLiquidity);
 
-  const isValid = !error;
+  const isValid = !errorKey;
 
   // modal and loading
   const [showConfirm, setShowConfirm] = useState<boolean>(false);

@@ -106,6 +106,7 @@ export function useDerivedSwapInfo(): {
   parsedAmount: CurrencyAmount | undefined;
   v2Trade: Trade | undefined;
   inputError?: string;
+  inputErrorParams?: Record<string, string>;
 } {
   const { account } = useActiveWeb3React();
 
@@ -146,28 +147,29 @@ export function useDerivedSwapInfo(): {
   };
 
   let inputError: string | undefined;
+  let inputErrorParams: Record<string, string> | undefined;
   if (!account) {
-    inputError = 'Connect Wallet';
+    inputError = 'connectWallet';
   }
 
   if (!parsedAmount) {
-    inputError = inputError ?? 'Enter an amount';
+    inputError = inputError ?? 'enterAnAmount';
   }
 
   if (!currencies[Field.INPUT] || !currencies[Field.OUTPUT]) {
-    inputError = inputError ?? 'Select a token';
+    inputError = inputError ?? 'selectAToken';
   }
 
   const formattedTo = isAddress(to);
   if (!to || !formattedTo) {
-    inputError = inputError ?? 'Enter a recipient';
+    inputError = inputError ?? 'enterARecipient';
   } else {
     if (
       BAD_RECIPIENT_ADDRESSES.indexOf(formattedTo) !== -1 ||
       (bestTradeExactIn && involvesAddress(bestTradeExactIn, formattedTo)) ||
       (bestTradeExactOut && involvesAddress(bestTradeExactOut, formattedTo))
     ) {
-      inputError = inputError ?? 'Invalid recipient';
+      inputError = inputError ?? 'invalidRecipientAddress';
     }
   }
 
@@ -183,7 +185,8 @@ export function useDerivedSwapInfo(): {
   ];
 
   if (balanceIn && amountIn && balanceIn.lessThan(amountIn)) {
-    inputError = 'Insufficient ' + amountIn.currency.symbol + ' balance';
+    inputError = 'insufficientSymbolBalance';
+    inputErrorParams = { symbol: amountIn.currency.symbol ?? '' };
   }
 
   return {
@@ -192,6 +195,7 @@ export function useDerivedSwapInfo(): {
     parsedAmount,
     v2Trade: v2Trade ?? undefined,
     inputError,
+    inputErrorParams,
   };
 }
 

@@ -252,5 +252,19 @@
   "andPoolShare": "およびプールシェア",
   "outputEstimatedRevert": "出力は推定です。価格が{{slippage}}%以上不利に変化すると、取引は元に戻ります。",
   "supplying": "{{amountA}} {{symbolA}}と{{amountB}} {{symbolB}}を供給中",
-  "transactionTakingLonger": "取引が予想より時間がかかっています。まだ完了する可能性があります - ウォレットで保留中の取引を確認してください。"
+  "transactionTakingLonger": "取引が予想より時間がかかっています。まだ完了する可能性があります - ウォレットで保留中の取引を確認してください。",
+  "selectAToken": "トークンを選択",
+  "invalidPair": "無効なペア",
+  "enterARecipient": "受取人を入力",
+  "invalidRecipientAddress": "無効な受取人",
+  "insufficientSymbolBalance": "{{symbol}}残高が不足しています",
+  "connectToWalletToFindPools": "プールを検索するにはウォレットを接続してください",
+  "selectTokenToFindLiquidity": "流動性を見つけるにはトークンを選択してください。",
+  "poolFound": "プールが見つかりました！",
+  "manageThisPool": "このプールを管理する。",
+  "noLiquidityInPoolYet": "このプールにはまだ流動性がありません。",
+  "addLiquidityDot": "流動性を追加する。",
+  "noPoolFound": "プールが見つかりません。",
+  "createPoolDot": "プールを作成する。",
+  "poolFinderTip": "このツールを使用して、インターフェースに自動的に表示されないペアを見つけます。"
 }

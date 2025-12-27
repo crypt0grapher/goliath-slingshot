@@ -8,6 +8,7 @@ import { ArrowDown, Plus } from 'react-feather';
 import { RouteComponentProps } from 'react-router';
 import { Text } from 'rebass';
 import { ThemeContext } from 'styled-components';
+import { useTranslation } from 'react-i18next';
 import { ButtonPrimary, ButtonError, ButtonConfirmed } from '../../components/Button';
 import { GreyCard, LightCard } from '../../components/Card';
 import { AutoColumn, ColumnCenter } from '../../components/Column';
@@ -65,15 +66,17 @@ export default function RemoveLiquidity({
   const symbolB = getCurrencySymbol(currencyB, chainId);
 
   const theme = useContext(ThemeContext);
+  const { t } = useTranslation();
 
   // toggle wallet when disconnected
   const toggleWalletModal = useWalletModalToggle();
 
   // burn state
   const { independentField, typedValue } = useBurnState();
-  const { pair, parsedAmounts, error } = useDerivedBurnInfo(currencyA ?? undefined, currencyB ?? undefined);
+  const { pair, parsedAmounts, error: errorKey } = useDerivedBurnInfo(currencyA ?? undefined, currencyB ?? undefined);
+  const error = errorKey ? t(errorKey) : undefined;
   const { onUserInput: _onUserInput } = useBurnActionHandlers();
-  const isValid = !error;
+  const isValid = !errorKey;
 
   // modal and loading
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
@@ -697,7 +700,7 @@ export default function RemoveLiquidity({
                     error={!isValid && !!parsedAmounts[Field.CURRENCY_A] && !!parsedAmounts[Field.CURRENCY_B]}
                   >
                     <Text fontSize={16} fontWeight={500}>
-                      {error || 'Remove'}
+                      {error || t('removeLiquidity')}
                     </Text>
                   </ButtonError>
                 </RowBetween>

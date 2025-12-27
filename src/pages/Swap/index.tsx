@@ -87,7 +87,8 @@ export default function Swap() {
 
   // swap state
   const { independentField, typedValue, recipient } = useSwapState();
-  const { v2Trade, currencyBalances, parsedAmount, currencies, inputError: swapInputError } = useDerivedSwapInfo();
+  const { v2Trade, currencyBalances, parsedAmount, currencies, inputError: swapInputErrorKey, inputErrorParams } = useDerivedSwapInfo();
+  const swapInputError = swapInputErrorKey ? t(swapInputErrorKey, inputErrorParams) : undefined;
   const {
     wrapType,
     execute: onWrap,

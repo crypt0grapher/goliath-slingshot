@@ -252,5 +252,19 @@
   "andPoolShare": "dan bagian pool",
   "outputEstimatedRevert": "Output adalah perkiraan. Jika harga berubah lebih dari {{slippage}}% transaksi Anda akan dikembalikan.",
   "supplying": "Menyuplai {{amountA}} {{symbolA}} dan {{amountB}} {{symbolB}}",
-  "transactionTakingLonger": "Transaksi memakan waktu lebih lama dari yang diharapkan. Mungkin masih selesai - periksa transaksi tertunda di dompet Anda."
+  "transactionTakingLonger": "Transaksi memakan waktu lebih lama dari yang diharapkan. Mungkin masih selesai - periksa transaksi tertunda di dompet Anda.",
+  "selectAToken": "Pilih token",
+  "invalidPair": "Pasangan tidak valid",
+  "enterARecipient": "Masukkan penerima",
+  "invalidRecipientAddress": "Penerima tidak valid",
+  "insufficientSymbolBalance": "Saldo {{symbol}} tidak mencukupi",
+  "connectToWalletToFindPools": "Hubungkan dompet untuk menemukan pool",
+  "selectTokenToFindLiquidity": "Pilih token untuk menemukan likuiditas Anda.",
+  "poolFound": "Pool ditemukan!",
+  "manageThisPool": "Kelola pool ini.",
+  "noLiquidityInPoolYet": "Anda belum memiliki likuiditas di pool ini.",
+  "addLiquidityDot": "Tambah likuiditas.",
+  "noPoolFound": "Pool tidak ditemukan.",
+  "createPoolDot": "Buat pool.",
+  "poolFinderTip": "Gunakan alat ini untuk menemukan pasangan yang tidak muncul secara otomatis di antarmuka."
 }
