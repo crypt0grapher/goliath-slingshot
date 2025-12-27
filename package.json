@@ -111,6 +111,7 @@
     "@uniswap/default-token-list": "2.0.0",
     "@vercel/analytics": "^1.6.1",
     "dotenv": "^10.0.0",
+    "react-is": "^19.2.3",
     "web3-utils": "^1.5.3"
   },
   "eslintConfig": {
