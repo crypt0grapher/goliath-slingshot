@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useActiveWeb3React } from '../index';
 import { BridgeNetwork } from '../../constants/bridge/networks';
 import { BridgeTokenSymbol, getTokenConfigForChain } from '../../constants/bridge/tokens';
@@ -19,12 +19,30 @@ export function useBridgeBalances(
 ): UseBridgeBalancesReturn {
   const { account } = useActiveWeb3React();
   const [balanceAtomic, setBalanceAtomic] = useState<bigint>(BigInt(0));
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasFetchedRef = useRef(false);
+  const previousAccountRef = useRef<string | null | undefined>(null);
+
+  // Reset balance only when account actually changes to a different account
+  useEffect(() => {
+    if (previousAccountRef.current !== account) {
+      if (previousAccountRef.current && account && previousAccountRef.current !== account) {
+        // Account changed to a different account - reset balance
+        setBalanceAtomic(BigInt(0));
+        hasFetchedRef.current = false;
+      } else if (!account && previousAccountRef.current) {
+        // Account disconnected - reset balance
+        setBalanceAtomic(BigInt(0));
+        hasFetchedRef.current = false;
+      }
+      previousAccountRef.current = account;
+    }
+  }, [account]);
 
   const fetchBalance = useCallback(async (silent = false) => {
     if (!account) {
-      setBalanceAtomic(BigInt(0));
+      // Don't reset balance here - let the effect above handle it
       return;
     }
 
@@ -59,6 +77,7 @@ export function useBridgeBalances(
       }
 
       setBalanceAtomic(balance);
+      hasFetchedRef.current = true;
       if (!silent) {
         setError(null);
       }
@@ -66,7 +85,7 @@ export function useBridgeBalances(
       console.error('Error fetching balance:', err);
       if (!silent) {
         setError('Failed to fetch balance');
-        setBalanceAtomic(BigInt(0));
+        // Don't reset balance on error - keep showing the previous value
       }
     } finally {
       if (!silent) {
@@ -91,7 +110,12 @@ export function useBridgeBalances(
   }, [account, fetchBalance]);
 
   // Format the balance for display
-  const balance = balanceAtomic > BigInt(0) ? formatAmount(balanceAtomic, token, network) : '0';
+  // Show '-' while loading initial balance, '0' only after confirmed fetch
+  const balance = isLoading && !hasFetchedRef.current
+    ? '-'
+    : balanceAtomic > BigInt(0)
+      ? formatAmount(balanceAtomic, token, network)
+      : '0';
 
   return {
     balance,
