@@ -80,6 +80,7 @@ export function isValidAmountString(amount: string): boolean {
 
 /**
  * Compare two amounts (returns -1, 0, or 1)
+ * Returns 0 if either amount is invalid (e.g., '-' loading indicator)
  */
 export function compareAmounts(
   a: string,
@@ -87,8 +88,13 @@ export function compareAmounts(
   token: BridgeTokenSymbol,
   network: BridgeNetwork
 ): number {
-  const aAtomic = parseAmount(a || '0', token, network);
-  const bAtomic = parseAmount(b || '0', token, network);
+  // Handle loading states or invalid values - treat as incomparable (return 0)
+  if (!a || !b || !isValidAmountString(a) || !isValidAmountString(b)) {
+    return 0;
+  }
+
+  const aAtomic = parseAmount(a, token, network);
+  const bAtomic = parseAmount(b, token, network);
 
   if (aAtomic < bAtomic) return -1;
   if (aAtomic > bAtomic) return 1;
