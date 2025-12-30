@@ -13,11 +13,23 @@ export function useActiveWeb3React(): Web3ReactContextInterface<Web3Provider> & 
   return context.active ? context : contextNetwork;
 }
 
+// Timeout for wallet connection attempts (prevents infinite white screen in MetaMask browser)
+const EAGER_CONNECT_TIMEOUT = 3000;
+
 export function useEagerConnect() {
   const { activate, active } = useWeb3ReactCore(); // specifically using useWeb3ReactCore because of what this hook does
   const [tried, setTried] = useState(false);
 
   useEffect(() => {
+    // Safety timeout: if wallet connection hangs (common in MetaMask mobile browser),
+    // we still render the app after timeout to prevent white screen
+    const timeout = setTimeout(() => {
+      if (!tried) {
+        console.warn('Wallet eager connect timed out, proceeding without wallet');
+        setTried(true);
+      }
+    }, EAGER_CONNECT_TIMEOUT);
+
     injected.isAuthorized().then((isAuthorized) => {
       if (isAuthorized) {
         activate(injected, undefined, true).catch(() => {
@@ -32,7 +44,13 @@ export function useEagerConnect() {
           setTried(true);
         }
       }
+    }).catch(() => {
+      // Handle case where isAuthorized() itself fails
+      console.warn('Wallet authorization check failed');
+      setTried(true);
     });
+
+    return () => clearTimeout(timeout);
   }, [activate]); // intentionally only running on mount (make sure it's only mounted once :))
 
   // if the connection worked, wait until we get confirmation of that to flip the flag

@@ -6,6 +6,7 @@ import Header from '../components/Header';
 import Polling from '../components/Header/Polling';
 import Popups from '../components/Popups';
 import Web3ReactManager from '../components/Web3ReactManager';
+import Loader from '../components/Loader';
 import DarkModeQueryParamReader from '../theme/DarkModeQueryParamReader';
 import AddLiquidity from './AddLiquidity';
 import {
@@ -48,9 +49,16 @@ const BodyWrapper = styled.div`
   z-index: 1;
 `;
 
+const LoaderWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+`;
+
 export default function App() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<LoaderWrapper><Loader /></LoaderWrapper>}>
       <Route component={DarkModeQueryParamReader} />
       <AppWrapper>
         <HeaderWrapper>

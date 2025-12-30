@@ -19,6 +19,8 @@ import UserUpdater from './state/user/updater';
 import ThemeProvider, { FixedGlobalStyle, ThemedGlobalStyle } from './theme';
 import { DirectionProvider } from './contexts/DirectionContext';
 import getLibrary from './utils/getLibrary';
+import LoadingScreen from './components/LoadingScreen';
+import { AppErrorBoundary } from './components/AppErrorBoundary';
 
 const Web3ProviderNetwork = createWeb3ReactRoot(NetworkContextName);
 
@@ -41,23 +43,25 @@ function Updaters() {
 ReactDOM.render(
   <StrictMode>
     <FixedGlobalStyle />
-    <Web3ReactProvider getLibrary={getLibrary}>
-      <Web3ProviderNetwork getLibrary={getLibrary}>
-        <Provider store={store}>
-          <Updaters />
-          <Suspense fallback={null}>
-            <DirectionProvider>
-              <ThemeProvider>
-                <ThemedGlobalStyle />
-                <HashRouter>
-                  <App />
-                </HashRouter>
-              </ThemeProvider>
-            </DirectionProvider>
-          </Suspense>
-        </Provider>
-      </Web3ProviderNetwork>
-    </Web3ReactProvider>
+    <AppErrorBoundary>
+      <Web3ReactProvider getLibrary={getLibrary}>
+        <Web3ProviderNetwork getLibrary={getLibrary}>
+          <Provider store={store}>
+            <Updaters />
+            <Suspense fallback={<LoadingScreen />}>
+              <DirectionProvider>
+                <ThemeProvider>
+                  <ThemedGlobalStyle />
+                  <HashRouter>
+                    <App />
+                  </HashRouter>
+                </ThemeProvider>
+              </DirectionProvider>
+            </Suspense>
+          </Provider>
+        </Web3ProviderNetwork>
+      </Web3ReactProvider>
+    </AppErrorBoundary>
   </StrictMode>,
   document.getElementById('root')
 );
