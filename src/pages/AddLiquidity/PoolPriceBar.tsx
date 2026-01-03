@@ -42,13 +42,13 @@ export function PoolPriceBar({
     <AutoColumn gap="md">
       <AutoRow justify="space-around" gap="4px">
         <AutoColumn justify="center">
-          <TYPE.black>{price?.toSignificant(6) ?? '-'}</TYPE.black>
+          <TYPE.black>{price?.toSignificant(10) ?? '-'}</TYPE.black>
           <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
             {symbolB} per {symbolA}
           </Text>
         </AutoColumn>
         <AutoColumn justify="center">
-          <TYPE.black>{price?.invert()?.toSignificant(6) ?? '-'}</TYPE.black>
+          <TYPE.black>{price?.invert()?.toSignificant(10) ?? '-'}</TYPE.black>
           <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
             {symbolA} per {symbolB}
           </Text>

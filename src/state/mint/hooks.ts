@@ -56,6 +56,7 @@ export function useDerivedMintInfo(
   noLiquidity?: boolean;
   liquidityMinted?: TokenAmount;
   poolTokenPercentage?: Percent;
+  ratioDeviation?: number;
   error?: string;
   errorParams?: Record<string, string>;
 } {
@@ -166,6 +167,50 @@ export function useDerivedMintInfo(
     }
   }, [liquidityMinted, totalSupply]);
 
+  // Calculate ratio deviation percentage between user input and pool ratio
+  const ratioDeviation = useMemo(() => {
+    // Only calculate for existing pools (not noLiquidity)
+    if (noLiquidity || !pair || !parsedAmounts[Field.CURRENCY_A] || !parsedAmounts[Field.CURRENCY_B]) {
+      return undefined;
+    }
+
+    try {
+      const tokenA = wrappedCurrency(currencyA, chainId);
+      const tokenB = wrappedCurrency(currencyB, chainId);
+      if (!tokenA || !tokenB) return undefined;
+
+      // Get pool reserves in correct order
+      const [reserve0, reserve1] = pair.token0.equals(tokenA)
+        ? [pair.reserve0, pair.reserve1]
+        : [pair.reserve1, pair.reserve0];
+
+      // User's input amounts
+      const userAmountA = parsedAmounts[Field.CURRENCY_A];
+      const userAmountB = parsedAmounts[Field.CURRENCY_B];
+
+      // Calculate ratios using JSBI for precision
+      // Pool ratio: reserveA / reserveB
+      // User ratio: amountA / amountB
+      // We use cross-multiplication to avoid division: userA * reserveB vs reserveA * userB
+      const userCrossProduct = JSBI.multiply(userAmountA.raw, reserve1.raw);
+      const poolCrossProduct = JSBI.multiply(reserve0.raw, userAmountB.raw);
+
+      // Calculate percentage deviation
+      // |userCross - poolCross| / poolCross * 100
+      const diff = JSBI.greaterThan(userCrossProduct, poolCrossProduct)
+        ? JSBI.subtract(userCrossProduct, poolCrossProduct)
+        : JSBI.subtract(poolCrossProduct, userCrossProduct);
+
+      // Convert to percentage (multiply by 100 before division for precision)
+      const diffScaled = JSBI.multiply(diff, JSBI.BigInt(10000)); // Scale by 10000 for 2 decimal precision
+      const deviation = JSBI.toNumber(JSBI.divide(diffScaled, poolCrossProduct)) / 100;
+
+      return deviation;
+    } catch {
+      return undefined;
+    }
+  }, [noLiquidity, pair, parsedAmounts, currencyA, currencyB, chainId]);
+
   let error: string | undefined;
   let errorParams: Record<string, string> | undefined;
   if (!account) {
@@ -203,6 +248,7 @@ export function useDerivedMintInfo(
     noLiquidity,
     liquidityMinted,
     poolTokenPercentage,
+    ratioDeviation,
     error,
     errorParams,
   };

@@ -266,5 +266,6 @@
   "addLiquidityDot": "Tambah likuiditas.",
   "noPoolFound": "Pool tidak ditemukan.",
   "createPoolDot": "Buat pool.",
-  "poolFinderTip": "Gunakan alat ini untuk menemukan pasangan yang tidak muncul secara otomatis di antarmuka."
+  "poolFinderTip": "Gunakan alat ini untuk menemukan pasangan yang tidak muncul secara otomatis di antarmuka.",
+  "ratioDeviationWarning": "Rasio input Anda menyimpang {{deviation}}% dari pool. Toleransi slippage Anda adalah {{slippage}}%. Transaksi mungkin gagal."
 }

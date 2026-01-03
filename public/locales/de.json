@@ -266,5 +266,6 @@
   "addLiquidityDot": "Liquidität hinzufügen.",
   "noPoolFound": "Kein Pool gefunden.",
   "createPoolDot": "Pool erstellen.",
-  "poolFinderTip": "Verwende dieses Tool, um Paare zu finden, die nicht automatisch in der Oberfläche erscheinen."
+  "poolFinderTip": "Verwende dieses Tool, um Paare zu finden, die nicht automatisch in der Oberfläche erscheinen.",
+  "ratioDeviationWarning": "Dein Eingabeverhältnis weicht {{deviation}}% vom Pool ab. Deine Slippage-Toleranz beträgt {{slippage}}%. Die Transaktion könnte fehlschlagen."
 }

@@ -266,5 +266,6 @@
   "addLiquidityDot": "Likvidlik əlavə et.",
   "noPoolFound": "Hovuz tapılmadı.",
   "createPoolDot": "Hovuz yarat.",
-  "poolFinderTip": "İnterfeysdə avtomatik görünməyən cütləri tapmaq üçün bu alətdən istifadə edin."
+  "poolFinderTip": "İnterfeysdə avtomatik görünməyən cütləri tapmaq üçün bu alətdən istifadə edin.",
+  "ratioDeviationWarning": "Giriş nisbətiniz hovuzdan {{deviation}}% fərqlənir. Sürüşmə tolerantlığınız {{slippage}}%-dir. Əməliyyat uğursuz ola bilər."
 }

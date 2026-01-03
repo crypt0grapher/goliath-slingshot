@@ -272,5 +272,6 @@
   "deposited": "Depositato",
   "tokenDeposited": "{{token}} Depositato",
   "rates": "Tassi",
-  "confirmSupply": "Conferma Fornitura"
+  "confirmSupply": "Conferma Fornitura",
+  "ratioDeviationWarning": "Il tuo rapporto di input devia del {{deviation}}% dal pool. La tua tolleranza allo slippage è {{slippage}}%. La transazione potrebbe fallire."
 }

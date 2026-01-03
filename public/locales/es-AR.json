@@ -266,5 +266,6 @@
   "addLiquidityDot": "Agregar liquidez.",
   "noPoolFound": "No se encontró pool.",
   "createPoolDot": "Crear pool.",
-  "poolFinderTip": "Usá esta herramienta para encontrar pares que no aparecen automáticamente en la interfaz."
+  "poolFinderTip": "Usá esta herramienta para encontrar pares que no aparecen automáticamente en la interfaz.",
+  "ratioDeviationWarning": "Tu proporción de entrada se desvía {{deviation}}% del pool. Tu tolerancia de deslizamiento es {{slippage}}%. La transacción podría fallar."
 }

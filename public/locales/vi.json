@@ -266,5 +266,6 @@
   "addLiquidityDot": "Thêm thanh khoản.",
   "noPoolFound": "Không tìm thấy pool.",
   "createPoolDot": "Tạo pool.",
-  "poolFinderTip": "Sử dụng công cụ này để tìm các cặp không tự động hiển thị trong giao diện."
+  "poolFinderTip": "Sử dụng công cụ này để tìm các cặp không tự động hiển thị trong giao diện.",
+  "ratioDeviationWarning": "Tỷ lệ đầu vào của bạn lệch {{deviation}}% so với pool. Dung sai trượt giá của bạn là {{slippage}}%. Giao dịch có thể thất bại."
 }

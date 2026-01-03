@@ -266,5 +266,6 @@
   "addLiquidityDot": "Liquiditeit toevoegen.",
   "noPoolFound": "Geen pool gevonden.",
   "createPoolDot": "Pool aanmaken.",
-  "poolFinderTip": "Gebruik deze tool om paren te vinden die niet automatisch in de interface verschijnen."
+  "poolFinderTip": "Gebruik deze tool om paren te vinden die niet automatisch in de interface verschijnen.",
+  "ratioDeviationWarning": "Je invoerverhouding wijkt {{deviation}}% af van de pool. Je slippage tolerantie is {{slippage}}%. De transactie kan mislukken."
 }

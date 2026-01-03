@@ -266,5 +266,6 @@
   "addLiquidityDot": "Likidite ekle.",
   "noPoolFound": "Havuz bulunamadı.",
   "createPoolDot": "Havuz oluştur.",
-  "poolFinderTip": "Arayüzde otomatik olarak görünmeyen çiftleri bulmak için bu aracı kullanın."
+  "poolFinderTip": "Arayüzde otomatik olarak görünmeyen çiftleri bulmak için bu aracı kullanın.",
+  "ratioDeviationWarning": "Giriş oranınız havuzdan {{deviation}}% sapıyor. Kayma toleransınız {{slippage}}%. İşlem başarısız olabilir."
 }

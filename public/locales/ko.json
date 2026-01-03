@@ -266,5 +266,6 @@
   "addLiquidityDot": "유동성을 추가합니다.",
   "noPoolFound": "풀을 찾을 수 없습니다.",
   "createPoolDot": "풀을 생성합니다.",
-  "poolFinderTip": "이 도구를 사용하여 인터페이스에 자동으로 표시되지 않는 페어를 찾으세요."
+  "poolFinderTip": "이 도구를 사용하여 인터페이스에 자동으로 표시되지 않는 페어를 찾으세요.",
+  "ratioDeviationWarning": "입력 비율이 풀에서 {{deviation}}% 벗어났습니다. 슬리피지 허용치는 {{slippage}}%입니다. 트랜잭션이 실패할 수 있습니다."
 }

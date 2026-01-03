@@ -56,6 +56,22 @@ const ErrorText = styled(Text)`
   gap: 8px;
 `;
 
+// Warning message styled component for ratio deviation
+const WarningCard = styled(LightCard)`
+  padding: 12px;
+  margin-top: 8px;
+  background-color: ${({ theme }) => theme.yellow2}20;
+  border: 1px solid ${({ theme }) => theme.yellow2};
+`;
+
+const WarningText = styled(Text)`
+  color: ${({ theme }) => theme.yellow2};
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+`;
+
 /**
  * Get the display symbol for a currency, showing XCN for native token on Goliath
  */
@@ -98,6 +114,7 @@ export default function AddLiquidity({
     noLiquidity,
     liquidityMinted,
     poolTokenPercentage,
+    ratioDeviation,
     error: errorKey,
     errorParams,
   } = useDerivedMintInfo(currencyA ?? undefined, currencyB ?? undefined);
@@ -121,7 +138,7 @@ export default function AddLiquidity({
   // get formatted amounts
   const formattedAmounts = {
     [independentField]: typedValue,
-    [dependentField]: noLiquidity ? otherTypedValue : parsedAmounts[dependentField]?.toSignificant(7) ?? '',
+    [dependentField]: noLiquidity ? otherTypedValue : parsedAmounts[dependentField]?.toSignificant(10) ?? '',
   };
 
   // get the max amounts user can add
@@ -259,7 +276,7 @@ export default function AddLiquidity({
       setAttemptingTxn(false);
 
       addTransaction(response, {
-        summary: `Add ${parsedAmountA.toSignificant(3)} ${symbolA} and ${parsedAmountB.toSignificant(3)} ${symbolB}`,
+        summary: `Add ${parsedAmountA.toSignificant(6)} ${symbolA} and ${parsedAmountB.toSignificant(6)} ${symbolB}`,
       });
 
       setTxHash(response.hash);
@@ -504,6 +521,19 @@ export default function AddLiquidity({
                   </LightCard>
                 </LightCard>
               </>
+            )}
+
+            {/* Ratio deviation warning */}
+            {ratioDeviation !== undefined && ratioDeviation > allowedSlippage / 100 && (
+              <WarningCard>
+                <WarningText>
+                  <AlertTriangle size={16} />
+                  {t('ratioDeviationWarning', {
+                    deviation: ratioDeviation.toFixed(2),
+                    slippage: (allowedSlippage / 100).toFixed(2),
+                  })}
+                </WarningText>
+              </WarningCard>
             )}
 
             {!account ? (

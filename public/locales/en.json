@@ -266,5 +266,6 @@
   "addLiquidityDot": "Add liquidity.",
   "noPoolFound": "No pool found.",
   "createPoolDot": "Create pool.",
-  "poolFinderTip": "Use this tool to find pairs that don't automatically appear in the interface."
+  "poolFinderTip": "Use this tool to find pairs that don't automatically appear in the interface.",
+  "ratioDeviationWarning": "Your input ratio deviates {{deviation}}% from the pool. Your slippage tolerance is {{slippage}}%. Transaction may fail."
 }

@@ -266,5 +266,6 @@
   "addLiquidityDot": "流動性を追加する。",
   "noPoolFound": "プールが見つかりません。",
   "createPoolDot": "プールを作成する。",
-  "poolFinderTip": "このツールを使用して、インターフェースに自動的に表示されないペアを見つけます。"
+  "poolFinderTip": "このツールを使用して、インターフェースに自動的に表示されないペアを見つけます。",
+  "ratioDeviationWarning": "入力比率がプールから{{deviation}}%ずれています。スリッページ許容度は{{slippage}}%です。トランザクションが失敗する可能性があります。"
 }

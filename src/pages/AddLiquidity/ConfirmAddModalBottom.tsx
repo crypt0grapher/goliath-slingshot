@@ -46,14 +46,14 @@ export function ConfirmAddModalBottom({
         <TYPE.body>{symbolA} Deposited</TYPE.body>
         <RowFixed>
           <CurrencyLogo currency={currencies[Field.CURRENCY_A]} style={{ marginRight: '8px' }} />
-          <TYPE.body>{parsedAmounts[Field.CURRENCY_A]?.toSignificant(6)}</TYPE.body>
+          <TYPE.body>{parsedAmounts[Field.CURRENCY_A]?.toSignificant(10)}</TYPE.body>
         </RowFixed>
       </RowBetween>
       <RowBetween>
         <TYPE.body>{symbolB} Deposited</TYPE.body>
         <RowFixed>
           <CurrencyLogo currency={currencies[Field.CURRENCY_B]} style={{ marginRight: '8px' }} />
-          <TYPE.body>{parsedAmounts[Field.CURRENCY_B]?.toSignificant(6)}</TYPE.body>
+          <TYPE.body>{parsedAmounts[Field.CURRENCY_B]?.toSignificant(10)}</TYPE.body>
         </RowFixed>
       </RowBetween>
       <RowBetween>

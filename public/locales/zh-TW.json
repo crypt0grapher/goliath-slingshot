@@ -266,5 +266,6 @@
   "addLiquidityDot": "增加流動性。",
   "noPoolFound": "未找到資金池。",
   "createPoolDot": "創建資金池。",
-  "poolFinderTip": "使用此工具查找界面中未自動顯示的交易對。"
+  "poolFinderTip": "使用此工具查找界面中未自動顯示的交易對。",
+  "ratioDeviationWarning": "您的輸入比例與資金池偏差{{deviation}}%。您的滑點容差為{{slippage}}%。交易可能會失敗。"
 }

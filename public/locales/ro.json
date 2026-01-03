@@ -266,5 +266,6 @@
   "addLiquidityDot": "Adaugă lichiditate.",
   "noPoolFound": "Niciun pool găsit.",
   "createPoolDot": "Creează pool.",
-  "poolFinderTip": "Folosește acest instrument pentru a găsi perechi care nu apar automat în interfață."
+  "poolFinderTip": "Folosește acest instrument pentru a găsi perechi care nu apar automat în interfață.",
+  "ratioDeviationWarning": "Raportul de intrare deviază cu {{deviation}}% față de pool. Toleranța ta la alunecare este {{slippage}}%. Tranzacția ar putea eșua."
 }
