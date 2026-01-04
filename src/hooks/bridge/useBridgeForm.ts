@@ -54,6 +54,9 @@ export interface UseBridgeFormReturn {
   setInputAmount: (amount: string) => void;
   setMaxAmount: () => void;
   resetForm: () => void;
+
+  // Balance refresh (call after successful transactions)
+  triggerBalanceRefresh: () => void;
 }
 
 export function useBridgeForm(): UseBridgeFormReturn {
@@ -94,15 +97,25 @@ export function useBridgeForm(): UseBridgeFormReturn {
   }, [isSubmitting, dispatch]);
 
   // Balances
-  const { balance: originBalance, balanceAtomic, isLoading: isBalanceLoading } = useBridgeBalances(
-    form.selectedToken,
-    form.originNetwork
-  );
+  const {
+    balance: originBalance,
+    balanceAtomic,
+    isLoading: isBalanceLoading,
+    triggerAggressivePolling: triggerOriginPolling,
+  } = useBridgeBalances(form.selectedToken, form.originNetwork);
 
-  const { balance: destinationBalance, isLoading: isDestinationBalanceLoading } = useBridgeBalances(
-    form.selectedToken,
-    form.destinationNetwork
-  );
+  const {
+    balance: destinationBalance,
+    isLoading: isDestinationBalanceLoading,
+    triggerAggressivePolling: triggerDestPolling,
+  } = useBridgeBalances(form.selectedToken, form.destinationNetwork);
+
+  // Combined function to refresh both balances (call after transactions)
+  const triggerBalanceRefresh = useCallback(() => {
+    console.log('[Bridge Form] Triggering balance refresh for both networks');
+    triggerOriginPolling();
+    triggerDestPolling();
+  }, [triggerOriginPolling, triggerDestPolling]);
 
   // Allowance (only for ERC-20 tokens)
   const needsApprovalCheck = tokenRequiresApproval(form.selectedToken, form.originNetwork);
@@ -213,5 +226,8 @@ export function useBridgeForm(): UseBridgeFormReturn {
     setInputAmount,
     setMaxAmount,
     resetForm,
+
+    // Balance refresh
+    triggerBalanceRefresh,
   };
 }

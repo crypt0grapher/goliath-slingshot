@@ -9,7 +9,7 @@ import { selectActiveOperation, selectIsStatusModalOpen, selectPollingError } fr
 import { bridgeActions } from '../../state/bridge/reducer';
 import { BridgeStatusStepper } from '../../components/bridge';
 import { BridgeNetwork, getExplorerTxUrl } from '../../constants/bridge/networks';
-import { useBridgeStatusPolling } from '../../hooks/bridge';
+import { useBridgeStatusPolling, useBridgeForm } from '../../hooks/bridge';
 import { formatEta } from '../../utils/bridge/eta';
 
 const ContentWrapper = styled.div`
@@ -127,17 +127,22 @@ export default function BridgeStatusModal() {
   const isOpen = useSelector(selectIsStatusModalOpen);
   const operation = useSelector(selectActiveOperation);
   const pollingError = useSelector(selectPollingError);
+  const { triggerBalanceRefresh } = useBridgeForm();
 
   // Start polling for status updates
   useBridgeStatusPolling(operation);
 
   const handleClose = () => {
     dispatch(bridgeActions.closeStatusModal());
+    // Refresh balances when closing the modal to ensure fresh data
+    triggerBalanceRefresh();
   };
 
   const handleBridgeMore = () => {
     dispatch(bridgeActions.closeStatusModal());
     dispatch(bridgeActions.resetForm());
+    // Trigger aggressive polling to ensure balances are up to date
+    triggerBalanceRefresh();
   };
 
   if (!operation) {

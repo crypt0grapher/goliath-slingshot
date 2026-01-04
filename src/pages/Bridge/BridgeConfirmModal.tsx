@@ -1,13 +1,14 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useSelector, useDispatch } from 'react-redux';
+import { useTranslation } from 'react-i18next';
 import Modal from '../../components/Modal';
 import { ButtonPrimary } from '../../components/Button';
 import { selectBridgeForm, selectIsConfirmModalOpen } from '../../state/bridge/selectors';
 import { bridgeActions } from '../../state/bridge/reducer';
 import { BridgeNetwork, NETWORK_METADATA } from '../../constants/bridge/networks';
 import { useActiveWeb3React } from '../../hooks';
-import { useBridgeDeposit, useBridgeBurn } from '../../hooks/bridge';
+import { useBridgeDeposit, useBridgeBurn, useBridgeForm } from '../../hooks/bridge';
 import { getStaticEtaEstimate } from '../../utils/bridge/eta';
 
 const ContentWrapper = styled.div`
@@ -85,12 +86,14 @@ const WarningText = styled.div`
 `;
 
 export default function BridgeConfirmModal() {
+  const { t } = useTranslation();
   const dispatch = useDispatch();
   const { account } = useActiveWeb3React();
   const isOpen = useSelector(selectIsConfirmModalOpen);
   const form = useSelector(selectBridgeForm);
   const { deposit, isLoading: isDepositing } = useBridgeDeposit();
   const { burn, isLoading: isBurning } = useBridgeBurn();
+  const { triggerBalanceRefresh } = useBridgeForm();
 
   const isLoading = isDepositing || isBurning;
 
@@ -115,6 +118,9 @@ export default function BridgeConfirmModal() {
       } else {
         await burn(form.selectedToken, form.inputAmount, account);
       }
+      // Trigger aggressive balance polling after successful transaction
+      // This ensures balances update quickly without requiring network switch
+      triggerBalanceRefresh();
     } catch (error) {
       console.error('Bridge transaction failed:', error);
     }
@@ -127,7 +133,7 @@ export default function BridgeConfirmModal() {
   return (
     <Modal isOpen={isOpen} onDismiss={handleClose}>
       <ContentWrapper>
-        <Title>Confirm Bridge</Title>
+        <Title>{t('confirmBridge')}</Title>
 
         <AmountHighlight>
           <AmountText>
@@ -140,38 +146,38 @@ export default function BridgeConfirmModal() {
         </AmountHighlight>
 
         <DetailRow>
-          <DetailLabel>From Network</DetailLabel>
+          <DetailLabel>{t('fromNetwork')}</DetailLabel>
           <DetailValue>{originMetadata.displayName}</DetailValue>
         </DetailRow>
 
         <DetailRow>
-          <DetailLabel>To Network</DetailLabel>
+          <DetailLabel>{t('toNetwork')}</DetailLabel>
           <DetailValue>{destMetadata.displayName}</DetailValue>
         </DetailRow>
 
         <DetailRow>
-          <DetailLabel>Recipient</DetailLabel>
+          <DetailLabel>{t('recipient')}</DetailLabel>
           <DetailValue>{account ? truncateAddress(account) : '-'}</DetailValue>
         </DetailRow>
 
         <DetailRow>
-          <DetailLabel>Bridge Fee</DetailLabel>
-          <DetailValue style={{ color: '#27AE60' }}>Free</DetailValue>
+          <DetailLabel>{t('bridgeFee')}</DetailLabel>
+          <DetailValue style={{ color: '#27AE60' }}>{t('free')}</DetailValue>
         </DetailRow>
 
         <DetailRow>
-          <DetailLabel>Estimated Time</DetailLabel>
+          <DetailLabel>{t('estimatedTime')}</DetailLabel>
           <DetailValue>{eta}</DetailValue>
         </DetailRow>
 
         <ButtonContainer>
           <ButtonPrimary onClick={handleConfirm} disabled={isLoading}>
-            {isLoading ? 'Confirming...' : 'Confirm Bridge'}
+            {isLoading ? t('confirming') : t('confirmBridge')}
           </ButtonPrimary>
         </ButtonContainer>
 
         <WarningText>
-          By confirming, you agree to bridge your assets. This action cannot be undone.
+          {t('bridgeConfirmWarning')}
         </WarningText>
       </ContentWrapper>
     </Modal>

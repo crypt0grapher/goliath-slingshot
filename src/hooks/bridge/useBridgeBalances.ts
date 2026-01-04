@@ -5,12 +5,18 @@ import { BridgeTokenSymbol, getTokenConfigForChain } from '../../constants/bridg
 import { getNativeBalance, getTokenBalance } from '../../services/bridgeProviders';
 import { formatAmount } from '../../utils/bridge/amounts';
 
+// Configuration for aggressive polling after transactions
+const AGGRESSIVE_POLL_INTERVAL = 500; // ms - faster polling right after tx
+const AGGRESSIVE_POLL_DURATION = 15000; // ms - how long to poll aggressively
+const NORMAL_POLL_INTERVAL = 2000; // ms - normal polling interval
+
 interface UseBridgeBalancesReturn {
   balance: string;
   balanceAtomic: bigint;
   isLoading: boolean;
   error: string | null;
   refetch: () => void;
+  triggerAggressivePolling: () => void; // Force aggressive polling after tx
 }
 
 export function useBridgeBalances(
@@ -23,6 +29,8 @@ export function useBridgeBalances(
   const [error, setError] = useState<string | null>(null);
   const hasFetchedRef = useRef(false);
   const previousAccountRef = useRef<string | null | undefined>(null);
+  const aggressivePollingUntilRef = useRef<number>(0); // Timestamp when aggressive polling should stop
+  const lastFetchedBalanceRef = useRef<bigint>(BigInt(0)); // Track last balance to detect changes
 
   // Reset balance only when account actually changes to a different account
   useEffect(() => {
@@ -76,6 +84,17 @@ export function useBridgeBalances(
         balance = BigInt(0);
       }
 
+      // Track if balance changed (useful for debugging and detecting updates)
+      if (balance !== lastFetchedBalanceRef.current) {
+        console.log('[Bridge Balance] Balance changed:', {
+          from: lastFetchedBalanceRef.current.toString(),
+          to: balance.toString(),
+          network,
+          token,
+        });
+        lastFetchedBalanceRef.current = balance;
+      }
+
       setBalanceAtomic(balance);
       hasFetchedRef.current = true;
       if (!silent) {
@@ -98,15 +117,37 @@ export function useBridgeBalances(
     fetchBalance();
   }, [fetchBalance]);
 
-  // Poll balances every second to keep them updated (silent mode to avoid UI flickering)
+  // Trigger aggressive polling mode (called after transactions)
+  const triggerAggressivePolling = useCallback(() => {
+    console.log('[Bridge Balance] Aggressive polling triggered for', network, token);
+    aggressivePollingUntilRef.current = Date.now() + AGGRESSIVE_POLL_DURATION;
+    // Immediately fetch to get the latest balance
+    fetchBalance(false);
+  }, [fetchBalance, network, token]);
+
+  // Poll balances with adaptive interval (aggressive after tx, normal otherwise)
   useEffect(() => {
     if (!account) return;
 
-    const intervalId = setInterval(() => {
-      fetchBalance(true);
-    }, 1000);
+    let intervalId: NodeJS.Timeout;
 
-    return () => clearInterval(intervalId);
+    const poll = () => {
+      const isAggressiveMode = Date.now() < aggressivePollingUntilRef.current;
+      const interval = isAggressiveMode ? AGGRESSIVE_POLL_INTERVAL : NORMAL_POLL_INTERVAL;
+
+      fetchBalance(true);
+
+      // Schedule next poll with appropriate interval
+      intervalId = setTimeout(poll, interval);
+    };
+
+    // Start polling
+    const initialInterval = Date.now() < aggressivePollingUntilRef.current
+      ? AGGRESSIVE_POLL_INTERVAL
+      : NORMAL_POLL_INTERVAL;
+    intervalId = setTimeout(poll, initialInterval);
+
+    return () => clearTimeout(intervalId);
   }, [account, fetchBalance]);
 
   // Format the balance for display
@@ -123,5 +164,6 @@ export function useBridgeBalances(
     isLoading,
     error,
     refetch: fetchBalance,
+    triggerAggressivePolling,
   };
 }
