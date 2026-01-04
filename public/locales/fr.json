@@ -267,5 +267,22 @@
   "noPoolFound": "Aucun pool trouvé.",
   "createPoolDot": "Créer un pool.",
   "poolFinderTip": "Utilisez cet outil pour trouver des paires qui n'apparaissent pas automatiquement dans l'interface.",
-  "ratioDeviationWarning": "Votre ratio d'entrée dévie de {{deviation}}% par rapport au pool. Votre tolérance au glissement est de {{slippage}}%. La transaction pourrait échouer."
+  "ratioDeviationWarning": "Votre ratio d'entrée dévie de {{deviation}}% par rapport au pool. Votre tolérance au glissement est de {{slippage}}%. La transaction pourrait échouer.",
+  "waitingForConfirmation": "En attente de confirmation",
+  "confirmThisTransaction": "Confirmez cette transaction dans votre portefeuille",
+  "minimumReceived": "Minimum reçu",
+  "maximumSold": "Maximum vendu",
+  "priceImpact": "Impact sur le prix",
+  "liquidityProviderFee": "Frais du fournisseur de liquidité",
+  "confirmSwap": "Confirmer l'échange",
+  "priceUpdated": "Prix mis à jour",
+  "accept": "Accepter",
+  "outputEstimatedReceive": "La sortie est estimée. Vous recevrez au minimum",
+  "inputEstimatedSell": "L'entrée est estimée. Vous vendrez au maximum",
+  "orTransactionWillRevert": "ou la transaction sera annulée.",
+  "outputWillBeSentTo": "La sortie sera envoyée à",
+  "dismiss": "Fermer",
+  "slippageTooltipMinReceived": "Votre transaction sera annulée si un mouvement de prix important et défavorable se produit avant sa confirmation.",
+  "slippageTooltipPriceImpact": "La différence entre le prix du marché et votre prix en raison de la taille de la transaction.",
+  "slippageTooltipLPFee": "Une partie de chaque transaction (0,30%) va aux fournisseurs de liquidité comme incitation au protocole."
 }

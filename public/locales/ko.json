@@ -267,5 +267,22 @@
   "noPoolFound": "풀을 찾을 수 없습니다.",
   "createPoolDot": "풀을 생성합니다.",
   "poolFinderTip": "이 도구를 사용하여 인터페이스에 자동으로 표시되지 않는 페어를 찾으세요.",
-  "ratioDeviationWarning": "입력 비율이 풀에서 {{deviation}}% 벗어났습니다. 슬리피지 허용치는 {{slippage}}%입니다. 트랜잭션이 실패할 수 있습니다."
+  "ratioDeviationWarning": "입력 비율이 풀에서 {{deviation}}% 벗어났습니다. 슬리피지 허용치는 {{slippage}}%입니다. 트랜잭션이 실패할 수 있습니다.",
+  "waitingForConfirmation": "확인 대기 중",
+  "confirmThisTransaction": "지갑에서 이 거래를 확인하세요",
+  "minimumReceived": "최소 수령량",
+  "maximumSold": "최대 판매량",
+  "priceImpact": "가격 영향",
+  "liquidityProviderFee": "유동성 공급자 수수료",
+  "confirmSwap": "스왑 확인",
+  "priceUpdated": "가격 업데이트됨",
+  "accept": "수락",
+  "outputEstimatedReceive": "출력은 추정치입니다. 최소한 받게 됩니다",
+  "inputEstimatedSell": "입력은 추정치입니다. 최대한 판매합니다",
+  "orTransactionWillRevert": "그렇지 않으면 거래가 취소됩니다.",
+  "outputWillBeSentTo": "출력이 다음으로 전송됩니다",
+  "dismiss": "닫기",
+  "slippageTooltipMinReceived": "확인 전에 큰 불리한 가격 변동이 발생하면 거래가 취소됩니다.",
+  "slippageTooltipPriceImpact": "거래 규모로 인한 시장 가격과 귀하의 가격 간의 차이.",
+  "slippageTooltipLPFee": "각 거래의 일부(0.30%)가 프로토콜 인센티브로 유동성 공급자에게 지급됩니다."
 }

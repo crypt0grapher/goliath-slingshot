@@ -267,5 +267,22 @@
   "noPoolFound": "Havuz bulunamadı.",
   "createPoolDot": "Havuz oluştur.",
   "poolFinderTip": "Arayüzde otomatik olarak görünmeyen çiftleri bulmak için bu aracı kullanın.",
-  "ratioDeviationWarning": "Giriş oranınız havuzdan {{deviation}}% sapıyor. Kayma toleransınız {{slippage}}%. İşlem başarısız olabilir."
+  "ratioDeviationWarning": "Giriş oranınız havuzdan {{deviation}}% sapıyor. Kayma toleransınız {{slippage}}%. İşlem başarısız olabilir.",
+  "waitingForConfirmation": "Onay Bekleniyor",
+  "confirmThisTransaction": "Bu işlemi cüzdanınızda onaylayın",
+  "minimumReceived": "Minimum alınan",
+  "maximumSold": "Maksimum satılan",
+  "priceImpact": "Fiyat Etkisi",
+  "liquidityProviderFee": "Likidite Sağlayıcı Ücreti",
+  "confirmSwap": "Takası Onayla",
+  "priceUpdated": "Fiyat Güncellendi",
+  "accept": "Kabul Et",
+  "outputEstimatedReceive": "Çıktı tahminidir. En az alacaksınız",
+  "inputEstimatedSell": "Girdi tahminidir. En fazla satacaksınız",
+  "orTransactionWillRevert": "veya işlem iptal edilecek.",
+  "outputWillBeSentTo": "Çıktı şuraya gönderilecek",
+  "dismiss": "Kapat",
+  "slippageTooltipMinReceived": "Onaylanmadan önce büyük ve olumsuz bir fiyat hareketi olursa işleminiz iptal edilecektir.",
+  "slippageTooltipPriceImpact": "İşlem büyüklüğü nedeniyle piyasa fiyatı ile sizin fiyatınız arasındaki fark.",
+  "slippageTooltipLPFee": "Her işlemin bir kısmı (%0,30) protokol teşviki olarak likidite sağlayıcılarına gider."
 }

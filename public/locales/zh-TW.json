@@ -267,5 +267,22 @@
   "noPoolFound": "未找到資金池。",
   "createPoolDot": "創建資金池。",
   "poolFinderTip": "使用此工具查找界面中未自動顯示的交易對。",
-  "ratioDeviationWarning": "您的輸入比例與資金池偏差{{deviation}}%。您的滑點容差為{{slippage}}%。交易可能會失敗。"
+  "ratioDeviationWarning": "您的輸入比例與資金池偏差{{deviation}}%。您的滑點容差為{{slippage}}%。交易可能會失敗。",
+  "waitingForConfirmation": "等待確認",
+  "confirmThisTransaction": "請在您的錢包中確認此交易",
+  "minimumReceived": "最少收到",
+  "maximumSold": "最多賣出",
+  "priceImpact": "價格影響",
+  "liquidityProviderFee": "流動性提供者費用",
+  "confirmSwap": "確認兌換",
+  "priceUpdated": "價格已更新",
+  "accept": "接受",
+  "outputEstimatedReceive": "輸出為預估值。您將至少收到",
+  "inputEstimatedSell": "輸入為預估值。您將最多賣出",
+  "orTransactionWillRevert": "否則交易將回退。",
+  "outputWillBeSentTo": "輸出將發送至",
+  "dismiss": "關閉",
+  "slippageTooltipMinReceived": "如果在確認前發生較大的不利價格變動，您的交易將被回退。",
+  "slippageTooltipPriceImpact": "由於交易規模導致的市場價格與您價格之間的差異。",
+  "slippageTooltipLPFee": "每筆交易的一部分（0.30%）將作為協議激勵分配給流動性提供者。"
 }

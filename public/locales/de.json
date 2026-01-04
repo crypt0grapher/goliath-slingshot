@@ -267,5 +267,22 @@
   "noPoolFound": "Kein Pool gefunden.",
   "createPoolDot": "Pool erstellen.",
   "poolFinderTip": "Verwende dieses Tool, um Paare zu finden, die nicht automatisch in der Oberfläche erscheinen.",
-  "ratioDeviationWarning": "Dein Eingabeverhältnis weicht {{deviation}}% vom Pool ab. Deine Slippage-Toleranz beträgt {{slippage}}%. Die Transaktion könnte fehlschlagen."
+  "ratioDeviationWarning": "Dein Eingabeverhältnis weicht {{deviation}}% vom Pool ab. Deine Slippage-Toleranz beträgt {{slippage}}%. Die Transaktion könnte fehlschlagen.",
+  "waitingForConfirmation": "Warte auf Bestätigung",
+  "confirmThisTransaction": "Bestätige diese Transaktion in deinem Wallet",
+  "minimumReceived": "Minimum erhalten",
+  "maximumSold": "Maximum verkauft",
+  "priceImpact": "Preisauswirkung",
+  "liquidityProviderFee": "Liquiditätsanbieter-Gebühr",
+  "confirmSwap": "Swap bestätigen",
+  "priceUpdated": "Preis aktualisiert",
+  "accept": "Akzeptieren",
+  "outputEstimatedReceive": "Ausgabe ist geschätzt. Du erhältst mindestens",
+  "inputEstimatedSell": "Eingabe ist geschätzt. Du verkaufst höchstens",
+  "orTransactionWillRevert": "oder die Transaktion wird rückgängig gemacht.",
+  "outputWillBeSentTo": "Ausgabe wird gesendet an",
+  "dismiss": "Schließen",
+  "slippageTooltipMinReceived": "Deine Transaktion wird rückgängig gemacht, wenn vor der Bestätigung eine große, ungünstige Preisbewegung stattfindet.",
+  "slippageTooltipPriceImpact": "Die Differenz zwischen dem Marktpreis und deinem Preis aufgrund der Handelsgröße.",
+  "slippageTooltipLPFee": "Ein Teil jedes Handels (0,30%) geht an Liquiditätsanbieter als Protokollanreiz."
 }

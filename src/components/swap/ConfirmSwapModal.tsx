@@ -1,5 +1,6 @@
 import { currencyEquals, Trade } from '@uniswap/sdk';
 import React, { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import TransactionConfirmationModal, {
   ConfirmationModalContent,
   TransactionErrorContent,
@@ -47,6 +48,7 @@ export default function ConfirmSwapModal({
   swapErrorMessage: string | undefined;
   onDismiss: () => void;
 }) {
+  const { t } = useTranslation();
   const showAcceptChanges = useMemo(
     () => Boolean(trade && originalTrade && tradeMeaningfullyDiffers(trade, originalTrade)),
     [originalTrade, trade]
@@ -77,9 +79,12 @@ export default function ConfirmSwapModal({
   }, [allowedSlippage, onConfirm, showAcceptChanges, swapErrorMessage, trade]);
 
   // text to show while loading
-  const pendingText = `Swapping ${trade?.inputAmount?.toSignificant(6)} ${
-    trade?.inputAmount?.currency?.symbol
-  } for ${trade?.outputAmount?.toSignificant(6)} ${trade?.outputAmount?.currency?.symbol}`;
+  const pendingText = t('swappingTokens', {
+    amountIn: trade?.inputAmount?.toSignificant(6),
+    symbolIn: trade?.inputAmount?.currency?.symbol,
+    amountOut: trade?.outputAmount?.toSignificant(6),
+    symbolOut: trade?.outputAmount?.currency?.symbol,
+  });
 
   const confirmationContent = useCallback(
     () =>
@@ -87,13 +92,13 @@ export default function ConfirmSwapModal({
         <TransactionErrorContent onDismiss={onDismiss} message={swapErrorMessage} />
       ) : (
         <ConfirmationModalContent
-          title="Confirm Swap"
+          title={t('confirmSwap')}
           onDismiss={onDismiss}
           topContent={modalHeader}
           bottomContent={modalBottom}
         />
       ),
-    [onDismiss, modalBottom, modalHeader, swapErrorMessage]
+    [onDismiss, modalBottom, modalHeader, swapErrorMessage, t]
   );
 
   return (

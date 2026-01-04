@@ -267,5 +267,22 @@
   "noPoolFound": "Hovuz tapılmadı.",
   "createPoolDot": "Hovuz yarat.",
   "poolFinderTip": "İnterfeysdə avtomatik görünməyən cütləri tapmaq üçün bu alətdən istifadə edin.",
-  "ratioDeviationWarning": "Giriş nisbətiniz hovuzdan {{deviation}}% fərqlənir. Sürüşmə tolerantlığınız {{slippage}}%-dir. Əməliyyat uğursuz ola bilər."
+  "ratioDeviationWarning": "Giriş nisbətiniz hovuzdan {{deviation}}% fərqlənir. Sürüşmə tolerantlığınız {{slippage}}%-dir. Əməliyyat uğursuz ola bilər.",
+  "waitingForConfirmation": "Təsdiq gözlənilir",
+  "confirmThisTransaction": "Bu əməliyyatı pul kisənizdə təsdiqləyin",
+  "minimumReceived": "Minimum alınan",
+  "maximumSold": "Maksimum satılan",
+  "priceImpact": "Qiymət Təsiri",
+  "liquidityProviderFee": "Likvidlik Təchizatçısı Haqqı",
+  "confirmSwap": "Mübadiləni Təsdiqlə",
+  "priceUpdated": "Qiymət Yeniləndi",
+  "accept": "Qəbul et",
+  "outputEstimatedReceive": "Çıxış təxminidir. Ən azı alacaqsınız",
+  "inputEstimatedSell": "Giriş təxminidir. Ən çox satacaqsınız",
+  "orTransactionWillRevert": "və ya əməliyyat ləğv ediləcək.",
+  "outputWillBeSentTo": "Çıxış göndəriləcək",
+  "dismiss": "Bağla",
+  "slippageTooltipMinReceived": "Təsdiqdən əvvəl böyük və əlverişsiz qiymət hərəkəti olarsa, əməliyyatınız ləğv ediləcək.",
+  "slippageTooltipPriceImpact": "Ticarət həcminə görə bazar qiyməti ilə sizin qiymətiniz arasındakı fərq.",
+  "slippageTooltipLPFee": "Hər əməliyyatın bir hissəsi (0.30%) protokol təşviqi olaraq likvidlik təchizatçılarına gedir."
 }

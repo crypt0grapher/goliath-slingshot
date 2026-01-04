@@ -267,5 +267,22 @@
   "noPoolFound": "Geen pool gevonden.",
   "createPoolDot": "Pool aanmaken.",
   "poolFinderTip": "Gebruik deze tool om paren te vinden die niet automatisch in de interface verschijnen.",
-  "ratioDeviationWarning": "Je invoerverhouding wijkt {{deviation}}% af van de pool. Je slippage tolerantie is {{slippage}}%. De transactie kan mislukken."
+  "ratioDeviationWarning": "Je invoerverhouding wijkt {{deviation}}% af van de pool. Je slippage tolerantie is {{slippage}}%. De transactie kan mislukken.",
+  "waitingForConfirmation": "Wachten op bevestiging",
+  "confirmThisTransaction": "Bevestig deze transactie in je wallet",
+  "minimumReceived": "Minimum ontvangen",
+  "maximumSold": "Maximum verkocht",
+  "priceImpact": "Prijsimpact",
+  "liquidityProviderFee": "Liquiditeitsprovider Kosten",
+  "confirmSwap": "Swap bevestigen",
+  "priceUpdated": "Prijs bijgewerkt",
+  "accept": "Accepteren",
+  "outputEstimatedReceive": "Output is geschat. Je ontvangt minimaal",
+  "inputEstimatedSell": "Input is geschat. Je verkoopt maximaal",
+  "orTransactionWillRevert": "of de transactie wordt teruggedraaid.",
+  "outputWillBeSentTo": "Output wordt verzonden naar",
+  "dismiss": "Sluiten",
+  "slippageTooltipMinReceived": "Je transactie wordt teruggedraaid als er een grote, ongunstige prijsbeweging plaatsvindt voordat deze wordt bevestigd.",
+  "slippageTooltipPriceImpact": "Het verschil tussen de marktprijs en jouw prijs vanwege de handelsgrootte.",
+  "slippageTooltipLPFee": "Een deel van elke transactie (0,30%) gaat naar liquiditeitsproviders als protocolbeloning."
 }

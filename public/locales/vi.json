@@ -267,5 +267,22 @@
   "noPoolFound": "Không tìm thấy pool.",
   "createPoolDot": "Tạo pool.",
   "poolFinderTip": "Sử dụng công cụ này để tìm các cặp không tự động hiển thị trong giao diện.",
-  "ratioDeviationWarning": "Tỷ lệ đầu vào của bạn lệch {{deviation}}% so với pool. Dung sai trượt giá của bạn là {{slippage}}%. Giao dịch có thể thất bại."
+  "ratioDeviationWarning": "Tỷ lệ đầu vào của bạn lệch {{deviation}}% so với pool. Dung sai trượt giá của bạn là {{slippage}}%. Giao dịch có thể thất bại.",
+  "waitingForConfirmation": "Đang chờ xác nhận",
+  "confirmThisTransaction": "Xác nhận giao dịch này trong ví của bạn",
+  "minimumReceived": "Tối thiểu nhận được",
+  "maximumSold": "Tối đa bán ra",
+  "priceImpact": "Tác động giá",
+  "liquidityProviderFee": "Phí nhà cung cấp thanh khoản",
+  "confirmSwap": "Xác nhận hoán đổi",
+  "priceUpdated": "Giá đã cập nhật",
+  "accept": "Chấp nhận",
+  "outputEstimatedReceive": "Đầu ra là ước tính. Bạn sẽ nhận được ít nhất",
+  "inputEstimatedSell": "Đầu vào là ước tính. Bạn sẽ bán nhiều nhất",
+  "orTransactionWillRevert": "hoặc giao dịch sẽ bị hoàn lại.",
+  "outputWillBeSentTo": "Đầu ra sẽ được gửi đến",
+  "dismiss": "Đóng",
+  "slippageTooltipMinReceived": "Giao dịch của bạn sẽ bị hoàn lại nếu có biến động giá lớn bất lợi trước khi được xác nhận.",
+  "slippageTooltipPriceImpact": "Sự khác biệt giữa giá thị trường và giá của bạn do quy mô giao dịch.",
+  "slippageTooltipLPFee": "Một phần của mỗi giao dịch (0.30%) được chuyển cho các nhà cung cấp thanh khoản như phần thưởng giao thức."
 }

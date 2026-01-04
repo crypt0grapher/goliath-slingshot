@@ -267,5 +267,22 @@
   "noPoolFound": "Niciun pool găsit.",
   "createPoolDot": "Creează pool.",
   "poolFinderTip": "Folosește acest instrument pentru a găsi perechi care nu apar automat în interfață.",
-  "ratioDeviationWarning": "Raportul de intrare deviază cu {{deviation}}% față de pool. Toleranța ta la alunecare este {{slippage}}%. Tranzacția ar putea eșua."
+  "ratioDeviationWarning": "Raportul de intrare deviază cu {{deviation}}% față de pool. Toleranța ta la alunecare este {{slippage}}%. Tranzacția ar putea eșua.",
+  "waitingForConfirmation": "Se așteaptă confirmarea",
+  "confirmThisTransaction": "Confirmă această tranzacție în portofelul tău",
+  "minimumReceived": "Minim primit",
+  "maximumSold": "Maxim vândut",
+  "priceImpact": "Impact asupra prețului",
+  "liquidityProviderFee": "Taxa furnizorului de lichiditate",
+  "confirmSwap": "Confirmă schimbul",
+  "priceUpdated": "Preț actualizat",
+  "accept": "Acceptă",
+  "outputEstimatedReceive": "Output-ul este estimat. Vei primi cel puțin",
+  "inputEstimatedSell": "Input-ul este estimat. Vei vinde cel mult",
+  "orTransactionWillRevert": "sau tranzacția va fi anulată.",
+  "outputWillBeSentTo": "Output-ul va fi trimis la",
+  "dismiss": "Închide",
+  "slippageTooltipMinReceived": "Tranzacția ta va fi anulată dacă are loc o mișcare mare și nefavorabilă a prețului înainte de confirmare.",
+  "slippageTooltipPriceImpact": "Diferența dintre prețul pieței și prețul tău din cauza dimensiunii tranzacției.",
+  "slippageTooltipLPFee": "O parte din fiecare tranzacție (0,30%) merge la furnizorii de lichiditate ca stimulent pentru protocol."
 }

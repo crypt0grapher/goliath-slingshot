@@ -267,5 +267,22 @@
   "noPoolFound": "لم يتم العثور على مجمّع.",
   "createPoolDot": "إنشاء مجمّع.",
   "poolFinderTip": "استخدم هذه الأداة للعثور على الأزواج التي لا تظهر تلقائيًا في الواجهة.",
-  "ratioDeviationWarning": "نسبة الإدخال الخاصة بك تنحرف بنسبة {{deviation}}% عن المجمّع. تحملك للانزلاق هو {{slippage}}%. قد تفشل المعاملة."
+  "ratioDeviationWarning": "نسبة الإدخال الخاصة بك تنحرف بنسبة {{deviation}}% عن المجمّع. تحملك للانزلاق هو {{slippage}}%. قد تفشل المعاملة.",
+  "waitingForConfirmation": "في انتظار التأكيد",
+  "confirmThisTransaction": "قم بتأكيد هذه المعاملة في محفظتك",
+  "minimumReceived": "الحد الأدنى المستلم",
+  "maximumSold": "الحد الأقصى للبيع",
+  "priceImpact": "تأثير السعر",
+  "liquidityProviderFee": "رسوم مزود السيولة",
+  "confirmSwap": "تأكيد المبادلة",
+  "priceUpdated": "تم تحديث السعر",
+  "accept": "قبول",
+  "outputEstimatedReceive": "المخرجات مقدّرة. ستستلم على الأقل",
+  "inputEstimatedSell": "المدخلات مقدّرة. ستبيع على الأكثر",
+  "orTransactionWillRevert": "وإلا ستُلغى المعاملة.",
+  "outputWillBeSentTo": "سيتم إرسال المخرجات إلى",
+  "dismiss": "إغلاق",
+  "slippageTooltipMinReceived": "ستُلغى معاملتك إذا حدث تحرك سعري كبير غير مواتٍ قبل تأكيدها.",
+  "slippageTooltipPriceImpact": "الفرق بين سعر السوق وسعرك بسبب حجم التداول.",
+  "slippageTooltipLPFee": "جزء من كل صفقة (0.30%) يذهب لمزودي السيولة كحافز للبروتوكول."
 }

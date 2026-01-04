@@ -267,5 +267,22 @@
   "noPoolFound": "Pool tidak ditemukan.",
   "createPoolDot": "Buat pool.",
   "poolFinderTip": "Gunakan alat ini untuk menemukan pasangan yang tidak muncul secara otomatis di antarmuka.",
-  "ratioDeviationWarning": "Rasio input Anda menyimpang {{deviation}}% dari pool. Toleransi slippage Anda adalah {{slippage}}%. Transaksi mungkin gagal."
+  "ratioDeviationWarning": "Rasio input Anda menyimpang {{deviation}}% dari pool. Toleransi slippage Anda adalah {{slippage}}%. Transaksi mungkin gagal.",
+  "waitingForConfirmation": "Menunggu Konfirmasi",
+  "confirmThisTransaction": "Konfirmasi transaksi ini di dompet Anda",
+  "minimumReceived": "Minimum diterima",
+  "maximumSold": "Maksimum dijual",
+  "priceImpact": "Dampak Harga",
+  "liquidityProviderFee": "Biaya Penyedia Likuiditas",
+  "confirmSwap": "Konfirmasi Swap",
+  "priceUpdated": "Harga Diperbarui",
+  "accept": "Terima",
+  "outputEstimatedReceive": "Output adalah perkiraan. Anda akan menerima minimal",
+  "inputEstimatedSell": "Input adalah perkiraan. Anda akan menjual maksimal",
+  "orTransactionWillRevert": "atau transaksi akan dibatalkan.",
+  "outputWillBeSentTo": "Output akan dikirim ke",
+  "dismiss": "Tutup",
+  "slippageTooltipMinReceived": "Transaksi Anda akan dibatalkan jika terjadi pergerakan harga besar yang tidak menguntungkan sebelum dikonfirmasi.",
+  "slippageTooltipPriceImpact": "Selisih antara harga pasar dan harga Anda karena ukuran perdagangan.",
+  "slippageTooltipLPFee": "Sebagian dari setiap perdagangan (0,30%) diberikan kepada penyedia likuiditas sebagai insentif protokol."
 }

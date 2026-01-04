@@ -267,5 +267,22 @@
   "noPoolFound": "Nenhum pool encontrado.",
   "createPoolDot": "Criar pool.",
   "poolFinderTip": "Use esta ferramenta para encontrar pares que não aparecem automaticamente na interface.",
-  "ratioDeviationWarning": "Sua proporção de entrada desvia {{deviation}}% do pool. Sua tolerância de deslizamento é {{slippage}}%. A transação pode falhar."
+  "ratioDeviationWarning": "Sua proporção de entrada desvia {{deviation}}% do pool. Sua tolerância de deslizamento é {{slippage}}%. A transação pode falhar.",
+  "waitingForConfirmation": "Aguardando Confirmação",
+  "confirmThisTransaction": "Confirme esta transação na sua carteira",
+  "minimumReceived": "Mínimo recebido",
+  "maximumSold": "Máximo vendido",
+  "priceImpact": "Impacto no Preço",
+  "liquidityProviderFee": "Taxa do Provedor de Liquidez",
+  "confirmSwap": "Confirmar Troca",
+  "priceUpdated": "Preço Atualizado",
+  "accept": "Aceitar",
+  "outputEstimatedReceive": "A saída é estimada. Você receberá no mínimo",
+  "inputEstimatedSell": "A entrada é estimada. Você venderá no máximo",
+  "orTransactionWillRevert": "ou a transação será revertida.",
+  "outputWillBeSentTo": "A saída será enviada para",
+  "dismiss": "Fechar",
+  "slippageTooltipMinReceived": "Sua transação será revertida se houver uma grande movimentação de preço desfavorável antes de ser confirmada.",
+  "slippageTooltipPriceImpact": "A diferença entre o preço de mercado e seu preço devido ao tamanho da negociação.",
+  "slippageTooltipLPFee": "Uma parte de cada negociação (0,30%) vai para os provedores de liquidez como incentivo do protocolo."
 }

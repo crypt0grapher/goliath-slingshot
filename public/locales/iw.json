@@ -267,5 +267,22 @@
   "noPoolFound": "לא נמצא מאגר.",
   "createPoolDot": "צור מאגר.",
   "poolFinderTip": "השתמש בכלי זה כדי למצוא צמדים שאינם מופיעים אוטומטית בממשק.",
-  "ratioDeviationWarning": "יחס הקלט שלך סוטה ב-{{deviation}}% מהמאגר. סובלנות ההחלקה שלך היא {{slippage}}%. העסקה עלולה להיכשל."
+  "ratioDeviationWarning": "יחס הקלט שלך סוטה ב-{{deviation}}% מהמאגר. סובלנות ההחלקה שלך היא {{slippage}}%. העסקה עלולה להיכשל.",
+  "waitingForConfirmation": "ממתין לאישור",
+  "confirmThisTransaction": "אשר עסקה זו בארנק שלך",
+  "minimumReceived": "מינימום שיתקבל",
+  "maximumSold": "מקסימום שיימכר",
+  "priceImpact": "השפעה על המחיר",
+  "liquidityProviderFee": "עמלת ספק נזילות",
+  "confirmSwap": "אשר החלפה",
+  "priceUpdated": "המחיר עודכן",
+  "accept": "קבל",
+  "outputEstimatedReceive": "הפלט הוא הערכה. תקבל לפחות",
+  "inputEstimatedSell": "הקלט הוא הערכה. תמכור לכל היותר",
+  "orTransactionWillRevert": "או שהעסקה תבוטל.",
+  "outputWillBeSentTo": "הפלט יישלח אל",
+  "dismiss": "סגור",
+  "slippageTooltipMinReceived": "העסקה שלך תבוטל אם תהיה תנועת מחיר גדולה ולא נוחה לפני האישור.",
+  "slippageTooltipPriceImpact": "ההבדל בין מחיר השוק למחיר שלך בשל גודל העסקה.",
+  "slippageTooltipLPFee": "חלק מכל עסקה (0.30%) הולך לספקי הנזילות כתמריץ פרוטוקול."
 }

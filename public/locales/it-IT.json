@@ -273,5 +273,22 @@
   "tokenDeposited": "{{token}} Depositato",
   "rates": "Tassi",
   "confirmSupply": "Conferma Fornitura",
-  "ratioDeviationWarning": "Il tuo rapporto di input devia del {{deviation}}% dal pool. La tua tolleranza allo slippage è {{slippage}}%. La transazione potrebbe fallire."
+  "ratioDeviationWarning": "Il tuo rapporto di input devia del {{deviation}}% dal pool. La tua tolleranza allo slippage è {{slippage}}%. La transazione potrebbe fallire.",
+  "waitingForConfirmation": "In Attesa di Conferma",
+  "confirmThisTransaction": "Conferma questa transazione nel tuo wallet",
+  "minimumReceived": "Minimo ricevuto",
+  "maximumSold": "Massimo venduto",
+  "priceImpact": "Impatto sul Prezzo",
+  "liquidityProviderFee": "Commissione del Fornitore di Liquidità",
+  "confirmSwap": "Conferma Scambio",
+  "priceUpdated": "Prezzo Aggiornato",
+  "accept": "Accetta",
+  "outputEstimatedReceive": "L'output è stimato. Riceverai almeno",
+  "inputEstimatedSell": "L'input è stimato. Venderai al massimo",
+  "orTransactionWillRevert": "o la transazione verrà annullata.",
+  "outputWillBeSentTo": "L'output verrà inviato a",
+  "dismiss": "Chiudi",
+  "slippageTooltipMinReceived": "La tua transazione verrà annullata se si verifica un grande movimento di prezzo sfavorevole prima della conferma.",
+  "slippageTooltipPriceImpact": "La differenza tra il prezzo di mercato e il tuo prezzo a causa della dimensione della transazione.",
+  "slippageTooltipLPFee": "Una parte di ogni transazione (0,30%) va ai fornitori di liquidità come incentivo del protocollo."
 }
