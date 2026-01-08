@@ -284,5 +284,16 @@
   "dismiss": "Kapat",
   "slippageTooltipMinReceived": "Onaylanmadan önce büyük ve olumsuz bir fiyat hareketi olursa işleminiz iptal edilecektir.",
   "slippageTooltipPriceImpact": "İşlem büyüklüğü nedeniyle piyasa fiyatı ile sizin fiyatınız arasındaki fark.",
-  "slippageTooltipLPFee": "Her işlemin bir kısmı (%0,30) protokol teşviki olarak likidite sağlayıcılarına gider."
+  "slippageTooltipLPFee": "Her işlemin bir kısmı (%0,30) protokol teşviki olarak likidite sağlayıcılarına gider.",
+  "swappingTokens": "{{amountIn}} {{symbolIn}} {{amountOut}} {{symbolOut}} ile takas ediliyor",
+  "swapSummary": "{{inputAmount}} {{inputSymbol}} {{outputAmount}} {{outputSymbol}} ile takas et",
+  "manage": "Yönet",
+  "lists": "Listeler",
+  "tokens": "Tokenler",
+  "customTokensCount": "{{count}} Özel Token",
+  "customTokensCount_plural": "{{count}} Özel Token",
+  "customTokensTip": "İpucu: Özel tokenler tarayıcınızda yerel olarak saklanır",
+  "enterValidTokenAddress": "Geçerli bir token adresi girin",
+  "route": "Rota",
+  "routeTooltip": "Bu tokenler üzerinden yönlendirme, işleminiz için en iyi fiyatı sağladı."
 }

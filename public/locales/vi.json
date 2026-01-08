@@ -284,5 +284,16 @@
   "dismiss": "Đóng",
   "slippageTooltipMinReceived": "Giao dịch của bạn sẽ bị hoàn lại nếu có biến động giá lớn bất lợi trước khi được xác nhận.",
   "slippageTooltipPriceImpact": "Sự khác biệt giữa giá thị trường và giá của bạn do quy mô giao dịch.",
-  "slippageTooltipLPFee": "Một phần của mỗi giao dịch (0.30%) được chuyển cho các nhà cung cấp thanh khoản như phần thưởng giao thức."
+  "slippageTooltipLPFee": "Một phần của mỗi giao dịch (0.30%) được chuyển cho các nhà cung cấp thanh khoản như phần thưởng giao thức.",
+  "swappingTokens": "Đang hoán đổi {{amountIn}} {{symbolIn}} lấy {{amountOut}} {{symbolOut}}",
+  "swapSummary": "Hoán đổi {{inputAmount}} {{inputSymbol}} lấy {{outputAmount}} {{outputSymbol}}",
+  "manage": "Quản lý",
+  "lists": "Danh sách",
+  "tokens": "Token",
+  "customTokensCount": "{{count}} Token tùy chỉnh",
+  "customTokensCount_plural": "{{count}} Token tùy chỉnh",
+  "customTokensTip": "Mẹo: Các token tùy chỉnh được lưu trữ cục bộ trong trình duyệt của bạn",
+  "enterValidTokenAddress": "Nhập địa chỉ token hợp lệ",
+  "route": "Tuyến đường",
+  "routeTooltip": "Định tuyến qua các token này mang lại giá tốt nhất cho giao dịch của bạn."
 }

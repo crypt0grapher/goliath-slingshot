@@ -284,5 +284,16 @@
   "dismiss": "Fermer",
   "slippageTooltipMinReceived": "Votre transaction sera annulée si un mouvement de prix important et défavorable se produit avant sa confirmation.",
   "slippageTooltipPriceImpact": "La différence entre le prix du marché et votre prix en raison de la taille de la transaction.",
-  "slippageTooltipLPFee": "Une partie de chaque transaction (0,30%) va aux fournisseurs de liquidité comme incitation au protocole."
+  "slippageTooltipLPFee": "Une partie de chaque transaction (0,30%) va aux fournisseurs de liquidité comme incitation au protocole.",
+  "swappingTokens": "Échange de {{amountIn}} {{symbolIn}} contre {{amountOut}} {{symbolOut}}",
+  "swapSummary": "Échange {{inputAmount}} {{inputSymbol}} contre {{outputAmount}} {{outputSymbol}}",
+  "manage": "Gérer",
+  "lists": "Listes",
+  "tokens": "Jetons",
+  "customTokensCount": "{{count}} Jeton personnalisé",
+  "customTokensCount_plural": "{{count}} Jetons personnalisés",
+  "customTokensTip": "Conseil: Les jetons personnalisés sont stockés localement dans votre navigateur",
+  "enterValidTokenAddress": "Entrez une adresse de jeton valide",
+  "route": "Itinéraire",
+  "routeTooltip": "Le routage via ces jetons a permis d'obtenir le meilleur prix pour votre transaction."
 }

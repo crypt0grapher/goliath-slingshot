@@ -284,5 +284,16 @@
   "dismiss": "关闭",
   "slippageTooltipMinReceived": "如果在确认前发生较大的不利价格变动，您的交易将被回退。",
   "slippageTooltipPriceImpact": "由于交易规模导致的市场价格与您价格之间的差异。",
-  "slippageTooltipLPFee": "每笔交易的一部分（0.30%）将作为协议激励分配给流动性提供者。"
+  "slippageTooltipLPFee": "每笔交易的一部分（0.30%）将作为协议激励分配给流动性提供者。",
+  "swappingTokens": "正在将 {{amountIn}} {{symbolIn}} 兑换为 {{amountOut}} {{symbolOut}}",
+  "swapSummary": "兑换 {{inputAmount}} {{inputSymbol}} 为 {{outputAmount}} {{outputSymbol}}",
+  "manage": "管理",
+  "lists": "列表",
+  "tokens": "代币",
+  "customTokensCount": "{{count}} 个自定义代币",
+  "customTokensCount_plural": "{{count}} 个自定义代币",
+  "customTokensTip": "提示：自定义代币存储在您浏览器的本地存储中",
+  "enterValidTokenAddress": "请输入有效的代币地址",
+  "route": "路由",
+  "routeTooltip": "通过这些代币路由可为您的交易获得最佳价格。"
 }

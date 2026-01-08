@@ -183,7 +183,7 @@ function Web3StatusInner() {
       <Web3StatusConnected id="web3-status-connected" onClick={toggleWalletModal} pending={hasPendingTransactions}>
         {hasPendingTransactions ? (
           <RowBetween>
-            <Text>{pending?.length} Pending</Text> <Loader stroke="white" />
+            <Text>{t('pendingCount', { count: pending?.length })}</Text> <Loader stroke="white" />
           </RowBetween>
         ) : (
           <>
@@ -197,7 +197,7 @@ function Web3StatusInner() {
     return (
       <Web3StatusError onClick={toggleWalletModal}>
         <NetworkIcon />
-        <Text>{error instanceof UnsupportedChainIdError ? 'Wrong Network' : 'Error'}</Text>
+        <Text>{error instanceof UnsupportedChainIdError ? t('wrongNetworkShort') : t('error')}</Text>
       </Web3StatusError>
     );
   } else {

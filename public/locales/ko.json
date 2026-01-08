@@ -284,5 +284,16 @@
   "dismiss": "닫기",
   "slippageTooltipMinReceived": "확인 전에 큰 불리한 가격 변동이 발생하면 거래가 취소됩니다.",
   "slippageTooltipPriceImpact": "거래 규모로 인한 시장 가격과 귀하의 가격 간의 차이.",
-  "slippageTooltipLPFee": "각 거래의 일부(0.30%)가 프로토콜 인센티브로 유동성 공급자에게 지급됩니다."
+  "slippageTooltipLPFee": "각 거래의 일부(0.30%)가 프로토콜 인센티브로 유동성 공급자에게 지급됩니다.",
+  "swappingTokens": "{{amountIn}} {{symbolIn}}을(를) {{amountOut}} {{symbolOut}}(으)로 스왑 중",
+  "swapSummary": "{{inputAmount}} {{inputSymbol}}을(를) {{outputAmount}} {{outputSymbol}}(으)로 스왑",
+  "manage": "관리",
+  "lists": "목록",
+  "tokens": "토큰",
+  "customTokensCount": "사용자 정의 토큰 {{count}}개",
+  "customTokensCount_plural": "사용자 정의 토큰 {{count}}개",
+  "customTokensTip": "팁: 사용자 정의 토큰은 브라우저에 로컬로 저장됩니다",
+  "enterValidTokenAddress": "유효한 토큰 주소를 입력하세요",
+  "route": "경로",
+  "routeTooltip": "이 토큰들을 통한 라우팅으로 거래에 가장 좋은 가격을 얻었습니다."
 }

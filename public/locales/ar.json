@@ -284,5 +284,16 @@
   "dismiss": "إغلاق",
   "slippageTooltipMinReceived": "ستُلغى معاملتك إذا حدث تحرك سعري كبير غير مواتٍ قبل تأكيدها.",
   "slippageTooltipPriceImpact": "الفرق بين سعر السوق وسعرك بسبب حجم التداول.",
-  "slippageTooltipLPFee": "جزء من كل صفقة (0.30%) يذهب لمزودي السيولة كحافز للبروتوكول."
+  "slippageTooltipLPFee": "جزء من كل صفقة (0.30%) يذهب لمزودي السيولة كحافز للبروتوكول.",
+  "swappingTokens": "تبديل {{amountIn}} {{symbolIn}} بـ {{amountOut}} {{symbolOut}}",
+  "swapSummary": "تبديل {{inputAmount}} {{inputSymbol}} بـ {{outputAmount}} {{outputSymbol}}",
+  "manage": "إدارة",
+  "lists": "القوائم",
+  "tokens": "الرموز",
+  "customTokensCount": "{{count}} رمز مخصص",
+  "customTokensCount_plural": "{{count}} رموز مخصصة",
+  "customTokensTip": "نصيحة: يتم تخزين الرموز المخصصة محلياً في متصفحك",
+  "enterValidTokenAddress": "أدخل عنوان رمز صالح",
+  "route": "المسار",
+  "routeTooltip": "أدى التوجيه عبر هذه الرموز إلى الحصول على أفضل سعر لتداولك."
 }

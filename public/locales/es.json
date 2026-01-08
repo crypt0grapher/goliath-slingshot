@@ -284,5 +284,16 @@
   "dismiss": "Cerrar",
   "slippageTooltipMinReceived": "Tu transacción será revertida si hay un movimiento de precio grande y desfavorable antes de confirmarse.",
   "slippageTooltipPriceImpact": "La diferencia entre el precio de mercado y tu precio debido al tamaño de la operación.",
-  "slippageTooltipLPFee": "Una parte de cada operación (0.30%) va a los proveedores de liquidez como incentivo del protocolo."
+  "slippageTooltipLPFee": "Una parte de cada operación (0.30%) va a los proveedores de liquidez como incentivo del protocolo.",
+  "swappingTokens": "Intercambiando {{amountIn}} {{symbolIn}} por {{amountOut}} {{symbolOut}}",
+  "swapSummary": "Intercambiar {{inputAmount}} {{inputSymbol}} por {{outputAmount}} {{outputSymbol}}",
+  "manage": "Administrar",
+  "lists": "Listas",
+  "tokens": "Tokens",
+  "customTokensCount": "{{count}} Token personalizado",
+  "customTokensCount_plural": "{{count}} Tokens personalizados",
+  "customTokensTip": "Consejo: Los tokens personalizados se almacenan localmente en tu navegador",
+  "enterValidTokenAddress": "Ingresa una dirección de token válida",
+  "route": "Ruta",
+  "routeTooltip": "El enrutamiento a través de estos tokens resultó en el mejor precio para tu operación."
 }

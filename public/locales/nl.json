@@ -284,5 +284,16 @@
   "dismiss": "Sluiten",
   "slippageTooltipMinReceived": "Je transactie wordt teruggedraaid als er een grote, ongunstige prijsbeweging plaatsvindt voordat deze wordt bevestigd.",
   "slippageTooltipPriceImpact": "Het verschil tussen de marktprijs en jouw prijs vanwege de handelsgrootte.",
-  "slippageTooltipLPFee": "Een deel van elke transactie (0,30%) gaat naar liquiditeitsproviders als protocolbeloning."
+  "slippageTooltipLPFee": "Een deel van elke transactie (0,30%) gaat naar liquiditeitsproviders als protocolbeloning.",
+  "swappingTokens": "{{amountIn}} {{symbolIn}} ruilen voor {{amountOut}} {{symbolOut}}",
+  "swapSummary": "Ruil {{inputAmount}} {{inputSymbol}} voor {{outputAmount}} {{outputSymbol}}",
+  "manage": "Beheren",
+  "lists": "Lijsten",
+  "tokens": "Tokens",
+  "customTokensCount": "{{count}} Aangepaste Token",
+  "customTokensCount_plural": "{{count}} Aangepaste Tokens",
+  "customTokensTip": "Tip: Aangepaste tokens worden lokaal in je browser opgeslagen",
+  "enterValidTokenAddress": "Voer een geldig tokenadres in",
+  "route": "Route",
+  "routeTooltip": "Routing via deze tokens leverde de beste prijs op voor je transactie."
 }

@@ -284,5 +284,16 @@
   "dismiss": "Закрыть",
   "slippageTooltipMinReceived": "Ваша транзакция будет отменена, если перед её подтверждением произойдёт значительное неблагоприятное изменение цены.",
   "slippageTooltipPriceImpact": "Разница между рыночной ценой и вашей ценой из-за объёма сделки.",
-  "slippageTooltipLPFee": "Часть каждой сделки (0.30%) идёт поставщикам ликвидности в качестве вознаграждения протокола."
+  "slippageTooltipLPFee": "Часть каждой сделки (0.30%) идёт поставщикам ликвидности в качестве вознаграждения протокола.",
+  "swappingTokens": "Обмен {{amountIn}} {{symbolIn}} на {{amountOut}} {{symbolOut}}",
+  "swapSummary": "Обмен {{inputAmount}} {{inputSymbol}} на {{outputAmount}} {{outputSymbol}}",
+  "manage": "Управление",
+  "lists": "Списки",
+  "tokens": "Токены",
+  "customTokensCount": "{{count}} пользовательский токен",
+  "customTokensCount_plural": "{{count}} пользовательских токенов",
+  "customTokensTip": "Совет: Пользовательские токены хранятся локально в вашем браузере",
+  "enterValidTokenAddress": "Введите действительный адрес токена",
+  "route": "Маршрут",
+  "routeTooltip": "Маршрутизация через эти токены обеспечила лучшую цену для вашей сделки."
 }

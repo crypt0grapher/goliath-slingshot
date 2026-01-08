@@ -284,5 +284,16 @@
   "dismiss": "סגור",
   "slippageTooltipMinReceived": "העסקה שלך תבוטל אם תהיה תנועת מחיר גדולה ולא נוחה לפני האישור.",
   "slippageTooltipPriceImpact": "ההבדל בין מחיר השוק למחיר שלך בשל גודל העסקה.",
-  "slippageTooltipLPFee": "חלק מכל עסקה (0.30%) הולך לספקי הנזילות כתמריץ פרוטוקול."
+  "slippageTooltipLPFee": "חלק מכל עסקה (0.30%) הולך לספקי הנזילות כתמריץ פרוטוקול.",
+  "swappingTokens": "מחליף {{amountIn}} {{symbolIn}} ב-{{amountOut}} {{symbolOut}}",
+  "swapSummary": "החלף {{inputAmount}} {{inputSymbol}} ב-{{outputAmount}} {{outputSymbol}}",
+  "manage": "ניהול",
+  "lists": "רשימות",
+  "tokens": "טוקנים",
+  "customTokensCount": "{{count}} טוקן מותאם אישית",
+  "customTokensCount_plural": "{{count}} טוקנים מותאמים אישית",
+  "customTokensTip": "טיפ: טוקנים מותאמים אישית נשמרים מקומית בדפדפן שלך",
+  "enterValidTokenAddress": "הזן כתובת טוקן תקינה",
+  "route": "מסלול",
+  "routeTooltip": "ניתוב דרך טוקנים אלה הביא למחיר הטוב ביותר לעסקה שלך."
 }

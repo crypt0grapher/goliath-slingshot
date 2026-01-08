@@ -284,5 +284,16 @@
   "dismiss": "閉じる",
   "slippageTooltipMinReceived": "確認前に大きな不利な価格変動があった場合、トランザクションは取り消されます。",
   "slippageTooltipPriceImpact": "取引サイズによる市場価格とあなたの価格の差。",
-  "slippageTooltipLPFee": "各取引の一部（0.30%）はプロトコルのインセンティブとして流動性提供者に支払われます。"
+  "slippageTooltipLPFee": "各取引の一部（0.30%）はプロトコルのインセンティブとして流動性提供者に支払われます。",
+  "swappingTokens": "{{amountIn}} {{symbolIn}} を {{amountOut}} {{symbolOut}} にスワップ中",
+  "swapSummary": "{{inputAmount}} {{inputSymbol}} を {{outputAmount}} {{outputSymbol}} にスワップ",
+  "manage": "管理",
+  "lists": "リスト",
+  "tokens": "トークン",
+  "customTokensCount": "{{count}} カスタムトークン",
+  "customTokensCount_plural": "{{count}} カスタムトークン",
+  "customTokensTip": "ヒント: カスタムトークンはブラウザにローカルに保存されます",
+  "enterValidTokenAddress": "有効なトークンアドレスを入力してください",
+  "route": "ルート",
+  "routeTooltip": "これらのトークンを経由することで、取引の最良価格が得られました。"
 }

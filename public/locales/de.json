@@ -284,5 +284,16 @@
   "dismiss": "Schließen",
   "slippageTooltipMinReceived": "Deine Transaktion wird rückgängig gemacht, wenn vor der Bestätigung eine große, ungünstige Preisbewegung stattfindet.",
   "slippageTooltipPriceImpact": "Die Differenz zwischen dem Marktpreis und deinem Preis aufgrund der Handelsgröße.",
-  "slippageTooltipLPFee": "Ein Teil jedes Handels (0,30%) geht an Liquiditätsanbieter als Protokollanreiz."
+  "slippageTooltipLPFee": "Ein Teil jedes Handels (0,30%) geht an Liquiditätsanbieter als Protokollanreiz.",
+  "swappingTokens": "Tausche {{amountIn}} {{symbolIn}} gegen {{amountOut}} {{symbolOut}}",
+  "swapSummary": "Tausche {{inputAmount}} {{inputSymbol}} gegen {{outputAmount}} {{outputSymbol}}",
+  "manage": "Verwalten",
+  "lists": "Listen",
+  "tokens": "Token",
+  "customTokensCount": "{{count}} Benutzerdefinierter Token",
+  "customTokensCount_plural": "{{count}} Benutzerdefinierte Token",
+  "customTokensTip": "Tipp: Benutzerdefinierte Token werden lokal in deinem Browser gespeichert",
+  "enterValidTokenAddress": "Gib eine gültige Token-Adresse ein",
+  "route": "Route",
+  "routeTooltip": "Das Routing über diese Token ergab den besten Preis für deinen Handel."
 }

@@ -284,5 +284,16 @@
   "dismiss": "Tutup",
   "slippageTooltipMinReceived": "Transaksi Anda akan dibatalkan jika terjadi pergerakan harga besar yang tidak menguntungkan sebelum dikonfirmasi.",
   "slippageTooltipPriceImpact": "Selisih antara harga pasar dan harga Anda karena ukuran perdagangan.",
-  "slippageTooltipLPFee": "Sebagian dari setiap perdagangan (0,30%) diberikan kepada penyedia likuiditas sebagai insentif protokol."
+  "slippageTooltipLPFee": "Sebagian dari setiap perdagangan (0,30%) diberikan kepada penyedia likuiditas sebagai insentif protokol.",
+  "swappingTokens": "Menukar {{amountIn}} {{symbolIn}} dengan {{amountOut}} {{symbolOut}}",
+  "swapSummary": "Tukar {{inputAmount}} {{inputSymbol}} dengan {{outputAmount}} {{outputSymbol}}",
+  "manage": "Kelola",
+  "lists": "Daftar",
+  "tokens": "Token",
+  "customTokensCount": "{{count}} Token Kustom",
+  "customTokensCount_plural": "{{count}} Token Kustom",
+  "customTokensTip": "Tips: Token kustom disimpan secara lokal di browser Anda",
+  "enterValidTokenAddress": "Masukkan alamat token yang valid",
+  "route": "Rute",
+  "routeTooltip": "Perutean melalui token-token ini menghasilkan harga terbaik untuk perdagangan Anda."
 }

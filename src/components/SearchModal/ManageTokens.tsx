@@ -1,4 +1,5 @@
 import React, { useRef, RefObject, useCallback, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import Column from 'components/Column';
 import { PaddedColumn, Separator, SearchInput } from './styleds';
 import Row, { RowBetween, RowFixed } from 'components/Row';
@@ -42,6 +43,7 @@ export default function ManageTokens({
   setModalView: (view: CurrencyModalView) => void;
   setImportToken: (token: Token) => void;
 }) {
+  const { t } = useTranslation();
   const { chainId } = useActiveWeb3React();
 
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -108,7 +110,7 @@ export default function ManageTokens({
               onChange={handleInput}
             />
           </Row>
-          {searchQuery !== '' && !isAddressSearch && <TYPE.error error={true}>Enter valid token address</TYPE.error>}
+          {searchQuery !== '' && !isAddressSearch && <TYPE.error error={true}>{t('enterValidTokenAddress')}</TYPE.error>}
           {searchToken && (
             <Card backgroundColor={theme.bg2} padding="10px 0">
               <ImportRow
@@ -124,11 +126,11 @@ export default function ManageTokens({
         <PaddedColumn gap="lg">
           <RowBetween>
             <TYPE.main fontWeight={600}>
-              {userAddedTokens?.length} Custom {userAddedTokens.length === 1 ? 'Token' : 'Tokens'}
+              {t('customTokensCount', { count: userAddedTokens?.length })}
             </TYPE.main>
             {userAddedTokens.length > 0 && (
               <ButtonText onClick={handleRemoveAll}>
-                <TYPE.blue>Clear all</TYPE.blue>
+                <TYPE.blue>{t('clearAll')}</TYPE.blue>
               </ButtonText>
             )}
           </RowBetween>
@@ -136,7 +138,7 @@ export default function ManageTokens({
         </PaddedColumn>
       </Column>
       <Footer>
-        <TYPE.darkGray>Tip: Custom tokens are stored locally in your browser</TYPE.darkGray>
+        <TYPE.darkGray>{t('customTokensTip')}</TYPE.darkGray>
       </Footer>
     </Wrapper>
   );

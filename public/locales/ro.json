@@ -284,5 +284,16 @@
   "dismiss": "Închide",
   "slippageTooltipMinReceived": "Tranzacția ta va fi anulată dacă are loc o mișcare mare și nefavorabilă a prețului înainte de confirmare.",
   "slippageTooltipPriceImpact": "Diferența dintre prețul pieței și prețul tău din cauza dimensiunii tranzacției.",
-  "slippageTooltipLPFee": "O parte din fiecare tranzacție (0,30%) merge la furnizorii de lichiditate ca stimulent pentru protocol."
+  "slippageTooltipLPFee": "O parte din fiecare tranzacție (0,30%) merge la furnizorii de lichiditate ca stimulent pentru protocol.",
+  "swappingTokens": "Se schimbă {{amountIn}} {{symbolIn}} pentru {{amountOut}} {{symbolOut}}",
+  "swapSummary": "Schimbă {{inputAmount}} {{inputSymbol}} pentru {{outputAmount}} {{outputSymbol}}",
+  "manage": "Administrează",
+  "lists": "Liste",
+  "tokens": "Tokenuri",
+  "customTokensCount": "{{count}} Token personalizat",
+  "customTokensCount_plural": "{{count}} Tokenuri personalizate",
+  "customTokensTip": "Sfat: Tokenurile personalizate sunt stocate local în browserul tău",
+  "enterValidTokenAddress": "Introdu o adresă de token validă",
+  "route": "Rută",
+  "routeTooltip": "Rutarea prin aceste tokenuri a rezultat în cel mai bun preț pentru tranzacția ta."
 }

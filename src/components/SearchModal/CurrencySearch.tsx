@@ -183,7 +183,7 @@ export function CurrencySearch({
       <PaddedColumn gap="16px">
         <RowBetween>
           <Text fontWeight={500} fontSize={16}>
-            Select a token
+            {t('selectToken')}
           </Text>
           <CloseIcon onClick={onDismiss} />
         </RowBetween>
@@ -277,7 +277,7 @@ export function CurrencySearch({
               <IconWrapper size="16px" marginRight="6px">
                 <Edit />
               </IconWrapper>
-              <TYPE.main color={theme.blue1}>Manage</TYPE.main>
+              <TYPE.main color={theme.blue1}>{t('manage')}</TYPE.main>
             </RowFixed>
           </ButtonText>
         </Row>

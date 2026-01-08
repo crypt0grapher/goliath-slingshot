@@ -285,5 +285,15 @@
   "slippageTooltipMinReceived": "Your transaction will revert if there is a large, unfavorable price movement before it is confirmed.",
   "slippageTooltipPriceImpact": "The difference between the market price and your price due to trade size.",
   "slippageTooltipLPFee": "A portion of each trade (0.30%) goes to liquidity providers as a protocol incentive.",
-  "swappingTokens": "Swapping {{amountIn}} {{symbolIn}} for {{amountOut}} {{symbolOut}}"
+  "swappingTokens": "Swapping {{amountIn}} {{symbolIn}} for {{amountOut}} {{symbolOut}}",
+  "swapSummary": "Swap {{inputAmount}} {{inputSymbol}} for {{outputAmount}} {{outputSymbol}}",
+  "manage": "Manage",
+  "lists": "Lists",
+  "tokens": "Tokens",
+  "customTokensCount": "{{count}} Custom Token",
+  "customTokensCount_plural": "{{count}} Custom Tokens",
+  "customTokensTip": "Tip: Custom tokens are stored locally in your browser",
+  "enterValidTokenAddress": "Enter valid token address",
+  "route": "Route",
+  "routeTooltip": "Routing through these tokens resulted in the best price for your trade."
 }
