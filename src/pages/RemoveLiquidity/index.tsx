@@ -293,7 +293,7 @@ export default function RemoveLiquidity({
         ];
       }
     } else {
-      throw new Error('Attempting to confirm without approval or a signature. Please contact support.');
+      throw new Error(t('errorNoApprovalOrSignature'));
     }
 
     const safeGasEstimates: (BigNumber | undefined)[] = await Promise.all(

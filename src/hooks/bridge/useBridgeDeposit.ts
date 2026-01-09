@@ -1,4 +1,6 @@
 import { useCallback, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import i18n from 'i18next';
 import { ethers } from 'ethers';
 import { useActiveWeb3React } from '../index';
 import { useProviderReady } from '../useProviderReady';
@@ -45,7 +47,7 @@ const waitForTxWithTimeout = async (
     tx.wait(),
     new Promise<never>((_, reject) =>
       setTimeout(
-        () => reject(new Error('Transaction is taking too long. It may still complete - check your wallet for pending transactions.')),
+        () => reject(new Error(i18n.t('errorTransactionTakingLong'))),
         timeoutMs
       )
     ),
@@ -66,7 +68,9 @@ const checkPendingTransactions = async (
     if (pendingNonce > confirmedNonce) {
       const pendingCount = pendingNonce - confirmedNonce;
       throw new Error(
-        `You have ${pendingCount} pending transaction${pendingCount > 1 ? 's' : ''}. Please wait for ${pendingCount > 1 ? 'them' : 'it'} to confirm before starting a new bridge.`
+        pendingCount > 1
+          ? i18n.t('errorPendingTransactions', { count: pendingCount })
+          : i18n.t('errorPendingTransactionSingle')
       );
     }
   } catch (err: any) {
@@ -86,6 +90,7 @@ interface UseDepositReturn {
 }
 
 export function useBridgeDeposit(): UseDepositReturn {
+  const { t } = useTranslation();
   const { account, library } = useActiveWeb3React();
   const { isReady: providerReady, recheckProvider } = useProviderReady();
   const dispatch = useDispatch();
@@ -95,7 +100,7 @@ export function useBridgeDeposit(): UseDepositReturn {
   const deposit = useCallback(
     async (token: BridgeTokenSymbol, amountHuman: string, recipient: string): Promise<string> => {
       if (!account || !library) {
-        throw new Error('Wallet not connected');
+        throw new Error(t('errorWalletNotConnected'));
       }
 
       setIsLoading(true);
@@ -162,7 +167,7 @@ export function useBridgeDeposit(): UseDepositReturn {
         }
 
         if (!tx!) {
-          throw lastError || new Error('Deposit failed after multiple attempts');
+          throw lastError || new Error(t('errorDepositFailedRetry'));
         }
 
         // Create operation record
@@ -216,10 +221,10 @@ export function useBridgeDeposit(): UseDepositReturn {
             bridgeActions.updateOperationStatus({
               id: operationId,
               status: 'FAILED',
-              errorMessage: 'Transaction reverted',
+              errorMessage: t('errorTransactionReverted'),
             })
           );
-          throw new Error('Transaction reverted');
+          throw new Error(t('errorTransactionReverted'));
         }
 
         // Update status to confirming
@@ -242,7 +247,7 @@ export function useBridgeDeposit(): UseDepositReturn {
         dispatch(bridgeActions.setSubmitting(false));
       }
     },
-    [account, library, dispatch, providerReady, recheckProvider]
+    [t, account, library, dispatch, providerReady, recheckProvider]
   );
 
   return { deposit, isLoading, error };

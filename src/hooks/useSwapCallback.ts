@@ -163,7 +163,7 @@ export function useSwapCallback(
               return contract.callStatic[methodName](...args, options)
                 .then((result) => {
                   console.debug('Unexpected successful call after failed estimate gas', call, gasError, result);
-                  return { call, error: new Error('Unexpected issue with estimating the gas. Please try again.') };
+                  return { call, error: new Error(t('errorGasEstimate')) };
                 })
                 .catch((callError) => {
                   console.debug('Call threw error', call, callError);
@@ -171,11 +171,10 @@ export function useSwapCallback(
                   switch (callError.reason) {
                     case 'SwapRouterV2: INSUFFICIENT_OUTPUT_AMOUNT':
                     case 'SwapRouterV2: EXCESSIVE_INPUT_AMOUNT':
-                      errorMessage =
-                        'This transaction will not succeed either due to price movement or fee on transfer. Try increasing your slippage tolerance.';
+                      errorMessage = t('errorPriceMovementSlippage');
                       break;
                     default:
-                      errorMessage = `The transaction cannot succeed due to error: ${callError.reason}. This is probably an issue with one of the tokens you are swapping.`;
+                      errorMessage = t('errorTransactionFailed', { reason: callError.reason });
                   }
                   return { call, error: new Error(errorMessage) };
                 });
@@ -192,7 +191,7 @@ export function useSwapCallback(
       if (!successfulEstimation) {
         const errorCalls = estimatedCalls.filter((call): call is FailedCall => 'error' in call);
         if (errorCalls.length > 0) throw errorCalls[errorCalls.length - 1].error;
-        throw new Error('Unexpected error. Please contact support: none of the calls threw an error');
+        throw new Error(t('errorUnexpectedNoError'));
       }
 
       const {
@@ -237,11 +236,11 @@ export function useSwapCallback(
         .catch((error: any) => {
           // if the user rejected the tx, pass this along
           if (error?.code === 4001) {
-            throw new Error('Transaction rejected.');
+            throw new Error(t('errorTransactionRejected'));
           } else {
             // otherwise, the error was unexpected and we need to convey that
             console.error(`Swap failed`, error, methodName, args, value);
-            throw new Error(`Swap failed: ${error.message}`);
+            throw new Error(t('errorSwapFailed', { message: error.message }));
           }
         });
     };
@@ -286,7 +285,7 @@ export function useSwapCallback(
         }
 
         // If we get here, all retries failed
-        throw lastError || new Error('Swap failed after multiple attempts. Please try again.');
+        throw lastError || new Error(t('errorSwapFailedRetry'));
       },
       error: null,
     };

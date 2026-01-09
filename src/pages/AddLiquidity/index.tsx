@@ -253,13 +253,13 @@ export default function AddLiquidity({
 
         // Provide helpful error messages based on common failures
         if (estimateError?.message?.includes('INSUFFICIENT_')) {
-          throw new Error('Insufficient liquidity or token amounts are too low');
+          throw new Error(t('errorInsufficientLiquidityLow'));
         }
         if (estimateError?.message?.includes('EXPIRED')) {
-          throw new Error('Transaction deadline expired. Please try again.');
+          throw new Error(t('errorDeadlineExpired'));
         }
         if (estimateError?.message?.includes('insufficient funds')) {
-          throw new Error(`Insufficient ${symbolA === 'XCN' || symbolB === 'XCN' ? 'XCN' : 'token'} balance`);
+          throw new Error(t('errorInsufficientTokenBalance', { token: symbolA === 'XCN' || symbolB === 'XCN' ? 'XCN' : 'token' }));
         }
 
         // Use fallback gas limit for other cases

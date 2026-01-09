@@ -1,3 +1,4 @@
+import i18n from 'i18next';
 import { BridgeDirection, BridgeStatus, BridgeTokenSymbol } from '../state/bridge/types';
 
 // ============================================
@@ -153,7 +154,7 @@ export class BridgeApiClient {
     } else if (params.withdrawId) {
       queryParams.set('withdrawId', params.withdrawId);
     } else {
-      throw new Error('One of originTxHash, depositId, or withdrawId is required');
+      throw new Error(i18n.t('errorBridgeParamRequired'));
     }
 
     try {

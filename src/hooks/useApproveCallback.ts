@@ -2,6 +2,7 @@ import { MaxUint256 } from '@ethersproject/constants';
 import { TransactionResponse } from '@ethersproject/providers';
 import { Trade, TokenAmount, CurrencyAmount, ETHER } from '@uniswap/sdk';
 import { useCallback, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ROUTER_ADDRESS } from '../constants';
 import { useTokenAllowance } from '../data/Allowances';
 import { Field } from '../state/swap/actions';
@@ -49,6 +50,7 @@ export function useApproveCallback(
   amountToApprove?: CurrencyAmount,
   spender?: string
 ): [ApprovalState, () => Promise<void>] {
+  const { t } = useTranslation();
   const { account } = useActiveWeb3React();
   const { isReady: providerReady, recheckProvider } = useProviderReady();
   const token = amountToApprove instanceof TokenAmount ? amountToApprove.token : undefined;
@@ -164,8 +166,8 @@ export function useApproveCallback(
 
     // If we get here, all retries failed
     console.debug('Failed to approve token after retries', lastError);
-    throw lastError || new Error('Approval failed after multiple attempts. Please try again.');
-  }, [approvalState, token, tokenContract, amountToApprove, spender, addTransaction, providerReady, recheckProvider]);
+    throw lastError || new Error(t('errorApprovalFailedRetry'));
+  }, [t, approvalState, token, tokenContract, amountToApprove, spender, addTransaction, providerReady, recheckProvider]);
 
   return [approvalState, approve];
 }

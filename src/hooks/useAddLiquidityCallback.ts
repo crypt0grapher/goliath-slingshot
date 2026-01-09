@@ -2,6 +2,7 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { TransactionResponse } from '@ethersproject/providers';
 import { Currency, CurrencyAmount, ETHER, ChainId } from '@uniswap/sdk';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useActiveWeb3React } from './index';
 import { calculateGasMargin, calculateSlippageAmount, getRouterContract } from '../utils';
 import { wrappedCurrency } from '../utils/wrappedCurrency';
@@ -41,6 +42,7 @@ interface AddLiquidityCallbackResult {
 export function useAddLiquidityCallback(
   params: AddLiquidityParams | undefined
 ): AddLiquidityCallbackResult {
+  const { t } = useTranslation();
   const { account, chainId, library } = useActiveWeb3React();
   const addTransaction = useTransactionAdder();
 
@@ -131,20 +133,20 @@ export function useAddLiquidityCallback(
         } catch (error: any) {
           // Check if user rejected the transaction
           if (error?.code === 4001 || error?.code === 'ACTION_REJECTED') {
-            throw new Error('Transaction rejected by user');
+            throw new Error(t('errorTransactionRejectedByUser'));
           }
 
           console.error('addLiquidityETH failed:', error);
 
           // Provide more specific error messages
           if (error?.message?.includes('insufficient funds')) {
-            throw new Error('Insufficient balance for this transaction');
+            throw new Error(t('errorInsufficientBalanceTransaction'));
           }
           if (error?.message?.includes('INSUFFICIENT_')) {
-            throw new Error('Insufficient liquidity or amounts too low');
+            throw new Error(t('errorInsufficientLiquidityAmounts'));
           }
 
-          throw new Error(error?.message || 'Failed to add liquidity. Please try again.');
+          throw new Error(error?.message || t('errorAddLiquidityFailed'));
         }
       } else {
         // Both are ERC20 tokens, use regular addLiquidity
@@ -181,11 +183,11 @@ export function useAddLiquidityCallback(
           return response.hash;
         } catch (error: any) {
           if (error?.code === 4001 || error?.code === 'ACTION_REJECTED') {
-            throw new Error('Transaction rejected by user');
+            throw new Error(t('errorTransactionRejectedByUser'));
           }
 
           console.error('addLiquidity failed:', error);
-          throw new Error(error?.message || 'Failed to add liquidity. Please try again.');
+          throw new Error(error?.message || t('errorAddLiquidityFailed'));
         }
       }
     };
@@ -195,7 +197,7 @@ export function useAddLiquidityCallback(
       callback,
       error: null,
     };
-  }, [params, account, chainId, library, addTransaction]);
+  }, [t, params, account, chainId, library, addTransaction]);
 }
 
 /**
