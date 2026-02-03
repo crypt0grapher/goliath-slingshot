@@ -43,7 +43,7 @@ export const WXCN = new Token(GOLIATH_CHAIN_ID, '0x88A07F7BBb61A2945D8Ac541461fc
 // Wrapped asset tokens on Goliath (ERC20 representations)
 export const ETH_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xEd02AA7dd3f105EDab8702D859781CAfF111324b', 18, 'ETH', 'Ethereum');
 export const BTC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x8b2a7658acD9CA5b4e207F94a0101598c7B678F8', 8, 'BTC', 'Bitcoin');
-export const USDT_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x03cDCCa25A46Bc5F3F484096217de52C8c417c9D', 6, 'USDT', 'Tether USD');
+export const USDT_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x03cDCCa25A46Bc5F3F484096217de52C8C417c9D', 6, 'USDT', 'Tether USD');
 
 // Onyx Metals tokens (precious metal-backed tokens)
 export const XAUX_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x3B0F44325fb8AaC485Cbe14502d979008341f652', 8, 'XAUX', 'Onyx Gold');
