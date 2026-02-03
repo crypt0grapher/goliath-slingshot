@@ -1,6 +1,6 @@
 import { BridgeOperation, BridgeStatus } from './types';
 
-const STORAGE_KEY = 'bridge:operations:v1';
+const STORAGE_KEY = 'bridge:operations:v2';
 const MAX_STORED_OPERATIONS = 100;
 const EXPIRY_DAYS = 30;
 
