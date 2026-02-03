@@ -9,8 +9,8 @@ import {
 } from '../connectors';
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-export const FACTORY_ADDRESS = '0x698Ba06870312aEd129fC2e48dc3d002d981aB8E';
-export const ROUTER_ADDRESS = '0xC47483b7eE4728c7006001f372bFbd8519210654';
+export const FACTORY_ADDRESS = '0x1a0Da75ADf091a69E7285e596bB27218D77E17a9';
+export const ROUTER_ADDRESS = '0x008c99EedA17E193e5F788536234C6b3520B8D15';
 
 export const LP_TOKEN_NAME = 'Uniswap V2';
 export const LP_TOKEN_SYMBOL = 'SWAP-LP';
@@ -36,17 +36,18 @@ export const WBTC = new Token(ChainId.MAINNET, '0x2260FAC5E5542a773Aa44fBCfeDf7C
 
 // Goliath Testnet tokens
 const GOLIATH_CHAIN_ID = 8901;
-export const USDC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xEf2B9f754405f52c80B5A67656f14672a00d23b4', 6, 'USDC', 'USD Coin');
-export const WXCN = new Token(GOLIATH_CHAIN_ID, '0xec6Cd1441201e36F7289f0B2729a97d091AcB5b7', 18, 'WXCN', 'Wrapped Onyxcoin');
+export const USDC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xC8410270bb53f6c99A2EFe6eD3686a8630Efe22B', 6, 'USDC', 'USD Coin');
+export const WXCN = new Token(GOLIATH_CHAIN_ID, '0xB939d84698426855C628E45Ef02a4909b23535Fc', 18, 'WXCN', 'Wrapped Onyxcoin');
 // Note: XCN is the native token (like ETH), not a ERC20 token
 
 // Wrapped asset tokens on Goliath (ERC20 representations)
-export const ETH_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x9d318b851a6AF920D467bC5dC9882b5DFD36D65e', 18, 'ETH', 'Ethereum');
-export const BTC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xF568bE1D688353d2813810aA6DaF1cB1dCe38D7E', 8, 'BTC', 'Bitcoin');
+export const ETH_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xa973c5626eEaF7F482439753953e9B28C6aF3674', 18, 'ETH', 'Ethereum');
+export const BTC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x9253587505c3B7E7b9DEE118AE1AcB53eEC0E4b6', 8, 'BTC', 'Bitcoin');
+export const USDT_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x88b4BC8e5bd74327B5456466F3f30143986cC1f9', 6, 'USDT', 'Tether USD');
 
 // Onyx Metals tokens (precious metal-backed tokens)
-export const XAUX_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xEC3507BAF55C241e44036a94Cb9c02b15A78E863', 8, 'XAUX', 'Onyx Gold');
-export const XAGX_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x820037622659fF123a01bB94A720854C8A7609C0', 8, 'XAGX', 'Onyx Silver');
+export const XAUX_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x4de29616f7be2bc44D9dfF23abc5Fcb5804DF8B9', 8, 'XAUX', 'Onyx Gold');
+export const XAGX_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x086031394aD8288eC3fE7f2d7495DDfe830a7085', 8, 'XAGX', 'Onyx Silver');
 
 // Block time here is slightly higher (~1s) than average in order to avoid ongoing proposals past the displayed time
 export const AVERAGE_BLOCK_TIME_IN_SECS = 13;
@@ -71,7 +72,7 @@ const WETH_ONLY: ChainTokenList = {
 export const BASES_TO_CHECK_TRADES_AGAINST: ChainTokenList = {
   ...WETH_ONLY,
   [ChainId.MAINNET]: [...WETH_ONLY[ChainId.MAINNET], DAI, USDC, USDT, COMP, MKR, WBTC],
-  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH, ETH_GOLIATH, BTC_GOLIATH, XAUX_GOLIATH, XAGX_GOLIATH],
+  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH, USDT_GOLIATH, ETH_GOLIATH, BTC_GOLIATH, XAUX_GOLIATH, XAGX_GOLIATH],
 };
 
 /**
@@ -88,7 +89,7 @@ export const CUSTOM_BASES: { [chainId: number]: { [tokenAddress: string]: Token[
 export const SUGGESTED_BASES: ChainTokenList = {
   ...WETH_ONLY,
   [ChainId.MAINNET]: [...WETH_ONLY[ChainId.MAINNET], DAI, USDC, USDT, WBTC],
-  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH, ETH_GOLIATH, BTC_GOLIATH, XAUX_GOLIATH, XAGX_GOLIATH],
+  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH, USDT_GOLIATH, ETH_GOLIATH, BTC_GOLIATH, XAUX_GOLIATH, XAGX_GOLIATH],
 };
 
 // used to construct the list of all pairs we consider by default in the frontend
@@ -99,7 +100,7 @@ export const BASES_TO_TRACK_LIQUIDITY_FOR: ChainTokenList = {
   [ChainId.RINKEBY]: [...WETH_ONLY[ChainId.RINKEBY]],
   [ChainId.GÖRLI]: [...WETH_ONLY[ChainId.GÖRLI]],
   [ChainId.KOVAN]: [...WETH_ONLY[ChainId.KOVAN]],
-  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH, ETH_GOLIATH, BTC_GOLIATH, XAUX_GOLIATH, XAGX_GOLIATH],
+  8901: [WETH[ChainId.GOLIATH_TESTNET], USDC_GOLIATH, USDT_GOLIATH, ETH_GOLIATH, BTC_GOLIATH, XAUX_GOLIATH, XAGX_GOLIATH],
 };
 
 export const PINNED_PAIRS: { readonly [chainId: number]: [Token, Token][] | undefined } = {

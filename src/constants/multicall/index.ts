@@ -7,7 +7,7 @@ const MULTICALL_NETWORKS: { [chainId: number]: string } = {
   [ChainId.KOVAN]: '0x2cc8688C5f75E365aaEEb4ea8D6a480405A48D2A',
   [ChainId.RINKEBY]: '0x42Ad527de7d4e9d9d011aC45B31D8551f8Fe9821',
   [ChainId.GÖRLI]: '0x77dCa2C955b15e9dE4dbBCf1246B4B85b651e50e',
-  8901: '0x9a64319f37A02DbFab53f45fddB13Ea6744Fb8C2', // Goliath Testnet - Multicall3 (fixed decimal scaling)
+  8901: '0x3255A8408F11E6A3057fFaa73bf4A6526B7bD38a', // Goliath Testnet - Multicall3 (fixed decimal scaling)
 };
 
 export { MULTICALL_ABI, MULTICALL_NETWORKS };

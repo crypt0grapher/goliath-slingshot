@@ -14,18 +14,19 @@ const getTokenLogoURL = (address: string) =>
 // Custom logos for Goliath testnet tokens with local fallbacks
 // Format: { address: [primarySource, ...fallbackSources] } or { address: singleSource }
 const GOLIATH_TOKEN_LOGOS: { [address: string]: string | string[] } = {
-  '0xec6Cd1441201e36F7289f0B2729a97d091AcB5b7': 'https://bridge.onyx.org/img/networks/80888.svg', // WXCN
-  '0xEf2B9f754405f52c80B5A67656f14672a00d23b4': 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png', // USDC
-  '0x9d318b851a6AF920D467bC5dC9882b5DFD36D65e': 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png', // ETH
+  '0xB939d84698426855C628E45Ef02a4909b23535Fc': 'https://bridge.onyx.org/img/networks/80888.svg', // WXCN
+  '0xC8410270bb53f6c99A2EFe6eD3686a8630Efe22B': 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png', // USDC
+  '0x88b4BC8e5bd74327B5456466F3f30143986cC1f9': 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png', // USDT
+  '0xa973c5626eEaF7F482439753953e9B28C6aF3674': 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png', // ETH
   // BTC - local asset with CDN fallbacks for reliability
-  '0x3658049f0e9be1D2019652BfBe4EEBB42246Ea10': [
+  '0x9253587505c3B7E7b9DEE118AE1AcB53eEC0E4b6': [
     '/images/tokens/btc-logo.svg', // Local SVG asset (always available)
     'https://cryptologos.cc/logos/bitcoin-btc-logo.svg?v=040', // CDN fallback
     'https://assets.coingecko.com/coins/images/1/small/bitcoin.png', // CoinGecko fallback
   ],
   // Onyx Metals tokens
-  '0xEC3507BAF55C241e44036a94Cb9c02b15A78E863': '/images/tokens/gold.png', // XAUX (Onyx Gold)
-  '0x820037622659fF123a01bB94A720854C8A7609C0': '/images/tokens/silver.png', // XAGX (Onyx Silver)
+  '0x4de29616f7be2bc44D9dfF23abc5Fcb5804DF8B9': '/images/tokens/gold.png', // XAUX (Onyx Gold)
+  '0x086031394aD8288eC3fE7f2d7495DDfe830a7085': '/images/tokens/silver.png', // XAGX (Onyx Silver)
 };
 
 const StyledEthereumLogo = styled.img<{ size: string }>`

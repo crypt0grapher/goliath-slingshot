@@ -47,8 +47,8 @@ function loadBridgeConfig(): BridgeConfig {
         usdc: process.env.REACT_APP_SEPOLIA_USDC_ADDRESS || '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
       },
       goliath: {
-        eth: process.env.REACT_APP_ETH_TOKEN_ADDRESS || '0x9d318b851a6AF920D467bC5dC9882b5DFD36D65e',
-        usdc: process.env.REACT_APP_USDC_ADDRESS || '0xEf2B9f754405f52c80B5A67656f14672a00d23b4',
+        eth: process.env.REACT_APP_ETH_TOKEN_ADDRESS || '0xa973c5626eEaF7F482439753953e9B28C6aF3674',
+        usdc: process.env.REACT_APP_USDC_ADDRESS || '0xC8410270bb53f6c99A2EFe6eD3686a8630Efe22B',
       },
     },
     statusApiBaseUrl: process.env.REACT_APP_BRIDGE_STATUS_API_URL || 'https://testnet.mirrornode.goliath.net/bridge/api/v1',
