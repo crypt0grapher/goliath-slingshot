@@ -9,8 +9,8 @@ import {
 } from '../connectors';
 
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
-export const FACTORY_ADDRESS = '0x1a0Da75ADf091a69E7285e596bB27218D77E17a9';
-export const ROUTER_ADDRESS = '0x008c99EedA17E193e5F788536234C6b3520B8D15';
+export const FACTORY_ADDRESS = '0x561B0342878bcdeF1a7E7D9BA7654B3C84A81819';
+export const ROUTER_ADDRESS = '0x1D6B8ad12C72893f89844418DC03999298D9ABF4';
 
 export const LP_TOKEN_NAME = 'Uniswap V2';
 export const LP_TOKEN_SYMBOL = 'SWAP-LP';
@@ -36,18 +36,18 @@ export const WBTC = new Token(ChainId.MAINNET, '0x2260FAC5E5542a773Aa44fBCfeDf7C
 
 // Goliath Testnet tokens
 const GOLIATH_CHAIN_ID = 8901;
-export const USDC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xC8410270bb53f6c99A2EFe6eD3686a8630Efe22B', 6, 'USDC', 'USD Coin');
-export const WXCN = new Token(GOLIATH_CHAIN_ID, '0xB939d84698426855C628E45Ef02a4909b23535Fc', 18, 'WXCN', 'Wrapped Onyxcoin');
+export const USDC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x4BE65Dce1D79B8728485B759eE06cC8053E824F4', 6, 'USDC', 'USD Coin');
+export const WXCN = new Token(GOLIATH_CHAIN_ID, '0x88A07F7BBb61A2945D8Ac541461fc62efb1F4066', 18, 'WXCN', 'Wrapped Onyxcoin');
 // Note: XCN is the native token (like ETH), not a ERC20 token
 
 // Wrapped asset tokens on Goliath (ERC20 representations)
-export const ETH_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xa973c5626eEaF7F482439753953e9B28C6aF3674', 18, 'ETH', 'Ethereum');
-export const BTC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x9253587505c3B7E7b9DEE118AE1AcB53eEC0E4b6', 8, 'BTC', 'Bitcoin');
-export const USDT_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x88b4BC8e5bd74327B5456466F3f30143986cC1f9', 6, 'USDT', 'Tether USD');
+export const ETH_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0xEd02AA7dd3f105EDab8702D859781CAfF111324b', 18, 'ETH', 'Ethereum');
+export const BTC_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x8b2a7658acD9CA5b4e207F94a0101598c7B678F8', 8, 'BTC', 'Bitcoin');
+export const USDT_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x03cDCCa25A46Bc5F3F484096217de52C8c417c9D', 6, 'USDT', 'Tether USD');
 
 // Onyx Metals tokens (precious metal-backed tokens)
-export const XAUX_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x4de29616f7be2bc44D9dfF23abc5Fcb5804DF8B9', 8, 'XAUX', 'Onyx Gold');
-export const XAGX_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x086031394aD8288eC3fE7f2d7495DDfe830a7085', 8, 'XAGX', 'Onyx Silver');
+export const XAUX_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x3B0F44325fb8AaC485Cbe14502d979008341f652', 8, 'XAUX', 'Onyx Gold');
+export const XAGX_GOLIATH = new Token(GOLIATH_CHAIN_ID, '0x6090499ccC04bD65BEd0b02D40f607B5348697F7', 8, 'XAGX', 'Onyx Silver');
 
 // Block time here is slightly higher (~1s) than average in order to avoid ongoing proposals past the displayed time
 export const AVERAGE_BLOCK_TIME_IN_SECS = 13;
