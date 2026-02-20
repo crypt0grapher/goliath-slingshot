@@ -321,5 +321,7 @@
   "errorInsufficientTokenBalance": "{{token}} balansı kifayət deyil",
   "errorNoApprovalOrSignature": "Təsdiq və ya imza olmadan təsdiqləmə cəhdi. Dəstəklə əlaqə saxlayın.",
   "errorApprovalFailedRetry": "Çoxlu cəhdlərdən sonra təsdiq uğursuz oldu. Zəhmət olmasa yenidən cəhd edin.",
-  "errorInvalidTokenConfig": "Yanlış token konfiqurasiyası"
+  "errorInvalidTokenConfig": "Yanlış token konfiqurasiyası",
+  "addLiquidityEarningsInfo": "Likvidlik əlavə etməklə bu cütdəki bütün ticarətlərin 0,3%-ni hovuzdakı payınıza mütənasib olaraq qazanacaqsınız. Haqqlar hovuza əlavə olunur, real vaxtda toplanır və likvidliyinizi çıxararaq tələb edilə bilər.",
+  "removeLiquidityTip": "Hovuz tokenlərini çıxarmaq mövqeyinizi cari məzənnə ilə əsas tokenlərə geri çevirir, hovuzdakı payınıza mütənasibdir. Toplanmış haqqlar aldığınız məbləğlərə daxildir."
 }

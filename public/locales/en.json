@@ -321,5 +321,7 @@
   "errorInsufficientTokenBalance": "Insufficient {{token}} balance",
   "errorNoApprovalOrSignature": "Attempting to confirm without approval or a signature. Please contact support.",
   "errorApprovalFailedRetry": "Approval failed after multiple attempts. Please try again.",
-  "errorInvalidTokenConfig": "Invalid token configuration"
+  "errorInvalidTokenConfig": "Invalid token configuration",
+  "addLiquidityEarningsInfo": "By adding liquidity you'll earn 0.3% of all trades on this pair proportional to your share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.",
+  "removeLiquidityTip": "Removing pool tokens converts your position back into underlying tokens at the current rate, proportional to your share of the pool. Accrued fees are included in the amounts you receive."
 }

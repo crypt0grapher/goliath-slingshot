@@ -321,5 +321,7 @@
   "errorInsufficientTokenBalance": "Yetersiz {{token}} bakiyesi",
   "errorNoApprovalOrSignature": "Onay veya imza olmadan onaylama girişimi. Lütfen destekle iletişime geçin.",
   "errorApprovalFailedRetry": "Birden fazla denemeden sonra onay başarısız oldu. Lütfen tekrar deneyin.",
-  "errorInvalidTokenConfig": "Geçersiz token yapılandırması"
+  "errorInvalidTokenConfig": "Geçersiz token yapılandırması",
+  "addLiquidityEarningsInfo": "Likidite ekleyerek bu çiftteki tüm işlemlerin %0,3'ünü havuzdaki payınıza orantılı olarak kazanırsınız. Ücretler havuza eklenir, gerçek zamanlı olarak birikir ve likiditenizi çekerek talep edilebilir.",
+  "removeLiquidityTip": "Havuz tokenlerini kaldırmak, pozisyonunuzu havuzdaki payınıza orantılı olarak mevcut kurdan temel tokenlere geri dönüştürür. Biriken ücretler aldığınız miktarlara dahildir."
 }

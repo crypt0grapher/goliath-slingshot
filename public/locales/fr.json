@@ -321,5 +321,7 @@
   "errorInsufficientTokenBalance": "Solde {{token}} insuffisant",
   "errorNoApprovalOrSignature": "Tentative de confirmation sans approbation ou signature. Veuillez contacter le support.",
   "errorApprovalFailedRetry": "Approbation échouée après plusieurs tentatives. Veuillez réessayer.",
-  "errorInvalidTokenConfig": "Configuration de jeton invalide"
+  "errorInvalidTokenConfig": "Configuration de jeton invalide",
+  "addLiquidityEarningsInfo": "En ajoutant de la liquidité, vous gagnerez 0,3% de toutes les transactions sur cette paire, proportionnellement à votre part du pool. Les frais sont ajoutés au pool, s'accumulent en temps réel et peuvent être réclamés en retirant votre liquidité.",
+  "removeLiquidityTip": "En retirant les jetons du pool, votre position est reconvertie en jetons sous-jacents au taux actuel, proportionnellement à votre part du pool. Les frais accumulés sont inclus dans les montants que vous recevez."
 }

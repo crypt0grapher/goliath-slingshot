@@ -321,5 +321,7 @@
   "errorInsufficientTokenBalance": "Sold {{token}} insuficient",
   "errorNoApprovalOrSignature": "Încercare de confirmare fără aprobare sau semnătură. Te rugăm să contactezi suportul.",
   "errorApprovalFailedRetry": "Aprobare eșuată după mai multe încercări. Te rugăm să încerci din nou.",
-  "errorInvalidTokenConfig": "Configurație token invalidă"
+  "errorInvalidTokenConfig": "Configurație token invalidă",
+  "addLiquidityEarningsInfo": "Adăugând lichiditate, vei câștiga 0,3% din toate tranzacțiile pe această pereche, proporțional cu cota ta din pool. Comisioanele sunt adăugate la pool, se acumulează în timp real și pot fi revendicate prin retragerea lichidității tale.",
+  "removeLiquidityTip": "Eliminarea tokenurilor de pool convertește poziția ta înapoi în tokenurile subiacente la cursul actual, proporțional cu cota ta din pool. Comisioanele acumulate sunt incluse în sumele pe care le primești."
 }

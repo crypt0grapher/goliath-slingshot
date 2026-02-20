@@ -321,5 +321,7 @@
   "errorInsufficientTokenBalance": "Saldo de {{token}} insuficiente",
   "errorNoApprovalOrSignature": "Tentativa de confirmar sem aprovação ou assinatura. Por favor, contacte o suporte.",
   "errorApprovalFailedRetry": "Aprovação falhou após múltiplas tentativas. Por favor, tente novamente.",
-  "errorInvalidTokenConfig": "Configuração de token inválida"
+  "errorInvalidTokenConfig": "Configuração de token inválida",
+  "addLiquidityEarningsInfo": "Ao adicionar liquidez, irá ganhar 0,3% de todas as transações neste par, proporcional à sua quota no pool. As comissões são adicionadas ao pool, acumulam em tempo real e podem ser reclamadas ao retirar a sua liquidez.",
+  "removeLiquidityTip": "Remover tokens do pool converte a sua posição nos tokens subjacentes à taxa atual, proporcional à sua quota no pool. As comissões acumuladas estão incluídas nos montantes que recebe."
 }

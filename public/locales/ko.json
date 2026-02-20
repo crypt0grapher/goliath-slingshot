@@ -321,5 +321,7 @@
   "errorInsufficientTokenBalance": "{{token}} 잔액이 부족합니다",
   "errorNoApprovalOrSignature": "승인 또는 서명 없이 확인을 시도하고 있습니다. 지원팀에 문의하세요.",
   "errorApprovalFailedRetry": "여러 번 시도 후 승인에 실패했습니다. 다시 시도해 주세요.",
-  "errorInvalidTokenConfig": "잘못된 토큰 구성"
+  "errorInvalidTokenConfig": "잘못된 토큰 구성",
+  "addLiquidityEarningsInfo": "유동성을 추가하면 풀 지분에 비례하여 이 페어의 모든 거래에서 0.3%를 얻게 됩니다. 수수료는 풀에 추가되고, 실시간으로 누적되며, 유동성을 인출하여 청구할 수 있습니다.",
+  "removeLiquidityTip": "풀 토큰을 제거하면 풀 지분에 비례하여 현재 환율로 포지션이 기초 토큰으로 다시 변환됩니다. 누적된 수수료는 받는 금액에 포함됩니다."
 }

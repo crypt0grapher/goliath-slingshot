@@ -321,5 +321,7 @@
   "errorInsufficientTokenBalance": "Saldo {{token}} tidak cukup",
   "errorNoApprovalOrSignature": "Mencoba konfirmasi tanpa persetujuan atau tanda tangan. Silakan hubungi dukungan.",
   "errorApprovalFailedRetry": "Persetujuan gagal setelah beberapa percobaan. Silakan coba lagi.",
-  "errorInvalidTokenConfig": "Konfigurasi token tidak valid"
+  "errorInvalidTokenConfig": "Konfigurasi token tidak valid",
+  "addLiquidityEarningsInfo": "Dengan menambahkan likuiditas, Anda akan mendapatkan 0,3% dari semua perdagangan pada pasangan ini secara proporsional dengan bagian Anda di pool. Biaya ditambahkan ke pool, terakumulasi secara real-time, dan dapat diklaim dengan menarik likuiditas Anda.",
+  "removeLiquidityTip": "Menghapus token pool mengonversi posisi Anda kembali ke token dasar pada kurs saat ini, proporsional dengan bagian Anda di pool. Biaya yang terakumulasi termasuk dalam jumlah yang Anda terima."
 }

@@ -321,5 +321,7 @@
   "errorInsufficientTokenBalance": "{{token}}の残高が不足しています",
   "errorNoApprovalOrSignature": "承認または署名なしで確認しようとしています。サポートにお問い合わせください。",
   "errorApprovalFailedRetry": "複数回の試行後に承認に失敗しました。もう一度お試しください。",
-  "errorInvalidTokenConfig": "無効なトークン設定"
+  "errorInvalidTokenConfig": "無効なトークン設定",
+  "addLiquidityEarningsInfo": "流動性を追加することで、プールのシェアに比例してこのペアの全取引の0.3%を獲得できます。手数料はプールに追加され、リアルタイムで蓄積され、流動性を引き出すことで請求できます。",
+  "removeLiquidityTip": "プールトークンを削除すると、プールのシェアに比例して現在のレートで基礎トークンにポジションが変換されます。蓄積された手数料は受け取る金額に含まれています。"
 }

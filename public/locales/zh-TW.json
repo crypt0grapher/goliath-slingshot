@@ -321,5 +321,7 @@
   "errorInsufficientTokenBalance": "{{token}} 餘額不足",
   "errorNoApprovalOrSignature": "嘗試在沒有批准或簽名的情況下確認。請聯繫支援。",
   "errorApprovalFailedRetry": "多次嘗試後批准失敗。請重試。",
-  "errorInvalidTokenConfig": "無效的代幣配置"
+  "errorInvalidTokenConfig": "無效的代幣配置",
+  "addLiquidityEarningsInfo": "透過添加流動性，您將按照您在池中的份額比例賺取該交易對所有交易的 0.3% 手續費。手續費會添加到池中，即時累積，並可透過提取流動性來領取。",
+  "removeLiquidityTip": "移除池代幣會按照當前匯率將您的倉位轉換回底層代幣，比例與您在池中的份額相對應。累積的手續費包含在您收到的金額中。"
 }

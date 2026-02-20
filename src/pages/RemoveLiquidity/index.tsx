@@ -508,8 +508,7 @@ export default function RemoveLiquidity({
             <GreyCard>
               <AutoColumn gap="10px">
                 <TYPE.link fontWeight={400} color={'primaryText1'}>
-                  <b>Tip:</b> Removing pool tokens converts your position back into underlying tokens at the current
-                  rate, proportional to your share of the pool. Accrued fees are included in the amounts you receive.
+                  <b>{t('tip')}</b> {t('removeLiquidityTip')}
                 </TYPE.link>
               </AutoColumn>
             </GreyCard>

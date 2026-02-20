@@ -321,5 +321,7 @@
   "errorInsufficientTokenBalance": "Onvoldoende {{token}} saldo",
   "errorNoApprovalOrSignature": "Poging tot bevestiging zonder goedkeuring of handtekening. Neem contact op met ondersteuning.",
   "errorApprovalFailedRetry": "Goedkeuring mislukt na meerdere pogingen. Probeer het opnieuw.",
-  "errorInvalidTokenConfig": "Ongeldige tokenconfiguratie"
+  "errorInvalidTokenConfig": "Ongeldige tokenconfiguratie",
+  "addLiquidityEarningsInfo": "Door liquiditeit toe te voegen verdien je 0,3% van alle transacties op dit paar, evenredig met je aandeel in de pool. Vergoedingen worden aan de pool toegevoegd, lopen in real-time op en kunnen worden opgeëist door je liquiditeit op te nemen.",
+  "removeLiquidityTip": "Het verwijderen van pool-tokens converteert je positie terug naar de onderliggende tokens tegen de huidige koers, evenredig met je aandeel in de pool. Opgelopen vergoedingen zijn inbegrepen in de bedragen die je ontvangt."
 }

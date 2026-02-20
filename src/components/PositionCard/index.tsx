@@ -1,6 +1,7 @@
 import { JSBI, Pair, Percent, TokenAmount } from '@uniswap/sdk';
 import { darken } from 'polished';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { ChevronDown, ChevronUp } from 'react-feather';
 import { Link } from 'react-router-dom';
 import { Text } from 'rebass';
@@ -50,6 +51,7 @@ interface PositionCardProps {
 }
 
 export function MinimalPositionCard({ pair, showUnwrapped = false, border }: PositionCardProps) {
+  const { t } = useTranslation();
   const { account, chainId } = useActiveWeb3React();
 
   const currency0 = showUnwrapped ? pair.token0 : unwrappedToken(pair.token0);
@@ -152,8 +154,7 @@ export function MinimalPositionCard({ pair, showUnwrapped = false, border }: Pos
             <span role="img" aria-label="wizard-icon">
               ⭐️
             </span>{' '}
-            By adding liquidity you&apos;ll earn 0.3% of all trades on this pair proportional to your share of the pool.
-            Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.
+            {t('addLiquidityEarningsInfo')}
           </TYPE.subHeader>
         </LightCard>
       )}

@@ -321,5 +321,7 @@
   "errorInsufficientTokenBalance": "Unzureichendes {{token}} Guthaben",
   "errorNoApprovalOrSignature": "Versuch der Bestätigung ohne Genehmigung oder Signatur. Bitte kontaktiere den Support.",
   "errorApprovalFailedRetry": "Genehmigung nach mehreren Versuchen fehlgeschlagen. Bitte versuche es erneut.",
-  "errorInvalidTokenConfig": "Ungültige Token-Konfiguration"
+  "errorInvalidTokenConfig": "Ungültige Token-Konfiguration",
+  "addLiquidityEarningsInfo": "Durch das Hinzufügen von Liquidität verdienst du 0,3% aller Trades dieses Paares, proportional zu deinem Anteil am Pool. Gebühren werden dem Pool hinzugefügt, fallen in Echtzeit an und können durch Abheben deiner Liquidität beansprucht werden.",
+  "removeLiquidityTip": "Durch das Entfernen von Pool-Token wird deine Position zum aktuellen Kurs in die zugrunde liegenden Token zurückkonvertiert, proportional zu deinem Anteil am Pool. Aufgelaufene Gebühren sind in den Beträgen enthalten, die du erhältst."
 }

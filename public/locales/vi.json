@@ -321,5 +321,7 @@
   "errorInsufficientTokenBalance": "Số dư {{token}} không đủ",
   "errorNoApprovalOrSignature": "Cố gắng xác nhận mà không có phê duyệt hoặc chữ ký. Vui lòng liên hệ hỗ trợ.",
   "errorApprovalFailedRetry": "Phê duyệt thất bại sau nhiều lần thử. Vui lòng thử lại.",
-  "errorInvalidTokenConfig": "Cấu hình token không hợp lệ"
+  "errorInvalidTokenConfig": "Cấu hình token không hợp lệ",
+  "addLiquidityEarningsInfo": "Bằng cách thêm thanh khoản, bạn sẽ kiếm được 0,3% tất cả các giao dịch trên cặp này tương ứng với phần của bạn trong pool. Phí được thêm vào pool, tích lũy theo thời gian thực và có thể được yêu cầu bằng cách rút thanh khoản của bạn.",
+  "removeLiquidityTip": "Việc xóa token pool sẽ chuyển đổi vị thế của bạn trở lại thành các token cơ sở theo tỷ giá hiện tại, tương ứng với phần của bạn trong pool. Phí tích lũy được bao gồm trong số tiền bạn nhận được."
 }
