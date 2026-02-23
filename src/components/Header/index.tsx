@@ -10,6 +10,7 @@ import { useActiveWeb3React } from '../../hooks';
 import { useNetworkSwitch, GOLIATH_TESTNET_CHAIN_ID } from '../../hooks/useNetworkSwitch';
 import { useDarkModeManager } from '../../state/user/hooks';
 import { useETHBalances } from '../../state/wallet/hooks';
+import { migrationConfig } from '../../config/migrationConfig';
 
 import { LightCard } from '../Card';
 import { Moon, Sun, HelpCircle } from 'react-feather';
@@ -294,6 +295,16 @@ const DisabledNavLink = styled.span`
   `};
 `;
 
+const DeadlineDot = styled.span`
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: ${({ theme }) => theme.green1};
+  margin-inline-start: 4px;
+  vertical-align: middle;
+`;
+
 export const StyledMenuButton = styled.button`
   position: relative;
   width: 100%;
@@ -400,6 +411,13 @@ export default function Header() {
         <StyledNavLink id={`bridge-nav-link`} to={'/bridge'}>
           {t('bridge')}
         </StyledNavLink>
+        {migrationConfig.migrationEnabled && (
+          <StyledNavLink id={`migrate-nav-link`} to={'/migrate'}>
+            {t('migration.nav.title')}
+            {migrationConfig.migrationDeadline &&
+              new Date() < new Date(migrationConfig.migrationDeadline) && <DeadlineDot />}
+          </StyledNavLink>
+        )}
         <DisabledNavLink id={`yield-nav-link`}>
           {t('yield')}
         </DisabledNavLink>

@@ -1,5 +1,5 @@
 import React, { Suspense } from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import styled from 'styled-components';
 import { Analytics } from '@vercel/analytics/react';
 import Header from '../components/Header';
@@ -21,6 +21,10 @@ import { RedirectOldRemoveLiquidityPathStructure } from './RemoveLiquidity/redir
 import Swap from './Swap';
 import { OpenClaimAddressModalAndRedirectToSwap, RedirectPathToSwapOnly } from './Swap/redirects';
 import Bridge from './Bridge';
+import { migrationConfig } from '../config/migrationConfig';
+
+// Lazy-load Migrate so its bundle is only fetched when the feature is enabled
+const Migrate = React.lazy(() => import('./Migrate'));
 
 const AppWrapper = styled.div`
   min-height: 100vh;
@@ -72,6 +76,13 @@ export default function App() {
             <Switch>
               <Route exact strict path="/swap" component={Swap} />
               <Route exact strict path="/bridge" component={Bridge} />
+              {migrationConfig.migrationEnabled ? (
+                <Route exact strict path="/migrate" component={Migrate} />
+              ) : (
+                <Route exact strict path="/migrate">
+                  <Redirect to="/bridge" />
+                </Route>
+              )}
               <Route exact strict path="/claim" component={OpenClaimAddressModalAndRedirectToSwap} />
               <Route exact strict path="/find" component={PoolFinder} />
               <Route exact strict path="/pool" component={Pool} />

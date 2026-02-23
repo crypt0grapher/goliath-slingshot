@@ -11,6 +11,7 @@ import lists from './lists/reducer';
 import burn from './burn/reducer';
 import multicall from './multicall/reducer';
 import bridge from './bridge/reducer';
+import { migrationReducer as migration } from './migration';
 
 const PERSISTED_KEYS: string[] = ['user', 'transactions', 'lists', 'bridge'];
 
@@ -25,6 +26,7 @@ const store = configureStore({
     multicall,
     lists,
     bridge,
+    migration,
   },
   middleware: [
     ...getDefaultMiddleware({ immutableCheck: false, thunk: true, serializableCheck: false }),

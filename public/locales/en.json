@@ -323,5 +323,89 @@
   "errorApprovalFailedRetry": "Approval failed after multiple attempts. Please try again.",
   "errorInvalidTokenConfig": "Invalid token configuration",
   "addLiquidityEarningsInfo": "By adding liquidity you'll earn 0.3% of all trades on this pair proportional to your share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.",
-  "removeLiquidityTip": "Removing pool tokens converts your position back into underlying tokens at the current rate, proportional to your share of the pool. Accrued fees are included in the amounts you receive."
+  "removeLiquidityTip": "Removing pool tokens converts your position back into underlying tokens at the current rate, proportional to your share of the pool. Accrued fees are included in the amounts you receive.",
+
+  "migration.nav.title": "Migrate",
+  "migration.nav.deadlineIndicator": "Deadline: {{date}}",
+
+  "migration.summary.stakedXCN": "Staked XCN",
+  "migration.summary.pendingRewards": "Pending Rewards",
+  "migration.summary.walletXCN": "Wallet XCN",
+  "migration.summary.bridgeAllowance": "Bridge Allowance",
+
+  "migration.step.claimRewards.title": "Claim Rewards",
+  "migration.step.claimRewards.description": "Claim your pending XCN staking rewards before unstaking.",
+  "migration.step.approve.title": "Approve XCN",
+  "migration.step.approve.description": "Approve the bridge contract to transfer your XCN tokens.",
+  "migration.step.unstake.title": "Unstake XCN",
+  "migration.step.unstake.description": "Withdraw your staked XCN from the staking contract.",
+  "migration.step.bridge.title": "Bridge to Goliath",
+  "migration.step.bridge.description": "Bridge your XCN tokens to the Goliath network to receive CHN.",
+
+  "migration.toggle.stakeOnGoliath": "Stake on Goliath",
+  "migration.toggle.autoStakeDescription": "Auto-stake CHN tokens after migration",
+  "migration.toggle.lockedHint": "Preference locked after bridge submission",
+
+  "migration.status.depositConfirmed": "Deposit Confirmed",
+  "migration.status.waitingForConfirmations": "Waiting for Confirmations",
+  "migration.status.deliveringOnGoliath": "Delivering on Goliath",
+  "migration.status.stakingOnGoliath": "Staking on Goliath",
+  "migration.status.migrationComplete": "Migration Complete",
+  "migration.status.migrationFailed": "Migration Failed",
+
+  "migration.error.transactionRejected": "Transaction rejected",
+  "migration.error.transactionFailedRetry": "Transaction failed \u2014 retry",
+  "migration.error.stakeIntentFailed": "Stake intent failed \u2014 please retry",
+  "migration.error.bindFailed": "Bind failed \u2014 retrying in background",
+  "migration.error.switchNetworkPrompt": "Please switch to {{network}} to continue the migration.",
+
+  "migration.empty.noXCNToMigrate": "No XCN to migrate",
+  "migration.empty.bridgeLinkText": "Bridge tokens instead",
+
+  "migration.resumeHint": "It looks like you previously unstaked. Continue with bridging.",
+
+  "migration.deadline.banner": "Migration deadline: {{date}}",
+  "migration.deadline.ended": "Migration window has ended",
+
+  "migration.action.execute": "Execute",
+  "migration.action.retry": "Retry",
+  "migration.action.waitingForWallet": "Waiting for wallet...",
+  "migration.action.txPending": "Transaction pending...",
+  "migration.action.completed": "Completed",
+  "migration.action.failed": "Failed",
+  "migration.action.waitingForPrevious": "Waiting for previous steps",
+  "migration.action.viewTransaction": "View transaction",
+
+  "migration.panel.title": "Migration Status",
+  "migration.panel.originTx": "Origin Transaction",
+  "migration.panel.destinationTx": "Destination Transaction",
+  "migration.panel.stakingTx": "Staking Transaction",
+  "migration.panel.delayWarning": "Taking longer than expected. Your migration is still processing.",
+  "migration.panel.stakingInProgress": "Staking your tokens on Goliath...",
+  "migration.panel.stakingFailed": "Staking failed: {{error}}",
+  "migration.panel.startNewMigration": "Start New Migration",
+  "migration.panel.successMessage": "Your tokens have been successfully migrated!",
+  "migration.panel.successWithStaking": "Your tokens have been migrated and staked on Goliath!",
+  "migration.panel.failedMessage": "Something went wrong with your migration.",
+  "migration.panel.expiredMessage": "Your migration has expired.",
+  "migration.panel.errorDetails": "Error: {{message}}",
+  "migration.panel.pollingError": "Unable to fetch status. Retrying...",
+  "migration.panel.viewExplorer": "View on Explorer",
+
+  "migration.stepper.title": "Migration Steps",
+  "migration.stepper.completionMessage": "All steps completed! Your migration is being processed.",
+  "migration.stepper.resumeHint": "It looks like you previously unstaked. Continue with bridging.",
+
+  "migration.stats.title": "Migration Overview",
+  "migration.stats.totalMigrated": "Total Migrated",
+  "migration.stats.totalCount": "Migrations",
+  "migration.stats.totalStaked": "Staked",
+  "migration.stats.activeMigrations": "Active",
+  "migration.stats.unavailable": "Stats are temporarily unavailable.",
+
+  "migration.history.title": "Migration History",
+  "migration.history.empty": "No migration history yet.",
+  "migration.history.errorLoading": "Unable to load migration history.",
+  "migration.history.loadMore": "Load more",
+  "migration.history.viewTx": "View transaction"
 }
