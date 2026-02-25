@@ -12,6 +12,7 @@ import burn from './burn/reducer';
 import multicall from './multicall/reducer';
 import bridge from './bridge/reducer';
 import { migrationReducer as migration } from './migration';
+import yieldReducer from './yield/slice';
 
 const PERSISTED_KEYS: string[] = ['user', 'transactions', 'lists', 'bridge'];
 
@@ -27,6 +28,7 @@ const store = configureStore({
     lists,
     bridge,
     migration,
+    yield: yieldReducer,
   },
   middleware: [
     ...getDefaultMiddleware({ immutableCheck: false, thunk: true, serializableCheck: false }),

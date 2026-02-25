@@ -13,6 +13,7 @@ jest.mock('../../constants/bridge/networks', () => ({
 }));
 
 describe('bridgeProviders', () => {
+  const originalSepoliaTimeoutMs = process.env.REACT_APP_SEPOLIA_RPC_TIMEOUT_MS;
   const mockGetBalance = jest.fn();
   const mockGetBlockNumber = jest.fn().mockResolvedValue(100);
   const mockBalanceOf = jest.fn();
@@ -21,6 +22,7 @@ describe('bridgeProviders', () => {
 
   beforeEach(() => {
     jest.resetModules();
+    delete process.env.REACT_APP_SEPOLIA_RPC_TIMEOUT_MS;
     mockGetBalance.mockReset();
     mockGetBlockNumber.mockReset().mockResolvedValue(100);
     mockBalanceOf.mockReset();
@@ -38,6 +40,10 @@ describe('bridgeProviders', () => {
           chainId: 11155111,
           rpcUrl: 'https://primary-rpc.example.com',
           rpcUrlFallback: 'https://fallback-rpc.example.com',
+          rpcUrlFallbacks: [
+            'https://fallback-rpc.example.com',
+            'https://alchemy-rpc.example.com',
+          ],
         },
         goliath: {
           chainId: 8901,
@@ -57,6 +63,14 @@ describe('bridgeProviders', () => {
         })),
       },
     }));
+  });
+
+  afterAll(() => {
+    if (originalSepoliaTimeoutMs === undefined) {
+      delete process.env.REACT_APP_SEPOLIA_RPC_TIMEOUT_MS;
+      return;
+    }
+    process.env.REACT_APP_SEPOLIA_RPC_TIMEOUT_MS = originalSepoliaTimeoutMs;
   });
 
   describe('getReadonlyProvider', () => {
@@ -156,6 +170,50 @@ describe('bridgeProviders', () => {
       // Only validated once
       expect(mockGetBlockNumber).toHaveBeenCalledTimes(1);
     });
+
+    it('switches to fallback when primary RPC validation exceeds timeout', async () => {
+      process.env.REACT_APP_SEPOLIA_RPC_TIMEOUT_MS = '5';
+
+      mockGetBlockNumber
+        .mockImplementationOnce(() => new Promise((resolve) => setTimeout(() => resolve(101), 30)))
+        .mockResolvedValueOnce(202);
+
+      const { ensureSepoliaProviderReady, getReadonlyProvider } = require('../bridgeProviders');
+
+      await ensureSepoliaProviderReady();
+      const provider = getReadonlyProvider('sepolia');
+      expect(provider._rpcUrl).toBe('https://fallback-rpc.example.com');
+    });
+
+    it('throws timeout error when both primary and fallback validations exceed timeout', async () => {
+      process.env.REACT_APP_SEPOLIA_RPC_TIMEOUT_MS = '5';
+
+      mockGetBlockNumber.mockImplementation(
+        () => new Promise((resolve) => setTimeout(() => resolve(777), 30))
+      );
+
+      const { ensureSepoliaProviderReady } = require('../bridgeProviders');
+
+      await expect(ensureSepoliaProviderReady()).rejects.toMatchObject({
+        code: 'TIMEOUT_ERROR',
+      });
+    });
+
+    it('uses second fallback when first fallback also fails', async () => {
+      const timeoutErr: any = new Error('timed out');
+      timeoutErr.code = 'TIMEOUT_ERROR';
+
+      mockGetBlockNumber
+        .mockRejectedValueOnce(timeoutErr) // primary
+        .mockRejectedValueOnce(timeoutErr) // fallback #1
+        .mockResolvedValueOnce(333); // fallback #2
+
+      const { ensureSepoliaProviderReady, getReadonlyProvider } = require('../bridgeProviders');
+
+      await ensureSepoliaProviderReady();
+      const provider = getReadonlyProvider('sepolia');
+      expect(provider._rpcUrl).toBe('https://alchemy-rpc.example.com');
+    });
   });
 
   describe('getNativeBalance', () => {
@@ -219,6 +277,24 @@ describe('bridgeProviders', () => {
         'sepolia'
       );
       expect(balance).toBe(BigInt('999'));
+    });
+
+    it('retries on TIMEOUT_ERROR for Sepolia', async () => {
+      const timeoutErr: any = new Error('request timed out');
+      timeoutErr.code = 'TIMEOUT_ERROR';
+      const mockBigNumber = { toBigInt: () => BigInt('1234') };
+
+      mockGetBalance
+        .mockRejectedValueOnce(timeoutErr)
+        .mockResolvedValue(mockBigNumber);
+
+      const { getNativeBalance } = require('../bridgeProviders');
+      const balance = await getNativeBalance(
+        '0x1234567890abcdef1234567890abcdef12345678',
+        'sepolia'
+      );
+      expect(balance).toBe(BigInt('1234'));
+      expect(mockGetBalance).toHaveBeenCalledTimes(2);
     });
 
     it('throws non-RPC errors without retry', async () => {

@@ -8,6 +8,7 @@ const MULTICALL_NETWORKS: { [chainId: number]: string } = {
   [ChainId.RINKEBY]: '0x42Ad527de7d4e9d9d011aC45B31D8551f8Fe9821',
   [ChainId.GÖRLI]: '0x77dCa2C955b15e9dE4dbBCf1246B4B85b651e50e',
   8901: '0xF912C1ad454aaaE03A1d72C53702F3dc0B4fcb69', // Goliath Testnet - Multicall3 (fixed decimal scaling)
+  11155111: '0xcA11bde05977b3631167028862bE2a173976CA11', // Sepolia - Multicall3
 };
 
 export { MULTICALL_ABI, MULTICALL_NETWORKS };

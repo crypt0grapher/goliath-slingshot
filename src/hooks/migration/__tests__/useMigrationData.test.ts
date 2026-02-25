@@ -296,6 +296,35 @@ describe('useMigrationData', () => {
     errorSpy.mockRestore();
   });
 
+  it('sets deterministic timeout error message when provider readiness times out', async () => {
+    // Suppress expected console.error from the hook's error handler
+    const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const { ensureSepoliaProviderReady } = require('services/bridgeProviders') as {
+      ensureSepoliaProviderReady: jest.Mock;
+    };
+
+    const timeoutError: any = new Error('sepolia primary validation timed out');
+    timeoutError.code = 'TIMEOUT_ERROR';
+    ensureSepoliaProviderReady.mockRejectedValueOnce(timeoutError);
+
+    let hookResult: ReturnType<typeof useMigrationData>;
+    await act(async () => {
+      const { result } = renderHook(() => useMigrationData());
+      await new Promise((r) => setTimeout(r, 50));
+      hookResult = result.current;
+    });
+
+    expect(hookResult!.loading).toBe(false);
+    expect(hookResult!.error).toBe('Sepolia RPC timed out while loading migration data. Please try again.');
+    expect(mockUserInfo).not.toHaveBeenCalled();
+    expect(mockPendingReward).not.toHaveBeenCalled();
+    expect(mockBalanceOf).not.toHaveBeenCalled();
+    expect(mockAllowance).not.toHaveBeenCalled();
+
+    errorSpy.mockRestore();
+  });
+
   // ========================================
   // No account connected
   // ========================================

@@ -97,7 +97,7 @@ describe('deriveSteps', () => {
       expect(result.isStatusView).toBe(true);
     });
 
-    it('should NOT return isStatusView when operation has terminal status COMPLETED', () => {
+    it('should return isStatusView=true when operation has terminal status COMPLETED', () => {
       const result = deriveSteps(
         buildSnapshot(),
         buildOperation({ status: 'COMPLETED' }),
@@ -105,10 +105,11 @@ describe('deriveSteps', () => {
         false
       );
 
-      expect(result.isStatusView).toBe(false);
+      expect(result.isStatusView).toBe(true);
+      expect(result.isEmpty).toBe(false);
     });
 
-    it('should NOT return isStatusView when operation has terminal status FAILED', () => {
+    it('should return isStatusView=true when operation has terminal status FAILED', () => {
       const result = deriveSteps(
         buildSnapshot(),
         buildOperation({ status: 'FAILED' }),
@@ -116,10 +117,11 @@ describe('deriveSteps', () => {
         false
       );
 
-      expect(result.isStatusView).toBe(false);
+      expect(result.isStatusView).toBe(true);
+      expect(result.isEmpty).toBe(false);
     });
 
-    it('should NOT return isStatusView when operation has terminal status EXPIRED', () => {
+    it('should return isStatusView=true when operation has terminal status EXPIRED', () => {
       const result = deriveSteps(
         buildSnapshot(),
         buildOperation({ status: 'EXPIRED' }),
@@ -127,7 +129,20 @@ describe('deriveSteps', () => {
         false
       );
 
-      expect(result.isStatusView).toBe(false);
+      expect(result.isStatusView).toBe(true);
+      expect(result.isEmpty).toBe(false);
+    });
+
+    it('should keep isStatusView=true for COMPLETED even when balances are zero', () => {
+      const result = deriveSteps(
+        buildSnapshot({ staked: '0', walletXcn: '0' }),
+        buildOperation({ status: 'COMPLETED' }),
+        buildStepExecutions(),
+        false
+      );
+
+      expect(result.isStatusView).toBe(true);
+      expect(result.isEmpty).toBe(false);
     });
 
     it('should NOT return isStatusView when operation is null', () => {
@@ -534,8 +549,8 @@ describe('deriveSteps', () => {
   // Terminal operation fallback
   // ========================================
 
-  describe('terminal operation fallback to snapshot-based derivation', () => {
-    it('should derive steps from snapshot when operation is COMPLETED', () => {
+  describe('terminal operation stays in status view until cleared', () => {
+    it('should stay in status view when operation is COMPLETED (ignoring snapshot)', () => {
       const result = deriveSteps(
         buildSnapshot({ staked: '1000', allowance: '0' }),
         buildOperation({ status: 'COMPLETED' }),
@@ -543,12 +558,12 @@ describe('deriveSteps', () => {
         false
       );
 
-      expect(result.isStatusView).toBe(false);
-      expect(result.visibleSteps).toContain(MigrationStep.UNSTAKE);
-      expect(result.visibleSteps).toContain(MigrationStep.BRIDGE);
+      expect(result.isStatusView).toBe(true);
+      expect(result.visibleSteps).toEqual([]);
+      expect(result.isEmpty).toBe(false);
     });
 
-    it('should derive steps from snapshot when operation is FAILED', () => {
+    it('should stay in status view when operation is FAILED (ignoring snapshot)', () => {
       const result = deriveSteps(
         buildSnapshot({ staked: '0', walletXcn: '3000', allowance: '5000' }),
         buildOperation({ status: 'FAILED' }),
@@ -556,9 +571,22 @@ describe('deriveSteps', () => {
         false
       );
 
+      expect(result.isStatusView).toBe(true);
+      expect(result.visibleSteps).toEqual([]);
+      expect(result.isEmpty).toBe(false);
+    });
+
+    it('should fall back to snapshot-based derivation when operation is null (after clear)', () => {
+      const result = deriveSteps(
+        buildSnapshot({ staked: '1000', allowance: '0' }),
+        null,
+        buildStepExecutions(),
+        false
+      );
+
       expect(result.isStatusView).toBe(false);
-      expect(result.visibleSteps).toEqual([MigrationStep.BRIDGE]);
-      expect(result.isResume).toBe(true);
+      expect(result.visibleSteps).toContain(MigrationStep.UNSTAKE);
+      expect(result.visibleSteps).toContain(MigrationStep.BRIDGE);
     });
   });
 });

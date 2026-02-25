@@ -270,6 +270,78 @@ describe('useMigrationStatusPolling', () => {
       expect(result.current.migrationFields?.stakingError).toBe('staking reverted');
     });
 
+    it('should extract destinationTxHash from response', async () => {
+      getMigrationStatus.mockResolvedValue(
+        buildStatusResponse({ destinationTxHash: '0xdest456' })
+      );
+
+      const { result } = renderHook(() => useMigrationStatusPolling('0xabc123'));
+
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(result.current.migrationFields?.destinationTxHash).toBe('0xdest456');
+    });
+
+    it('should extract completedAt from response timestamps', async () => {
+      getMigrationStatus.mockResolvedValue(
+        buildStatusResponse({
+          status: 'COMPLETED',
+          timestamps: {
+            depositedAt: null,
+            finalizedAt: null,
+            destinationSubmittedAt: null,
+            completedAt: '2026-02-25T22:30:00Z',
+          },
+        })
+      );
+
+      const { result } = renderHook(() => useMigrationStatusPolling('0xabc123'));
+
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      expect(result.current.migrationFields?.completedAt).toBe('2026-02-25T22:30:00Z');
+    });
+
+    it('should dispatch completion metadata to Redux', async () => {
+      getMigrationStatus.mockResolvedValue(
+        buildStatusResponse({
+          status: 'COMPLETED',
+          destinationTxHash: '0xdest789',
+          stakeOnGoliath: true,
+          stakingTxHash: '0xstake999',
+          timestamps: {
+            depositedAt: null,
+            finalizedAt: null,
+            destinationSubmittedAt: null,
+            completedAt: '2026-02-25T23:00:00Z',
+          },
+        })
+      );
+
+      const { dispatchSpy } = renderHook(() =>
+        useMigrationStatusPolling('0xabc123', { senderAddress: '0xSender' })
+      );
+
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      const updateCalls = dispatchSpy.mock.calls.filter(
+        ([action]: [any]) => action.type === 'migration/updateOperationStatus'
+      );
+
+      expect(updateCalls.length).toBeGreaterThanOrEqual(1);
+      const lastPayload = updateCalls[updateCalls.length - 1][0].payload;
+      expect(lastPayload.destinationTxHash).toBe('0xdest789');
+      expect(lastPayload.completedAt).toBe('2026-02-25T23:00:00Z');
+      expect(lastPayload.stakeOnGoliath).toBe(true);
+      expect(lastPayload.stakingTxHash).toBe('0xstake999');
+    });
+
     it('should handle null response (404 not found)', async () => {
       getMigrationStatus.mockResolvedValue(null);
 

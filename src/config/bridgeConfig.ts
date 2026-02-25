@@ -4,6 +4,7 @@ export interface BridgeConfig {
     chainId: 11155111;
     rpcUrl: string;
     rpcUrlFallback: string;
+    rpcUrlFallbacks: string[];
     explorerUrl: string;
     bridgeAddress: string;
   };
@@ -29,12 +30,40 @@ export interface BridgeConfig {
   statusPollInterval: number;
 }
 
+function uniqueNonEmpty(values: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const value of values) {
+    const trimmed = value.trim();
+    if (!trimmed || seen.has(trimmed)) continue;
+    seen.add(trimmed);
+    out.push(trimmed);
+  }
+  return out;
+}
+
+function parseCsv(value: string | undefined): string[] {
+  if (!value) return [];
+  return value
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 function loadBridgeConfig(): BridgeConfig {
+  const sepoliaPrimaryRpc = process.env.REACT_APP_SEPOLIA_RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.com';
+  const legacyFallbackRpc = process.env.REACT_APP_SEPOLIA_RPC_URL_FALLBACK || 'https://eth-sepolia.g.alchemy.com/v2/demo';
+  const fallbackCsv = parseCsv(process.env.REACT_APP_SEPOLIA_RPC_URL_FALLBACKS);
+  const fallbackCandidates = uniqueNonEmpty([legacyFallbackRpc, ...fallbackCsv]).filter(
+    (url) => url !== sepoliaPrimaryRpc
+  );
+
   return {
     sepolia: {
       chainId: 11155111 as const,
-      rpcUrl: process.env.REACT_APP_SEPOLIA_RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.com',
-      rpcUrlFallback: process.env.REACT_APP_SEPOLIA_RPC_URL_FALLBACK || 'https://eth-sepolia.g.alchemy.com/v2/demo',
+      rpcUrl: sepoliaPrimaryRpc,
+      rpcUrlFallback: fallbackCandidates[0] || '',
+      rpcUrlFallbacks: fallbackCandidates,
       explorerUrl: process.env.REACT_APP_SEPOLIA_EXPLORER_URL || 'https://sepolia.etherscan.io',
       bridgeAddress: process.env.REACT_APP_BRIDGE_SEPOLIA_ADDRESS || '0x0000000000000000000000000000000000000000',
     },

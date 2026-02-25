@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import styled, { keyframes } from 'styled-components';
-import { Clock, ExternalLink, ChevronDown, AlertCircle, CheckCircle, XCircle, Loader } from 'react-feather';
+import { Clock, ExternalLink, ChevronDown, ChevronUp, AlertCircle, CheckCircle, XCircle, Loader } from 'react-feather';
 import { useTranslation } from 'react-i18next';
 import { migrationConfig } from '../../config/migrationConfig';
 import { useHistory } from '../../hooks/migration/useMigrationApi';
@@ -11,11 +11,6 @@ import { BridgeNetwork, getExplorerTxUrl } from '../../constants/bridge/networks
 // ---------------------------------------------------------------------------
 // Animations
 // ---------------------------------------------------------------------------
-
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
-`;
 
 const shimmer = keyframes`
   0% { background-position: -200px 0; }
@@ -28,35 +23,62 @@ const spin = keyframes`
 `;
 
 // ---------------------------------------------------------------------------
-// Styled Components
+// Styled Components — Collapsible Header
 // ---------------------------------------------------------------------------
 
 const PanelContainer = styled.div`
   width: 100%;
-  padding: 20px;
-  border-radius: 16px;
-  background-color: ${({ theme }) => theme.bg1};
-  border: 1px solid ${({ theme }) => theme.bg3};
-  animation: ${fadeIn} 0.3s ease-out;
-
-  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-    padding: 16px 12px;
-  `}
+  margin-top: 16px;
 `;
 
-const PanelTitle = styled.h3`
-  font-size: 16px;
-  font-weight: 500;
-  color: ${({ theme }) => theme.text1};
-  margin: 0 0 16px 0;
+const PanelHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: ${({ theme }) => theme.bg1};
+  border: 1px solid ${({ theme }) => theme.bg3};
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: ${({ theme }) => theme.bg2};
+  }
+`;
+
+const HeaderLeft = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
+`;
 
-  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-    font-size: 15px;
-    margin-bottom: 12px;
-  `}
+const HeaderTitle = styled.span`
+  font-size: 14px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.text1};
+`;
+
+const HeaderCount = styled.span`
+  font-size: 12px;
+  color: ${({ theme }) => theme.text2};
+`;
+
+const ChevronIcon = styled.div`
+  color: ${({ theme }) => theme.text2};
+  display: flex;
+  align-items: center;
+`;
+
+// ---------------------------------------------------------------------------
+// Styled Components — Content
+// ---------------------------------------------------------------------------
+
+const PanelContent = styled.div<{ isOpen: boolean }>`
+  display: ${({ isOpen }) => (isOpen ? 'flex' : 'none')};
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
 `;
 
 const HistoryList = styled.div`
@@ -67,7 +89,7 @@ const HistoryList = styled.div`
 
 const HistoryItem = styled.div`
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   padding: 12px 14px;
   border-radius: 12px;
@@ -110,8 +132,9 @@ const ItemDate = styled.span`
 
 const ItemRight = styled.div`
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
   flex-shrink: 0;
 `;
 
@@ -130,6 +153,13 @@ const StatusBadge = styled.span<{ statusColor: string }>`
     font-size: 11px;
     padding: 2px 6px;
   `}
+`;
+
+const TxLinksRow = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
 `;
 
 const TxLink = styled.a`
@@ -153,6 +183,12 @@ const TxLink = styled.a`
   ${({ theme }) => theme.mediaWidth.upToExtraSmall`
     font-size: 11px;
   `}
+`;
+
+const TxLabel = styled.span`
+  font-size: 11px;
+  color: ${({ theme }) => theme.text3};
+  margin-right: 2px;
 `;
 
 const LoadMoreButton = styled.button`
@@ -192,20 +228,6 @@ const LoadMoreButton = styled.button`
   `}
 `;
 
-const EmptyState = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  padding: 24px 16px;
-  text-align: center;
-`;
-
-const EmptyText = styled.span`
-  font-size: 14px;
-  color: ${({ theme }) => theme.text3};
-`;
-
 const ErrorBanner = styled.div`
   display: flex;
   align-items: flex-start;
@@ -240,6 +262,20 @@ const SkeletonItem = styled.div`
 
 const SpinningLoader = styled(Loader)`
   animation: ${spin} 1s linear infinite;
+`;
+
+const EmptyState = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 16px;
+  text-align: center;
+`;
+
+const EmptyText = styled.span`
+  font-size: 14px;
+  color: ${({ theme }) => theme.text3};
 `;
 
 // ---------------------------------------------------------------------------
@@ -277,11 +313,6 @@ interface HistoryEntryProps {
 function HistoryEntry({ operation }: HistoryEntryProps) {
   const { t } = useTranslation();
 
-  // We need theme colors for status display. Use styled-components
-  // ThemeContext access via a wrapper that passes theme props.
-  // For simplicity, we use CSS variables via the StatusBadge's statusColor prop.
-  // The color values are resolved inline here from the theme using the
-  // status mapping function with hardcoded defaults as fallback.
   const statusColor = useMemo(() => {
     switch (operation.status) {
       case 'COMPLETED':
@@ -339,14 +370,9 @@ function HistoryEntry({ operation }: HistoryEntryProps) {
     }
   }, [operation.status]);
 
-  // Determine the best date to display
   const displayDate = operation.timestamps.completedAt
     ?? operation.timestamps.depositedAt
     ?? null;
-
-  // Determine the best tx hash for the explorer link
-  const txHash = operation.originTxHash ?? operation.destinationTxHash;
-  const txNetwork = operation.originTxHash ? BridgeNetwork.SEPOLIA : BridgeNetwork.GOLIATH;
 
   return (
     <HistoryItem>
@@ -361,17 +387,44 @@ function HistoryEntry({ operation }: HistoryEntryProps) {
           {statusIcon}
           {statusLabel}
         </StatusBadge>
-        {txHash && (
-          <TxLink
-            href={getExplorerTxUrl(txNetwork, txHash)}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`${t('migration.history.viewTx')} ${truncateTxHash(txHash)}`}
-          >
-            {truncateTxHash(txHash)}
-            <ExternalLink size={11} aria-hidden="true" />
-          </TxLink>
-        )}
+        <TxLinksRow>
+          {operation.originTxHash && (
+            <TxLink
+              href={getExplorerTxUrl(BridgeNetwork.SEPOLIA, operation.originTxHash)}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${t('migration.history.sepoliaExplorer')} ${truncateTxHash(operation.originTxHash)}`}
+            >
+              <TxLabel>{t('migration.history.sepoliaExplorer')}</TxLabel>
+              {truncateTxHash(operation.originTxHash)}
+              <ExternalLink size={11} aria-hidden="true" />
+            </TxLink>
+          )}
+          {operation.destinationTxHash && (
+            <TxLink
+              href={getExplorerTxUrl(BridgeNetwork.GOLIATH, operation.destinationTxHash)}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${t('migration.history.goliathExplorer')} ${truncateTxHash(operation.destinationTxHash)}`}
+            >
+              <TxLabel>{t('migration.history.goliathExplorer')}</TxLabel>
+              {truncateTxHash(operation.destinationTxHash)}
+              <ExternalLink size={11} aria-hidden="true" />
+            </TxLink>
+          )}
+          {operation.stakingTxHash && (
+            <TxLink
+              href={getExplorerTxUrl(BridgeNetwork.GOLIATH, operation.stakingTxHash)}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`${t('migration.history.stakeTx')} ${truncateTxHash(operation.stakingTxHash)}`}
+            >
+              <TxLabel>{t('migration.history.stakeTx')}</TxLabel>
+              {truncateTxHash(operation.stakingTxHash)}
+              <ExternalLink size={11} aria-hidden="true" />
+            </TxLink>
+          )}
+        </TxLinksRow>
       </ItemRight>
     </HistoryItem>
   );
@@ -385,6 +438,11 @@ export default function MigrationHistoryPanel() {
   const { t } = useTranslation();
   const { account } = useActiveWeb3React();
   const { data, loading, error, loadMore } = useHistory(account);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleOpen = useCallback(() => {
+    setIsOpen((prev) => !prev);
+  }, []);
 
   // Gate: render nothing when feature flag is off
   if (!migrationConfig.historyEnabled) {
@@ -399,63 +457,75 @@ export default function MigrationHistoryPanel() {
   const hasOperations = data && data.operations.length > 0;
   const hasMore = data?.pagination.hasMore ?? false;
 
+  // Don't render the dropdown when there are no operations (and not loading)
+  if (!hasOperations && !loading && !error) {
+    return null;
+  }
+
   return (
-    <PanelContainer role="region" aria-label={t('migration.history.title')}>
-      <PanelTitle>
-        <Clock size={16} aria-hidden="true" />
-        {t('migration.history.title')}
-      </PanelTitle>
+    <PanelContainer>
+      <PanelHeader onClick={toggleOpen} role="button" aria-expanded={isOpen}>
+        <HeaderLeft>
+          <HeaderTitle>{t('migration.history.recentMigrations')}</HeaderTitle>
+          {hasOperations && <HeaderCount>({data.operations.length})</HeaderCount>}
+        </HeaderLeft>
+        <ChevronIcon>
+          {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+        </ChevronIcon>
+      </PanelHeader>
 
-      {/* Error state */}
-      {error && !data && (
-        <ErrorBanner role="alert">
-          <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 1 }} aria-hidden="true" />
-          <span>{t('migration.history.errorLoading')}</span>
-        </ErrorBanner>
-      )}
+      <PanelContent isOpen={isOpen}>
+        {/* Error state */}
+        {error && !data && (
+          <ErrorBanner role="alert">
+            <AlertCircle size={16} style={{ flexShrink: 0, marginTop: 1 }} aria-hidden="true" />
+            <span>{t('migration.history.errorLoading')}</span>
+          </ErrorBanner>
+        )}
 
-      {/* Loading state (initial) */}
-      {loading && !data && (
-        <HistoryList>
-          <SkeletonItem aria-label={t('loading')} />
-          <SkeletonItem aria-label={t('loading')} />
-          <SkeletonItem aria-label={t('loading')} />
-        </HistoryList>
-      )}
+        {/* Loading state (initial) */}
+        {loading && !data && (
+          <HistoryList>
+            <SkeletonItem aria-label={t('loading')} />
+            <SkeletonItem aria-label={t('loading')} />
+            <SkeletonItem aria-label={t('loading')} />
+          </HistoryList>
+        )}
 
-      {/* Empty state */}
-      {!loading && !error && data && !hasOperations && (
-        <EmptyState>
-          <Clock size={32} color="#888D9B" aria-hidden="true" />
-          <EmptyText>{t('migration.history.empty')}</EmptyText>
-        </EmptyState>
-      )}
+        {/* Empty state */}
+        {!loading && !error && data && !hasOperations && (
+          <EmptyState>
+            <Clock size={32} color="#888D9B" aria-hidden="true" />
+            <EmptyText>{t('migration.history.empty')}</EmptyText>
+          </EmptyState>
+        )}
 
-      {/* Operation list */}
-      {hasOperations && (
-        <HistoryList role="list" aria-label={t('migration.history.title')}>
-          {data.operations.map((op) => (
-            <HistoryEntry key={op.operationId} operation={op} />
-          ))}
-        </HistoryList>
-      )}
+        {/* Operation list */}
+        {hasOperations && (
+          <HistoryList role="list" aria-label={t('migration.history.recentMigrations')}>
+            {data.operations.map((op) => (
+              <HistoryEntry key={op.operationId} operation={op} />
+            ))}
+          </HistoryList>
+        )}
 
-      {/* Load more button */}
-      {hasOperations && hasMore && (
-        <LoadMoreButton
-          onClick={loadMore}
-          disabled={loading}
-          type="button"
-          aria-label={t('migration.history.loadMore')}
-        >
-          {loading ? (
-            <SpinningLoader size={14} aria-hidden="true" />
-          ) : (
-            <ChevronDown size={14} aria-hidden="true" />
-          )}
-          {t('migration.history.loadMore')}
-        </LoadMoreButton>
-      )}
+        {/* Load more button */}
+        {hasOperations && hasMore && (
+          <LoadMoreButton
+            onClick={loadMore}
+            disabled={loading}
+            type="button"
+            aria-label={t('migration.history.loadMore')}
+          >
+            {loading ? (
+              <SpinningLoader size={14} aria-hidden="true" />
+            ) : (
+              <ChevronDown size={14} aria-hidden="true" />
+            )}
+            {t('migration.history.loadMore')}
+          </LoadMoreButton>
+        )}
+      </PanelContent>
     </PanelContainer>
   );
 }

@@ -22,9 +22,13 @@ import Swap from './Swap';
 import { OpenClaimAddressModalAndRedirectToSwap, RedirectPathToSwapOnly } from './Swap/redirects';
 import Bridge from './Bridge';
 import { migrationConfig } from '../config/migrationConfig';
+import { stakingConfig } from '../config/stakingConfig';
 
 // Lazy-load Migrate so its bundle is only fetched when the feature is enabled
 const Migrate = React.lazy(() => import('./Migrate'));
+
+// Lazy-load Yield so its bundle is only fetched when staking is enabled
+const Yield = React.lazy(() => import('./Yield'));
 
 const AppWrapper = styled.div`
   min-height: 100vh;
@@ -81,6 +85,13 @@ export default function App() {
               ) : (
                 <Route exact strict path="/migrate">
                   <Redirect to="/bridge" />
+                </Route>
+              )}
+              {stakingConfig.stakingEnabled ? (
+                <Route exact strict path="/yield" component={Yield} />
+              ) : (
+                <Route exact strict path="/yield">
+                  <Redirect to="/swap" />
                 </Route>
               )}
               <Route exact strict path="/claim" component={OpenClaimAddressModalAndRedirectToSwap} />

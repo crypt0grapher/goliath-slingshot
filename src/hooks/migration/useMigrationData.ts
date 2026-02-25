@@ -30,6 +30,14 @@ export interface UseMigrationDataResult {
 
 /** Pool ID for the primary staking pool. */
 const POOL_ID = 0;
+const MIGRATION_TIMEOUT_ERROR = 'Sepolia RPC timed out while loading migration data. Please try again.';
+
+function isTimeoutError(err: unknown): boolean {
+  if (!err || typeof err !== 'object') return false;
+  const maybeErr = err as { code?: unknown; message?: unknown };
+  const message = typeof maybeErr.message === 'string' ? maybeErr.message.toLowerCase() : '';
+  return maybeErr.code === 'TIMEOUT_ERROR' || message.includes('timed out');
+}
 
 /**
  * Fetches all migration-relevant on-chain data from Sepolia in parallel.
@@ -159,7 +167,11 @@ export function useMigrationData(): UseMigrationDataResult {
       // Guard against setState after unmount or stale fetch.
       if (!mountedRef.current || currentFetchId !== fetchIdRef.current) return;
 
-      const message = err instanceof Error ? err.message : 'Failed to fetch migration data';
+      const message = isTimeoutError(err)
+        ? MIGRATION_TIMEOUT_ERROR
+        : err instanceof Error
+          ? err.message
+          : 'Failed to fetch migration data';
       console.error('[useMigrationData] Fetch error:', err);
 
       dispatch(

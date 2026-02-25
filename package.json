@@ -8,6 +8,8 @@
     "@reach/dialog": "0.15.0",
     "@reach/portal": "0.15.0",
     "@reduxjs/toolkit": "1.6.0",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^12.1.5",
     "@truffle/hdwallet-provider": "^1.4.2",
     "@types/jest": "26.0.23",
     "@types/lodash.flatmap": "4.5.6",

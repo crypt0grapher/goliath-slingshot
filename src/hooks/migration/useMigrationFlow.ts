@@ -11,9 +11,6 @@ import { StakingSnapshot, MigrationOperation, StepExecution } from 'state/migrat
 // Constants
 // ---------------------------------------------------------------------------
 
-/** Backend status values that indicate the operation has reached a final state. */
-const TERMINAL_STATUSES = new Set(['COMPLETED', 'FAILED', 'EXPIRED']);
-
 const ZERO = BigNumber.from(0);
 
 // ---------------------------------------------------------------------------
@@ -40,7 +37,8 @@ export interface UseMigrationFlowResult extends DeriveStepsResult {}
  * no side effects, making it straightforward to unit test.
  *
  * Algorithm:
- * 1. If an in-flight operation exists (non-terminal status) -> status view mode
+ * 1. If an operation exists (any status, including terminal) -> status view mode
+ *    (terminal operations stay visible until explicitly cleared via clearOperation)
  * 2. Else if staked > 0 -> full unstake path (optionally with CLAIM_REWARDS and APPROVE)
  * 3. Else if staked == 0 && walletXcn > 0 -> wallet-only bridge path (with resume hint)
  * 4. Else -> empty state (no XCN)
@@ -54,9 +52,11 @@ export function deriveSteps(
   claimEnabled: boolean
 ): DeriveStepsResult {
   // ------------------------------------------------------------------
-  // 1. Status view: in-flight operation with non-terminal status
+  // 1. Status view: operation exists (any status, including terminal).
+  //    Terminal operations stay in status view until explicitly cleared
+  //    via clearOperation (e.g. "Start New Migration" button).
   // ------------------------------------------------------------------
-  if (operation && !TERMINAL_STATUSES.has(operation.status)) {
+  if (operation) {
     return {
       visibleSteps: [],
       activeStep: null,

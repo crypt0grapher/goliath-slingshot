@@ -141,6 +141,46 @@ export const ErrorBanner = styled.div`
 `;
 
 // ---------------------------------------------------------------------------
+// Automated Flow Info
+// ---------------------------------------------------------------------------
+
+export const ProcessInfoCard = styled.div`
+  border: 1px solid ${({ theme }) => theme.primary1 + '35'};
+  background: ${({ theme }) => theme.primary1 + '10'};
+  border-radius: 14px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    padding: 12px 14px;
+  `}
+`;
+
+export const ProcessInfoTitle = styled.h4`
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: ${({ theme }) => theme.text1};
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    font-size: 13px;
+  `}
+`;
+
+export const ProcessInfoText = styled.p`
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: ${({ theme }) => theme.text2};
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    font-size: 12px;
+  `}
+`;
+
+// ---------------------------------------------------------------------------
 // Phase-2 Slot (empty placeholder for future stats/history)
 // ---------------------------------------------------------------------------
 

@@ -4,7 +4,7 @@ import { Check, Loader, AlertCircle, ExternalLink } from 'react-feather';
 import { useTranslation } from 'react-i18next';
 import { darken } from 'polished';
 import { MigrationStep, StepExecutionStatus } from '../../constants/migration';
-import { bridgeConfig } from '../../config/bridgeConfig';
+import { BridgeNetwork, getExplorerTxUrl } from '../../constants/bridge/networks';
 
 // ---------------------------------------------------------------------------
 // Animations
@@ -225,8 +225,12 @@ const ErrorMessage = styled.div`
 // Helpers
 // ---------------------------------------------------------------------------
 
-function getExplorerTxUrl(txHash: string): string {
-  return `${bridgeConfig.sepolia.explorerUrl}/tx/${txHash}`;
+/**
+ * Returns the correct explorer network for a given migration step.
+ * Bridge destination tx is on Goliath; all other steps are on Sepolia.
+ */
+function getStepNetwork(step: MigrationStep): BridgeNetwork {
+  return step === MigrationStep.BRIDGE ? BridgeNetwork.GOLIATH : BridgeNetwork.SEPOLIA;
 }
 
 function truncateTxHash(hash: string): string {
@@ -244,7 +248,8 @@ export interface MigrationStepItemProps {
   description: string;
   status: StepExecutionStatus;
   isActive: boolean;
-  onAction: () => void;
+  onAction?: () => void;
+  actionMode?: 'manual' | 'tracking';
   txHash?: string;
 }
 
@@ -256,6 +261,7 @@ export default function MigrationStepItem({
   status,
   isActive,
   onAction,
+  actionMode = 'manual',
   txHash,
 }: MigrationStepItemProps) {
   const { t } = useTranslation();
@@ -274,12 +280,93 @@ export default function MigrationStepItem({
     return stepNumber;
   };
 
+  const isTrackingMode = actionMode === 'tracking';
+
   // Determine the action area content
   const renderActionArea = () => {
+    if (isTrackingMode) {
+      if (isIdle && isActive) {
+        return (
+          <StatusLabel color={undefined}>
+            {t('migration.action.ready')}
+          </StatusLabel>
+        );
+      }
+
+      if (isIdle && !isActive) {
+        return (
+          <StatusLabel color={undefined}>
+            {t('migration.action.waitingForPrevious')}
+          </StatusLabel>
+        );
+      }
+
+      if (isWaitingSignature) {
+        return (
+          <StatusLabel>
+            <SpinningLoader size={14} aria-hidden="true" />
+            {t('migration.action.waitingForWallet')}
+          </StatusLabel>
+        );
+      }
+
+      if (isPending) {
+        return (
+          <>
+            <StatusLabel>
+              <SpinningLoader size={14} aria-hidden="true" />
+              {t('migration.action.txPending')}
+            </StatusLabel>
+            {txHash && (
+              <TxLink
+                href={getExplorerTxUrl(getStepNetwork(step), txHash)}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${t('migration.action.viewTransaction')} ${truncateTxHash(txHash)}`}
+              >
+                {truncateTxHash(txHash)} <ExternalLink size={12} aria-hidden="true" />
+              </TxLink>
+            )}
+          </>
+        );
+      }
+
+      if (isCompleted) {
+        return (
+          <>
+            <CompletedBadge>
+              <Check size={14} aria-hidden="true" />
+              {t('migration.action.completed')}
+            </CompletedBadge>
+            {txHash && (
+              <TxLink
+                href={getExplorerTxUrl(getStepNetwork(step), txHash)}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`${t('migration.action.viewTransaction')} ${truncateTxHash(txHash)}`}
+              >
+                {truncateTxHash(txHash)} <ExternalLink size={12} aria-hidden="true" />
+              </TxLink>
+            )}
+          </>
+        );
+      }
+
+      if (isFailed) {
+        return (
+          <StatusLabel color={undefined}>
+            {t('migration.action.failed')}
+          </StatusLabel>
+        );
+      }
+
+      return null;
+    }
+
     // IDLE + active: show enabled action button
     if (isIdle && isActive) {
       return (
-        <ActionButton onClick={onAction} type="button" aria-label={title}>
+        <ActionButton onClick={onAction} type="button" aria-label={title} disabled={!onAction}>
           {title}
         </ActionButton>
       );
@@ -318,7 +405,7 @@ export default function MigrationStepItem({
           </ActionButton>
           {txHash && (
             <TxLink
-              href={getExplorerTxUrl(txHash)}
+              href={getExplorerTxUrl(getStepNetwork(step), txHash)}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${t('migration.action.viewTransaction')} ${truncateTxHash(txHash)}`}
@@ -340,7 +427,7 @@ export default function MigrationStepItem({
           </CompletedBadge>
           {txHash && (
             <TxLink
-              href={getExplorerTxUrl(txHash)}
+              href={getExplorerTxUrl(getStepNetwork(step), txHash)}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${t('migration.action.viewTransaction')} ${truncateTxHash(txHash)}`}
@@ -361,7 +448,7 @@ export default function MigrationStepItem({
           </ActionButton>
           {txHash && (
             <TxLink
-              href={getExplorerTxUrl(txHash)}
+              href={getExplorerTxUrl(getStepNetwork(step), txHash)}
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${t('migration.action.viewTransaction')} ${truncateTxHash(txHash)}`}

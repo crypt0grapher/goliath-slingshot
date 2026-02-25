@@ -12,7 +12,7 @@ export interface SubmitStakePreferenceRequest {
   stakeOnGoliath: boolean;
   idempotencyKey: string;
   deadline: number;
-  nonce: number;
+  nonce: string;
   signature: string;
 }
 

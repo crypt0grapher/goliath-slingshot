@@ -604,6 +604,86 @@ describe('MigrationStepItem', () => {
   });
 
   // ========================================================================
+  // Explorer link per step type
+  // ========================================================================
+
+  describe('explorer links per step type', () => {
+    const txHash = '0xabcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890';
+
+    it('UNSTAKE step links to Sepolia Explorer', () => {
+      const { getAllLinks } = renderComponent({
+        step: MigrationStep.UNSTAKE,
+        status: StepExecutionStatus.CONFIRMED,
+        isActive: false,
+        txHash,
+      });
+      const txLink = getAllLinks().find((a) => a.getAttribute('href')?.includes(txHash));
+      expect(txLink).toBeDefined();
+      expect(txLink!.getAttribute('href')).toBe(`https://sepolia.etherscan.io/tx/${txHash}`);
+    });
+
+    it('APPROVE step links to Sepolia Explorer', () => {
+      const { getAllLinks } = renderComponent({
+        step: MigrationStep.APPROVE,
+        status: StepExecutionStatus.CONFIRMED,
+        isActive: false,
+        txHash,
+      });
+      const txLink = getAllLinks().find((a) => a.getAttribute('href')?.includes(txHash));
+      expect(txLink).toBeDefined();
+      expect(txLink!.getAttribute('href')).toBe(`https://sepolia.etherscan.io/tx/${txHash}`);
+    });
+
+    it('CLAIM_REWARDS step links to Sepolia Explorer', () => {
+      const { getAllLinks } = renderComponent({
+        step: MigrationStep.CLAIM_REWARDS,
+        status: StepExecutionStatus.CONFIRMED,
+        isActive: false,
+        txHash,
+      });
+      const txLink = getAllLinks().find((a) => a.getAttribute('href')?.includes(txHash));
+      expect(txLink).toBeDefined();
+      expect(txLink!.getAttribute('href')).toBe(`https://sepolia.etherscan.io/tx/${txHash}`);
+    });
+
+    it('BRIDGE step links to Goliath Explorer', () => {
+      const { getAllLinks } = renderComponent({
+        step: MigrationStep.BRIDGE,
+        status: StepExecutionStatus.CONFIRMED,
+        isActive: false,
+        txHash,
+      });
+      const txLink = getAllLinks().find((a) => a.getAttribute('href')?.includes(txHash));
+      expect(txLink).toBeDefined();
+      expect(txLink!.getAttribute('href')).toBe(`https://explorer.goliath.test/tx/${txHash}`);
+    });
+
+    it('BRIDGE step TX_PENDING links to Goliath Explorer', () => {
+      const { getAllLinks } = renderComponent({
+        step: MigrationStep.BRIDGE,
+        status: StepExecutionStatus.TX_PENDING,
+        isActive: true,
+        txHash,
+      });
+      const txLink = getAllLinks().find((a) => a.getAttribute('href')?.includes(txHash));
+      expect(txLink).toBeDefined();
+      expect(txLink!.getAttribute('href')).toBe(`https://explorer.goliath.test/tx/${txHash}`);
+    });
+
+    it('BRIDGE step FAILED links to Goliath Explorer', () => {
+      const { getAllLinks } = renderComponent({
+        step: MigrationStep.BRIDGE,
+        status: StepExecutionStatus.FAILED,
+        isActive: true,
+        txHash,
+      });
+      const txLink = getAllLinks().find((a) => a.getAttribute('href')?.includes(txHash));
+      expect(txLink).toBeDefined();
+      expect(txLink!.getAttribute('href')).toBe(`https://explorer.goliath.test/tx/${txHash}`);
+    });
+  });
+
+  // ========================================================================
   // Edge cases
   // ========================================================================
 

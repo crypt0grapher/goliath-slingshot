@@ -11,6 +11,7 @@ import { useNetworkSwitch, GOLIATH_TESTNET_CHAIN_ID } from '../../hooks/useNetwo
 import { useDarkModeManager } from '../../state/user/hooks';
 import { useETHBalances } from '../../state/wallet/hooks';
 import { migrationConfig } from '../../config/migrationConfig';
+import { stakingConfig } from '../../config/stakingConfig';
 
 import { LightCard } from '../Card';
 import { Moon, Sun, HelpCircle } from 'react-feather';
@@ -418,9 +419,15 @@ export default function Header() {
               new Date() < new Date(migrationConfig.migrationDeadline) && <DeadlineDot />}
           </StyledNavLink>
         )}
-        <DisabledNavLink id={`yield-nav-link`}>
-          {t('yield')}
-        </DisabledNavLink>
+        {stakingConfig.stakingEnabled ? (
+          <StyledNavLink id={`yield-nav-link`} to={'/yield'}>
+            {t('yield')}
+          </StyledNavLink>
+        ) : (
+          <DisabledNavLink id={`yield-nav-link`}>
+            {t('yield')}
+          </DisabledNavLink>
+        )}
       </HeaderLinks>
 
       <HeaderControls>
