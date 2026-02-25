@@ -11,7 +11,7 @@ import { ERC20_ABI } from 'abis/ERC20';
 import { BRIDGE_SEPOLIA_ABI } from 'constants/bridge/abis';
 import { MigrationStep, StepExecutionStatus } from 'constants/migration';
 import { migrationActions } from 'state/migration/slice';
-import { selectStakeToggle, selectStakingSnapshot } from 'state/migration/selectors';
+import { selectStakingSnapshot } from 'state/migration/selectors';
 import { StepExecution } from 'state/migration/types';
 import {
   migrationApiClient,
@@ -39,7 +39,7 @@ const BIND_RETRY_MAX = 5;
 const BIND_RETRY_BASE_DELAY_MS = 2000;
 
 /** EIP-712 domain name for migration intent signing. */
-const EIP712_DOMAIN_NAME = 'CoolSwap Migration';
+const EIP712_DOMAIN_NAME = 'GoliathBridge';
 
 /** EIP-712 domain version. */
 const EIP712_DOMAIN_VERSION = '1';
@@ -159,7 +159,6 @@ export function useMigrationTransactions(
   const dispatch = useDispatch();
   const { account, library } = useActiveWeb3React();
   const { isReady: providerReady, recheckProvider } = useProviderReady();
-  const stakeOnGoliath = useSelector(selectStakeToggle);
   const snapshot = useSelector(selectStakingSnapshot);
 
   // Ref to prevent concurrent execution of the same step
@@ -316,7 +315,7 @@ export function useMigrationTransactions(
       });
 
       // Refresh data on success
-      refetch();
+      await Promise.resolve(refetch());
     } finally {
       executingRef.current[MigrationStep.CLAIM_REWARDS] = false;
     }
@@ -349,7 +348,7 @@ export function useMigrationTransactions(
       });
 
       // Refresh allowance data on success
-      refetch();
+      await Promise.resolve(refetch());
     } finally {
       executingRef.current[MigrationStep.APPROVE] = false;
     }
@@ -395,7 +394,7 @@ export function useMigrationTransactions(
       });
 
       // Refresh data on success (staked should become 0, walletXcn should increase)
-      refetch();
+      await Promise.resolve(refetch());
     } finally {
       executingRef.current[MigrationStep.UNSTAKE] = false;
     }
@@ -439,8 +438,26 @@ export function useMigrationTransactions(
         return;
       }
 
-      // Determine the amount to bridge: walletXcn from snapshot
-      const bridgeAmount = snapshot.walletXcn;
+      // Determine the amount to bridge from the latest available state.
+      // Use snapshot first; if stale/zero (common right after unstake), read
+      // directly from the token contract as a fallback.
+      let bridgeAmount = snapshot.walletXcn;
+      if (!bridgeAmount || bridgeAmount === '0') {
+        try {
+          const signer = library.getSigner(account);
+          const signerAddress = await signer.getAddress();
+          const xcnContract = new ethers.Contract(
+            migrationConfig.sepoliaXcnAddress,
+            ERC20_ABI as readonly Record<string, unknown>[],
+            signer as any
+          );
+          const freshBalance = await xcnContract.balanceOf(signerAddress);
+          bridgeAmount = freshBalance.toString();
+        } catch (balanceErr) {
+          console.warn('[Migration] Unable to resolve live XCN balance for bridge step:', balanceErr);
+        }
+      }
+
       if (!bridgeAmount || bridgeAmount === '0') {
         dispatch(
           migrationActions.updateStepExecution({
@@ -453,7 +470,8 @@ export function useMigrationTransactions(
       }
 
       // ---- Step 1: Lock toggle ----
-      const frozenStakePreference = stakeOnGoliath;
+      // Migration now enforces post-bridge staking by default to align with Yield.
+      const frozenStakePreference = true;
       dispatch(migrationActions.lockToggle());
 
       // ---- Dispatch WAITING_SIGNATURE ----
@@ -474,57 +492,46 @@ export function useMigrationTransactions(
         // ---- Step 2: Generate idempotency key ----
         const idempotencyKey = uuidv4();
 
-        // ---- Step 3: Build EIP-712 typed data and sign ----
+        // ---- Step 3: Resolve canonical signer identity ----
+        const signer = library.getSigner();
+        const signerAddress = ethers.utils.getAddress(await signer.getAddress());
+        const { chainId } = await library.getNetwork();
+
+        // ---- Step 4: Build EIP-712 typed data and sign ----
         const deadline = Math.floor(Date.now() / 1000) + INTENT_DEADLINE_MINUTES * 60;
         const nonce = Date.now(); // Use timestamp as nonce for uniqueness
-
-        const sepoliaChainId = bridgeConfig.sepolia.chainId;
 
         const domain = {
           name: EIP712_DOMAIN_NAME,
           version: EIP712_DOMAIN_VERSION,
-          chainId: sepoliaChainId,
-          verifyingContract: bridgeConfig.sepolia.bridgeAddress,
+          chainId, // Use active wallet chain to avoid provider/account drift issues
         };
 
         const types = {
-          EIP712Domain: [
-            { name: 'name', type: 'string' },
-            { name: 'version', type: 'string' },
-            { name: 'chainId', type: 'uint256' },
-            { name: 'verifyingContract', type: 'address' },
-          ],
           StakePreference: [
-            { name: 'sender', type: 'address' },
-            { name: 'recipient', type: 'address' },
-            { name: 'amount', type: 'uint256' },
+            { name: 'senderAddress', type: 'address' },
+            { name: 'recipientAddress', type: 'address' },
+            { name: 'amountAtomic', type: 'string' },
             { name: 'stakeOnGoliath', type: 'bool' },
             { name: 'idempotencyKey', type: 'string' },
             { name: 'deadline', type: 'uint256' },
-            { name: 'nonce', type: 'uint256' },
+            { name: 'nonce', type: 'string' },
           ],
         };
 
         const message = {
-          sender: account,
-          recipient: account, // Same wallet on Goliath
-          amount: bridgeAmount,
+          senderAddress: signerAddress,
+          recipientAddress: signerAddress, // Same wallet on Goliath
+          amountAtomic: bridgeAmount,
           stakeOnGoliath: frozenStakePreference,
           idempotencyKey,
           deadline,
-          nonce,
+          nonce: String(nonce),
         };
-
-        const typedData = JSON.stringify({
-          types,
-          primaryType: 'StakePreference',
-          domain,
-          message,
-        });
 
         let signature: string;
         try {
-          signature = await library.send('eth_signTypedData_v4', [account, typedData]);
+          signature = await signer._signTypedData(domain, types, message);
         } catch (err: any) {
           if (isUserRejection(err)) {
             // User rejected: reset to IDLE, do NOT unlock toggle (per spec, toggle stays locked once bridge started)
@@ -552,15 +559,15 @@ export function useMigrationTransactions(
           return;
         }
 
-        // ---- Step 4: Submit stake preference to API ----
+        // ---- Step 5: Submit stake preference to API ----
         const stakePreferencePayload: SubmitStakePreferenceRequest = {
-          senderAddress: account,
-          recipientAddress: account,
+          senderAddress: signerAddress,
+          recipientAddress: signerAddress,
           amountAtomic: bridgeAmount,
           stakeOnGoliath: frozenStakePreference,
           idempotencyKey,
           deadline,
-          nonce,
+          nonce: String(nonce),
           signature,
         };
 
@@ -569,7 +576,7 @@ export function useMigrationTransactions(
           const response = await migrationApiClient.submitStakePreference(stakePreferencePayload);
           intentId = response.intentId;
         } catch (err: any) {
-          // ---- Step 5: API failure -- do NOT proceed to deposit ----
+        // ---- Step 6: API failure -- do NOT proceed to deposit ----
           // Note: We do NOT unlock the toggle here. Per spec, once the bridge flow
           // has started the toggle stays locked to prevent inconsistency.
           dispatch(
@@ -585,7 +592,7 @@ export function useMigrationTransactions(
           return;
         }
 
-        // ---- Step 6: Submit bridge deposit on-chain ----
+        // ---- Step 7: Submit bridge deposit on-chain ----
         dispatch(
           migrationActions.updateStepExecution({
             step: MigrationStep.BRIDGE,
@@ -595,7 +602,6 @@ export function useMigrationTransactions(
 
         let depositTx: ethers.ContractTransaction;
         try {
-          const signer = library.getSigner(account);
           const bridgeContract = new ethers.Contract(
             bridgeConfig.sepolia.bridgeAddress,
             BRIDGE_SEPOLIA_ABI,
@@ -605,7 +611,7 @@ export function useMigrationTransactions(
           depositTx = await bridgeContract.deposit(
             migrationConfig.sepoliaXcnAddress,
             bridgeAmount,
-            account // destination address = same wallet
+            signerAddress // destination address = same wallet
           );
         } catch (err: any) {
           if (isUserRejection(err)) {
@@ -641,9 +647,9 @@ export function useMigrationTransactions(
           })
         );
 
-        // ---- Step 7: Bind origin tx hash to intent ----
+        // ---- Step 8: Bind origin tx hash to intent ----
         // Fire-and-forget with background retry. Non-blocking for the user.
-        const bindPromise = retryBindOriginTxHash(intentId, account, depositTx.hash);
+        const bindPromise = retryBindOriginTxHash(intentId, signerAddress, depositTx.hash);
 
         // Handle bind result asynchronously -- set warning if all retries fail
         bindPromise.then(success => {
@@ -666,19 +672,21 @@ export function useMigrationTransactions(
           }
         });
 
-        // ---- Step 8: Save pending operation to localStorage ----
-        savePendingMigration(account, {
+        // ---- Step 9: Save pending operation to localStorage ----
+        savePendingMigration(signerAddress, {
           originTxHash: depositTx.hash,
           intentId,
           stakeOnGoliath: frozenStakePreference,
         });
 
-        // ---- Step 9: Set operation in Redux ----
+        // ---- Step 10: Set operation in Redux ----
         dispatch(
           migrationActions.setOperation({
             originTxHash: depositTx.hash,
             intentId,
             status: 'PENDING_ORIGIN_TX',
+            stakeOnGoliath: frozenStakePreference,
+            amount: bridgeAmount,
           })
         );
 
@@ -735,7 +743,7 @@ export function useMigrationTransactions(
           // Keep the operation in a pending state -- the status polling hook will track it
         }
 
-        // ---- Step 10: Transition to status view ----
+        // ---- Step 11: Transition to status view ----
         dispatch(migrationActions.setUiFlags({ isStatusView: true }));
 
         // Refresh data
@@ -759,7 +767,6 @@ export function useMigrationTransactions(
       account,
       library,
       snapshot.walletXcn,
-      stakeOnGoliath,
       providerReady,
       recheckProvider,
       dispatch,

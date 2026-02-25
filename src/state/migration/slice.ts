@@ -5,6 +5,7 @@ import {
   StakingSnapshot,
   StepExecution,
   MigrationOperation,
+  ClientStakingStatus,
 } from './types';
 
 // ============================================
@@ -121,19 +122,42 @@ const migrationSlice = createSlice({
       state,
       action: PayloadAction<{
         status: string;
+        destinationTxHash?: string | null;
+        completedAt?: string | null;
+        stakeOnGoliath?: boolean;
+        amount?: string;
         stakingTxHash?: string;
         stakingError?: string;
+        clientStakingStatus?: ClientStakingStatus;
         lastPolledAt?: number;
       }>
     ) {
       if (state.operation) {
-        const { status, stakingTxHash, stakingError, lastPolledAt } = action.payload;
+        const {
+          status, destinationTxHash, completedAt, stakeOnGoliath,
+          amount, stakingTxHash, stakingError, clientStakingStatus, lastPolledAt,
+        } = action.payload;
         state.operation.status = status;
+        if (destinationTxHash !== undefined) {
+          state.operation.destinationTxHash = destinationTxHash;
+        }
+        if (completedAt !== undefined) {
+          state.operation.completedAt = completedAt;
+        }
+        if (stakeOnGoliath !== undefined) {
+          state.operation.stakeOnGoliath = stakeOnGoliath;
+        }
+        if (amount !== undefined) {
+          state.operation.amount = amount;
+        }
         if (stakingTxHash !== undefined) {
           state.operation.stakingTxHash = stakingTxHash;
         }
         if (stakingError !== undefined) {
           state.operation.stakingError = stakingError;
+        }
+        if (clientStakingStatus !== undefined) {
+          state.operation.clientStakingStatus = clientStakingStatus;
         }
         if (lastPolledAt !== undefined) {
           state.operation.lastPolledAt = lastPolledAt;

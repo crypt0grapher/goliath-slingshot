@@ -16,6 +16,7 @@ import { darken } from 'polished';
 import { BridgeStatus } from '../../state/bridge/types';
 import { BridgeNetwork, getExplorerTxUrl } from '../../constants/bridge/networks';
 import { MigrationFields } from '../../hooks/migration/useMigrationStatusPolling';
+import { ClientStakingStatus } from '../../state/migration/types';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -56,6 +57,18 @@ export interface MigrationStatusPanelProps {
   errorMessage?: string | null;
   /** Callback to start a new migration. */
   onStartNewMigration?: () => void;
+  /** Client-side staking status from useMigrationStaking. */
+  clientStakingStatus?: ClientStakingStatus;
+  /** Client-side staking tx hash. */
+  clientStakingTxHash?: string | null;
+  /** Client-side staking error message. */
+  clientStakingError?: string | null;
+  /** Callback to trigger client-side staking. */
+  onExecuteStake?: () => void;
+  /** Callback to retry failed client-side staking. */
+  onRetryStake?: () => void;
+  /** Callback to switch wallet to Goliath network. */
+  onSwitchToGoliath?: () => void;
 }
 
 // ---------------------------------------------------------------------------
@@ -361,6 +374,44 @@ const PollingErrorText = styled.div`
   margin-top: 8px;
 `;
 
+const StakingActionButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: none;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  background-color: ${({ theme }) => theme.primary1};
+  color: ${({ theme }) => theme.white};
+
+  &:hover:not(:disabled) {
+    background-color: ${({ theme }) => darken(0.05, theme.primary1)};
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    font-size: 12px;
+    padding: 6px 12px;
+  `}
+`;
+
+const StakingRetryButton = styled(StakingActionButton)`
+  background-color: ${({ theme }) => theme.red1};
+
+  &:hover:not(:disabled) {
+    background-color: ${({ theme }) => darken(0.05, theme.red1)};
+  }
+`;
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -398,7 +449,8 @@ function buildSteps(stakeOnGoliath: boolean): StepConfig[] {
 function mapStatusToActiveStep(
   status: BridgeStatus | null,
   stakeOnGoliath: boolean,
-  migrationFields: MigrationFields | null
+  migrationFields: MigrationFields | null,
+  clientStakingStatus?: ClientStakingStatus
 ): StatusStep | null {
   if (!status) return null;
 
@@ -411,9 +463,11 @@ function mapStatusToActiveStep(
     case 'DELAYED':
       return StatusStep.DELIVERING_ON_GOLIATH;
     case 'COMPLETED': {
-      // If stakeOnGoliath but staking is still in-progress (stakingTxHash present but not an error),
-      // we show staking as active. However, if backend reports COMPLETED, the entire flow is done.
-      // The STAKING step was handled either implicitly or explicitly.
+      // If user opted to stake and client-side staking is not yet confirmed,
+      // the active step is STAKING_ON_GOLIATH.
+      if (stakeOnGoliath && clientStakingStatus && clientStakingStatus !== 'confirmed') {
+        return StatusStep.STAKING_ON_GOLIATH;
+      }
       return StatusStep.MIGRATION_COMPLETE;
     }
     case 'FAILED':
@@ -425,19 +479,41 @@ function mapStatusToActiveStep(
 }
 
 /**
- * Infer staking step status when the backend does not emit an explicit STAKING status
- * but stakeOnGoliath is true. Uses stakingTxHash and stakingError from migration fields.
+ * Infer staking step visual status from client-side staking state.
+ * Uses the clientStakingStatus from the useMigrationStaking hook as the
+ * primary source of truth, falling back to backend fields.
  */
 function inferStakingStatus(
   backendStatus: BridgeStatus | null,
   migrationFields: MigrationFields | null,
-  stakeOnGoliath: boolean
+  stakeOnGoliath: boolean,
+  clientStakingStatus?: ClientStakingStatus
 ): 'idle' | 'active' | 'completed' | 'error' {
   if (!stakeOnGoliath) return 'idle';
-  if (!migrationFields) return 'idle';
 
-  // If operation completed, staking is done
-  if (backendStatus === 'COMPLETED') return 'completed';
+  // Client-side staking status takes priority when bridge is COMPLETED.
+  if (backendStatus === 'COMPLETED' && clientStakingStatus) {
+    switch (clientStakingStatus) {
+      case 'confirmed':
+        return 'completed';
+      case 'failed':
+        return 'error';
+      case 'pending_signature':
+      case 'tx_pending':
+      case 'awaiting_network':
+        return 'active';
+      case 'idle':
+        // Bridge completed, staking not started yet — show as active (waiting for user)
+        return 'active';
+      default:
+        return 'active';
+    }
+  }
+
+  // Bridge completed but no client staking status yet — show as active
+  if (backendStatus === 'COMPLETED') return 'active';
+
+  if (!migrationFields) return 'idle';
 
   // If there is a staking error, show error
   if (migrationFields.stakingError) return 'error';
@@ -445,12 +521,7 @@ function inferStakingStatus(
   // If staking tx hash exists but not completed, staking is active
   if (migrationFields.stakingTxHash) return 'active';
 
-  // If delivery is done (COMPLETED status would have been caught above),
-  // and we're past the delivery step, staking may be about to start
-  if (backendStatus === 'AWAITING_RELAY' || backendStatus === 'PROCESSING_DESTINATION') {
-    return 'idle';
-  }
-
+  // Bridge still in progress — staking is pending
   return 'idle';
 }
 
@@ -462,7 +533,8 @@ function getStepVisualStatus(
   activeStep: StatusStep | null,
   backendStatus: BridgeStatus | null,
   stakeOnGoliath: boolean,
-  migrationFields: MigrationFields | null
+  migrationFields: MigrationFields | null,
+  clientStakingStatus?: ClientStakingStatus
 ): StepVisualStatus {
   const isFailed = backendStatus === 'FAILED' || backendStatus === 'EXPIRED';
 
@@ -478,20 +550,25 @@ function getStepVisualStatus(
   const stepIndex = stepOrder.indexOf(stepId);
   const activeIndex = activeStep ? stepOrder.indexOf(activeStep) : -1;
 
-  // Special handling for staking step when backend doesn't have explicit STAKING status
+  // Special handling for staking step — uses client-side staking status
   if (stepId === StatusStep.STAKING_ON_GOLIATH) {
-    const stakingInferred = inferStakingStatus(backendStatus, migrationFields, stakeOnGoliath);
+    const stakingInferred = inferStakingStatus(backendStatus, migrationFields, stakeOnGoliath, clientStakingStatus);
     if (stakingInferred === 'error') return 'error';
     if (stakingInferred === 'active') return 'active';
     if (stakingInferred === 'completed') return 'completed';
     // For idle: check if steps before staking are done
     if (activeIndex >= 0 && stepIndex <= activeIndex) {
-      // The staking step is at or before the "active" pointer. This means
-      // something after staking is active/completed (e.g., MIGRATION_COMPLETE).
       return 'completed';
     }
     if (isFailed) return 'error';
     return 'pending';
+  }
+
+  // MIGRATION_COMPLETE: only mark as completed when staking is also done (if opted)
+  if (stepId === StatusStep.MIGRATION_COMPLETE && stakeOnGoliath && backendStatus === 'COMPLETED') {
+    if (!clientStakingStatus || clientStakingStatus !== 'confirmed') {
+      return 'pending';
+    }
   }
 
   // FAILED / EXPIRED: mark the step that was active as error, completed steps stay completed
@@ -551,6 +628,12 @@ export default function MigrationStatusPanel({
   pollingError,
   errorMessage,
   onStartNewMigration,
+  clientStakingStatus,
+  clientStakingTxHash,
+  clientStakingError,
+  onExecuteStake,
+  onRetryStake,
+  onSwitchToGoliath,
 }: MigrationStatusPanelProps) {
   const { t } = useTranslation();
 
@@ -559,17 +642,20 @@ export default function MigrationStatusPanel({
 
   // Determine active step from backend status
   const activeStep = useMemo(
-    () => mapStatusToActiveStep(operationStatus, stakeOnGoliath, migrationFields),
-    [operationStatus, stakeOnGoliath, migrationFields]
+    () => mapStatusToActiveStep(operationStatus, stakeOnGoliath, migrationFields, clientStakingStatus),
+    [operationStatus, stakeOnGoliath, migrationFields, clientStakingStatus]
   );
 
   const isFailed = operationStatus === 'FAILED' || operationStatus === 'EXPIRED';
   const isCompleted = operationStatus === 'COMPLETED';
-  const isTerminal = isFailed || isCompleted;
 
-  // Determine staking tx hash: from migration fields
-  const stakingTxHash = migrationFields?.stakingTxHash ?? null;
-  const stakingError = migrationFields?.stakingError ?? null;
+  // The entire migration (including staking) is fully done
+  const isFullyCompleted = isCompleted && (!stakeOnGoliath || clientStakingStatus === 'confirmed');
+  const isTerminal = isFailed || isFullyCompleted;
+
+  // Determine staking tx hash: prefer client-side, fallback to backend
+  const stakingTxHash = clientStakingTxHash ?? migrationFields?.stakingTxHash ?? null;
+  const stakingError = clientStakingError ?? migrationFields?.stakingError ?? null;
 
   const handleStartNew = useCallback(() => {
     onStartNewMigration?.();
@@ -587,7 +673,8 @@ export default function MigrationStatusPanel({
             activeStep,
             operationStatus,
             stakeOnGoliath,
-            migrationFields
+            migrationFields,
+            clientStakingStatus
           );
           const isLast = index === steps.length - 1;
           const isHighlighted = visualStatus === 'active' || visualStatus === 'completed';
@@ -638,26 +725,60 @@ export default function MigrationStatusPanel({
             );
           }
 
-          // Extra description for staking step
+          // Extra description and actions for staking step
           let stepDescription: React.ReactNode = null;
+          let stepAction: React.ReactNode = null;
 
-          if (step.id === StatusStep.STAKING_ON_GOLIATH) {
-            const stakingInferred = inferStakingStatus(
-              operationStatus,
-              migrationFields,
-              stakeOnGoliath
-            );
-            if (stakingInferred === 'active') {
+          if (step.id === StatusStep.STAKING_ON_GOLIATH && isCompleted) {
+            if (clientStakingStatus === 'awaiting_network') {
+              stepDescription = (
+                <StepDescription>{t('migration.panel.switchToGoliathForStaking')}</StepDescription>
+              );
+              if (onSwitchToGoliath) {
+                stepAction = (
+                  <StakingActionButton onClick={onSwitchToGoliath} type="button">
+                    {t('migration.panel.switchNetwork')}
+                  </StakingActionButton>
+                );
+              }
+            } else if (clientStakingStatus === 'pending_signature') {
+              stepDescription = (
+                <StepDescription>{t('migration.panel.confirmStakingInWallet')}</StepDescription>
+              );
+            } else if (clientStakingStatus === 'tx_pending') {
               stepDescription = (
                 <StepDescription>{t('migration.panel.stakingInProgress')}</StepDescription>
               );
-            } else if (stakingInferred === 'error' && stakingError) {
+            } else if (clientStakingStatus === 'confirmed') {
+              stepDescription = null; // Completed badge is enough
+            } else if (clientStakingStatus === 'failed') {
               stepDescription = (
                 <StepDescription style={{ color: 'inherit' }}>
-                  {t('migration.panel.stakingFailed', { error: stakingError })}
+                  {stakingError || t('migration.panel.stakingFailedGeneric')}
                 </StepDescription>
               );
+              if (onRetryStake) {
+                stepAction = (
+                  <StakingRetryButton onClick={onRetryStake} type="button">
+                    {t('migration.action.retry')}
+                  </StakingRetryButton>
+                );
+              }
+            } else if (clientStakingStatus === 'idle' || !clientStakingStatus) {
+              stepDescription = (
+                <StepDescription>{t('migration.panel.readyToStake')}</StepDescription>
+              );
+              if (onExecuteStake) {
+                stepAction = (
+                  <StakingActionButton onClick={onExecuteStake} type="button">
+                    {t('migration.panel.stakeNow')}
+                  </StakingActionButton>
+                );
+              }
             }
+          } else if (step.id === StatusStep.STAKING_ON_GOLIATH && !isCompleted) {
+            // Bridge not yet completed — show pending description
+            stepDescription = null;
           }
 
           return (
@@ -675,6 +796,7 @@ export default function MigrationStatusPanel({
                 <StepLabel isHighlighted={isHighlighted}>{t(step.labelKey)}</StepLabel>
                 {stepDescription}
                 {txLinkElement}
+                {stepAction}
               </StepContent>
             </StepRow>
           );
@@ -694,8 +816,8 @@ export default function MigrationStatusPanel({
         <PollingErrorText role="alert">{t('migration.panel.pollingError')}</PollingErrorText>
       )}
 
-      {/* Completed State */}
-      {isCompleted && (
+      {/* Completed State — only shown when staking is also done (if opted) */}
+      {isFullyCompleted && (
         <TerminalStateContainer>
           <TerminalIcon isSuccess>
             <CheckCircle size={40} aria-hidden="true" />

@@ -11,6 +11,7 @@ import { useMigrationData } from '../../hooks/migration/useMigrationData';
 import { useMigrationFlow } from '../../hooks/migration/useMigrationFlow';
 import { useMigrationStatusPolling } from '../../hooks/migration/useMigrationStatusPolling';
 import { useMigrationTransactions } from '../../hooks/migration/useMigrationTransactions';
+import { useMigrationStaking } from '../../hooks/migration/useMigrationStaking';
 import { selectOperation } from '../../state/migration/selectors';
 import { migrationActions } from '../../state/migration/slice';
 import { loadPendingMigration } from '../../state/migration/persistence';
@@ -20,6 +21,7 @@ import MigrationStepper from '../../components/migration/MigrationStepper';
 import MigrationStatusPanel from '../../components/migration/MigrationStatusPanel';
 import MigrationStatsBanner from '../../components/migration/MigrationStatsBanner';
 import MigrationHistoryPanel from '../../components/migration/MigrationHistoryPanel';
+import GoliathStakedBalance from '../../components/migration/GoliathStakedBalance';
 import {
   PageWrapper,
   MigrateHeader,
@@ -31,6 +33,9 @@ import {
   SkeletonBlock,
   ContentSection,
   ErrorBanner,
+  ProcessInfoCard,
+  ProcessInfoTitle,
+  ProcessInfoText,
 } from './styleds';
 
 // ---------------------------------------------------------------------------
@@ -39,6 +44,9 @@ import {
 
 /** Sepolia chain ID for network gate check. */
 const SEPOLIA_CHAIN_ID = 11155111;
+
+/** Goliath testnet chain ID — needed for post-bridge staking. */
+const GOLIATH_CHAIN_ID = 8901;
 
 // ---------------------------------------------------------------------------
 // Component
@@ -52,7 +60,8 @@ export default function Migrate() {
   const { switchNetwork, isLoading: isSwitching } = useBridgeNetworkSwitch();
 
   const isConnected = Boolean(account);
-  const isCorrectNetwork = (chainId as number | undefined) === SEPOLIA_CHAIN_ID;
+  const isSepolia = (chainId as number | undefined) === SEPOLIA_CHAIN_ID;
+  const isGoliath = (chainId as number | undefined) === GOLIATH_CHAIN_ID;
 
   // ---------------------------------------------------------------------------
   // Data loading
@@ -65,7 +74,6 @@ export default function Migrate() {
   // ---------------------------------------------------------------------------
 
   const operation = useSelector(selectOperation);
-  const stakeOnGoliath = true;
 
   // ---------------------------------------------------------------------------
   // Resume: restore pending operation from localStorage on mount
@@ -81,6 +89,7 @@ export default function Migrate() {
           originTxHash: pending.originTxHash,
           intentId: pending.intentId,
           status: 'PENDING_ORIGIN_TX',
+          stakeOnGoliath: pending.stakeOnGoliath,
         })
       );
       dispatch(migrationActions.lockToggle());
@@ -127,6 +136,22 @@ export default function Migrate() {
     { senderAddress: account ?? undefined }
   );
 
+  // ---------------------------------------------------------------------------
+  // Client-side staking (after bridge COMPLETED)
+  // ---------------------------------------------------------------------------
+
+  const resolvedStakeOnGoliath = migrationFields?.stakeOnGoliath ?? operation?.stakeOnGoliath ?? true;
+  const bridgedAmount = operation?.amount ?? migrationFields?.amount ?? undefined;
+  const isBridgeCompleted = operationStatus === 'COMPLETED';
+
+  const {
+    executeStake,
+    stakingStatus: clientStakingStatus,
+    stakingTxHash: clientStakingTxHash,
+    stakingError: clientStakingError,
+    retry: retryStake,
+  } = useMigrationStaking(bridgedAmount, resolvedStakeOnGoliath, isBridgeCompleted);
+
   // Callback for "Start New Migration" from the status panel
   const handleStartNewMigration = useCallback(() => {
     dispatch(migrationActions.clearOperation());
@@ -135,11 +160,15 @@ export default function Migrate() {
   }, [dispatch, refetch]);
 
   // ---------------------------------------------------------------------------
-  // Network switch handler
+  // Network switch handlers
   // ---------------------------------------------------------------------------
 
   const handleSwitchNetwork = useCallback(async () => {
     await switchNetwork(BridgeNetwork.SEPOLIA);
+  }, [switchNetwork]);
+
+  const handleSwitchToGoliath = useCallback(async () => {
+    await switchNetwork(BridgeNetwork.GOLIATH);
   }, [switchNetwork]);
 
   // ---------------------------------------------------------------------------
@@ -156,7 +185,7 @@ export default function Migrate() {
     <PageWrapper>
       <AppBody>
         <MigrateHeader>
-          <MigrateTitle>{t('migration.nav.title')}</MigrateTitle>
+          <MigrateTitle>{t('migration.nav.pageTitle')}</MigrateTitle>
         </MigrateHeader>
 
         <MigrateBody>
@@ -173,8 +202,8 @@ export default function Migrate() {
             </GateContainer>
           )}
 
-          {/* ---- Gate 2: Wrong network ---- */}
-          {isConnected && !isCorrectNetwork && (
+          {/* ---- Gate 2: Wrong network (allow Goliath when in status view for post-bridge staking) ---- */}
+          {isConnected && !isSepolia && !(isGoliath && isStatusView) && (
             <GateContainer>
               <GateIcon>
                 <Wifi size={40} aria-hidden="true" />
@@ -194,11 +223,20 @@ export default function Migrate() {
             </GateContainer>
           )}
 
-          {/* ---- Connected + Correct Network ---- */}
-          {isConnected && isCorrectNetwork && (
+          {/* ---- Connected + Correct Network (or Goliath in status view) ---- */}
+          {isConnected && (isSepolia || (isGoliath && isStatusView)) && (
             <>
               {/* Phase-2: stats banner (renders nothing when flag is off) */}
               <MigrationStatsBanner />
+
+              {/* Goliath staked balance (renders nothing when 0 or disconnected) */}
+              <GoliathStakedBalance />
+
+              <ProcessInfoCard role="region" aria-label={t('migration.process.title')}>
+                <ProcessInfoTitle>{t('migration.process.title')}</ProcessInfoTitle>
+                <ProcessInfoText>{t('migration.process.description')}</ProcessInfoText>
+                <ProcessInfoText>{t('migration.process.signatureNotice')}</ProcessInfoText>
+              </ProcessInfoCard>
 
               {/* Data error */}
               {dataError && !dataLoading && (
@@ -239,17 +277,23 @@ export default function Migrate() {
                 </ContentSection>
               )}
 
-              {/* Status mode: in-flight or resumed operation */}
+              {/* Status mode: in-flight or resumed operation (persists through terminal states) */}
               {isStatusView && operation && (
                 <MigrationStatusPanel
                   operationStatus={operationStatus}
-                  stakeOnGoliath={stakeOnGoliath}
+                  stakeOnGoliath={resolvedStakeOnGoliath}
                   migrationFields={migrationFields}
                   originTxHash={operation.originTxHash}
-                  destinationTxHash={null}
+                  destinationTxHash={migrationFields?.destinationTxHash ?? operation.destinationTxHash ?? null}
                   delayWarning={delayWarning}
                   pollingError={pollingError}
                   onStartNewMigration={handleStartNewMigration}
+                  clientStakingStatus={clientStakingStatus}
+                  clientStakingTxHash={clientStakingTxHash}
+                  clientStakingError={clientStakingError}
+                  onExecuteStake={executeStake}
+                  onRetryStake={retryStake}
+                  onSwitchToGoliath={handleSwitchToGoliath}
                 />
               )}
 

@@ -326,6 +326,7 @@
   "removeLiquidityTip": "Removing pool tokens converts your position back into underlying tokens at the current rate, proportional to your share of the pool. Accrued fees are included in the amounts you receive.",
 
   "migration.nav.title": "Migrate",
+  "migration.nav.pageTitle": "Migrate Staked XCN",
   "migration.nav.deadlineIndicator": "Deadline: {{date}}",
 
   "migration.summary.stakedXCN": "Staked XCN",
@@ -340,10 +341,10 @@
   "migration.step.unstake.title": "Unstake XCN",
   "migration.step.unstake.description": "Withdraw your staked XCN from the staking contract.",
   "migration.step.bridge.title": "Bridge to Goliath",
-  "migration.step.bridge.description": "Bridge your XCN tokens to the Goliath network to receive CHN.",
+  "migration.step.bridge.description": "Bridge your XCN tokens to the Goliath network.",
 
   "migration.toggle.stakeOnGoliath": "Stake on Goliath",
-  "migration.toggle.autoStakeDescription": "Auto-stake CHN tokens after migration",
+  "migration.toggle.autoStakeDescription": "Auto-stake XCN tokens after migration",
   "migration.toggle.lockedHint": "Preference locked after bridge submission",
 
   "migration.status.depositConfirmed": "Deposit Confirmed",
@@ -359,10 +360,14 @@
   "migration.error.bindFailed": "Bind failed \u2014 retrying in background",
   "migration.error.switchNetworkPrompt": "Please switch to {{network}} to continue the migration.",
 
-  "migration.empty.noXCNToMigrate": "No XCN to migrate",
+  "migration.empty.noXCNToMigrate": "No Staked XCN on Ethereum to migrate",
   "migration.empty.bridgeLinkText": "Bridge tokens instead",
 
   "migration.resumeHint": "It looks like you previously unstaked. Continue with bridging.",
+
+  "migration.process.title": "Automated migration to Goliath",
+  "migration.process.description": "This process moves your staked XCN from Ethereum (Sepolia) to Goliath Testnet with one start action and tracked progress.",
+  "migration.process.signatureNotice": "You will usually sign 3 times in your wallet: (1) Unstake transaction, (2) migration authorization signature (gasless), and (3) Bridge transaction. If \"Approve XCN\" appears, there is one extra signature to grant bridge allowance.",
 
   "migration.deadline.banner": "Migration deadline: {{date}}",
   "migration.deadline.ended": "Migration window has ended",
@@ -373,6 +378,7 @@
   "migration.action.txPending": "Transaction pending...",
   "migration.action.completed": "Completed",
   "migration.action.failed": "Failed",
+  "migration.action.ready": "Ready to execute",
   "migration.action.waitingForPrevious": "Waiting for previous steps",
   "migration.action.viewTransaction": "View transaction",
 
@@ -383,6 +389,12 @@
   "migration.panel.delayWarning": "Taking longer than expected. Your migration is still processing.",
   "migration.panel.stakingInProgress": "Staking your tokens on Goliath...",
   "migration.panel.stakingFailed": "Staking failed: {{error}}",
+  "migration.panel.stakingFailedGeneric": "Staking transaction failed. Please retry.",
+  "migration.panel.switchToGoliathForStaking": "Switch to Goliath network to stake your XCN",
+  "migration.panel.switchNetwork": "Switch Network",
+  "migration.panel.confirmStakingInWallet": "Confirm staking in your wallet...",
+  "migration.panel.readyToStake": "Bridge complete! Stake your XCN on Goliath.",
+  "migration.panel.stakeNow": "Stake Now",
   "migration.panel.startNewMigration": "Start New Migration",
   "migration.panel.successMessage": "Your tokens have been successfully migrated!",
   "migration.panel.successWithStaking": "Your tokens have been migrated and staked on Goliath!",
@@ -393,6 +405,12 @@
   "migration.panel.viewExplorer": "View on Explorer",
 
   "migration.stepper.title": "Migration Steps",
+  "migration.stepper.automationDescription": "Start once and follow the wallet prompts. Standard flow requires 3 signatures (unstake, authorization signature, bridge tx). If approval is required, you will see 4 signatures.",
+  "migration.stepper.automationStart": "Start Migration",
+  "migration.stepper.automationContinue": "Continue Migration",
+  "migration.stepper.automationRunning": "Migration In Progress...",
+  "migration.stepper.automationFailed": "Automated migration stopped. Review the failed step and continue.",
+  "migration.stepper.automationStepFailed": "Step failed: {{step}}",
   "migration.stepper.completionMessage": "All steps completed! Your migration is being processed.",
   "migration.stepper.resumeHint": "It looks like you previously unstaked. Continue with bridging.",
 
@@ -407,5 +425,14 @@
   "migration.history.empty": "No migration history yet.",
   "migration.history.errorLoading": "Unable to load migration history.",
   "migration.history.loadMore": "Load more",
-  "migration.history.viewTx": "View transaction"
+  "migration.history.viewTx": "View transaction",
+  "migration.history.recentMigrations": "Recent Migrations",
+  "migration.history.sepoliaExplorer": "Sepolia",
+  "migration.history.goliathExplorer": "Goliath",
+  "migration.history.unstakeTx": "Unstake",
+  "migration.history.bridgeTx": "Bridge",
+  "migration.history.stakeTx": "Stake",
+
+  "migration.goliathBalance.title": "Staked on Goliath",
+  "migration.goliathBalance.stxcn": "stXCN Balance"
 }

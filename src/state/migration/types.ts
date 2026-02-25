@@ -65,12 +65,29 @@ export interface MigrationPreferences {
 /**
  * Tracks an active bridge+stake operation after the user submits the bridge transaction.
  */
+/**
+ * Status of the client-side staking step that runs after bridge completion.
+ */
+export type ClientStakingStatus =
+  | 'idle'
+  | 'awaiting_network'
+  | 'pending_signature'
+  | 'tx_pending'
+  | 'confirmed'
+  | 'failed';
+
 export interface MigrationOperation {
   originTxHash: string;
   intentId: string;
   status: string;
+  destinationTxHash?: string | null;
+  completedAt?: string | null;
+  stakeOnGoliath?: boolean;
+  /** Bridged amount in atomic units (wei), used by client-side staking. */
+  amount?: string;
   stakingTxHash?: string;
   stakingError?: string;
+  clientStakingStatus?: ClientStakingStatus;
   lastPolledAt?: number;
 }
 

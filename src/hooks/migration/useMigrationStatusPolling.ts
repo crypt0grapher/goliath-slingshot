@@ -28,8 +28,11 @@ const DELAY_WARNING_THRESHOLD_MS = 5 * 60 * 1000;
 
 export interface MigrationFields {
   stakeOnGoliath?: boolean;
+  amount?: string | null;
   stakingTxHash?: string | null;
   stakingError?: string | null;
+  destinationTxHash?: string | null;
+  completedAt?: string | null;
 }
 
 export interface UseMigrationStatusPollingOptions {
@@ -121,11 +124,20 @@ export function useMigrationStatusPolling(
         if (response.stakeOnGoliath !== undefined) {
           fields.stakeOnGoliath = response.stakeOnGoliath;
         }
+        if (response.amount !== undefined) {
+          fields.amount = response.amount;
+        }
         if (response.stakingTxHash !== undefined) {
           fields.stakingTxHash = response.stakingTxHash;
         }
         if (response.stakingError !== undefined) {
           fields.stakingError = response.stakingError;
+        }
+        if (response.destinationTxHash !== undefined) {
+          fields.destinationTxHash = response.destinationTxHash;
+        }
+        if (response.timestamps?.completedAt !== undefined) {
+          fields.completedAt = response.timestamps.completedAt;
         }
         setMigrationFields(fields);
 
@@ -133,6 +145,10 @@ export function useMigrationStatusPolling(
         dispatch(
           migrationActions.updateOperationStatus({
             status,
+            destinationTxHash: response.destinationTxHash ?? undefined,
+            completedAt: response.timestamps?.completedAt ?? undefined,
+            stakeOnGoliath: response.stakeOnGoliath,
+            amount: response.amount ?? undefined,
             stakingTxHash: response.stakingTxHash ?? undefined,
             stakingError: response.stakingError ?? undefined,
             lastPolledAt: Date.now(),
