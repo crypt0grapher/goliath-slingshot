@@ -207,7 +207,7 @@ describe('useMigrationData', () => {
   // Loading state
   // ========================================
 
-  it('dispatches loading snapshot before fetching', async () => {
+  it('dispatches loading state before fetching without zeroing balances', async () => {
     // Set up mocks that resolve with a delay to catch the loading dispatch
     mockUserInfo.mockImplementation(
       () => new Promise((r) => setTimeout(() => r({ amount: bn('1'), rewardDebt: bn('0'), pendingTokenReward: bn('0') }), 200))
@@ -230,15 +230,15 @@ describe('useMigrationData', () => {
       await new Promise((r) => setTimeout(r, 20));
     });
 
-    // Should have dispatched a loading snapshot
-    const loadingSnapshots = dispatchSpy!
+    // Should have dispatched setSnapshotLoading (not setSnapshot with zeros)
+    const loadingActions = dispatchSpy!
       .mock.calls.map((c) => c[0])
       .filter(
         (a: { type: string; payload?: unknown }) =>
-          a.type === 'migration/setSnapshot' && (a.payload as { loading: boolean }).loading === true
+          a.type === 'migration/setSnapshotLoading' && (a.payload as { loading: boolean }).loading === true
       );
 
-    expect(loadingSnapshots.length).toBeGreaterThanOrEqual(1);
+    expect(loadingActions.length).toBeGreaterThanOrEqual(1);
   });
 
   // ========================================

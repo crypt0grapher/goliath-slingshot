@@ -134,17 +134,10 @@ export function useMigrationData(): UseMigrationDataResult {
     setLoading(true);
     setError(null);
 
-    // Dispatch loading state to Redux.
-    dispatch(
-      migrationActions.setSnapshot({
-        staked: '0',
-        rewards: '0',
-        walletXcn: '0',
-        allowance: '0',
-        loading: true,
-        error: null,
-      })
-    );
+    // Mark snapshot as loading without zeroing balance values.
+    // Zeroing the snapshot here caused deriveSteps() to compute isEmpty=true,
+    // which made the UI show "No XCN to migrate" instead of a loading skeleton.
+    dispatch(migrationActions.setSnapshotLoading({ loading: true, error: null }));
 
     try {
       await ensureSepoliaProviderReady();

@@ -11,7 +11,7 @@ import { useMigrationData } from '../../hooks/migration/useMigrationData';
 import { useMigrationFlow } from '../../hooks/migration/useMigrationFlow';
 import { useMigrationStatusPolling } from '../../hooks/migration/useMigrationStatusPolling';
 import { useMigrationTransactions } from '../../hooks/migration/useMigrationTransactions';
-import { selectOperation, selectStakeToggle } from '../../state/migration/selectors';
+import { selectOperation } from '../../state/migration/selectors';
 import { migrationActions } from '../../state/migration/slice';
 import { loadPendingMigration } from '../../state/migration/persistence';
 import { BridgeNetwork } from '../../constants/bridge/networks';
@@ -65,7 +65,7 @@ export default function Migrate() {
   // ---------------------------------------------------------------------------
 
   const operation = useSelector(selectOperation);
-  const stakeOnGoliath = useSelector(selectStakeToggle);
+  const stakeOnGoliath = true;
 
   // ---------------------------------------------------------------------------
   // Resume: restore pending operation from localStorage on mount
@@ -83,16 +83,9 @@ export default function Migrate() {
           status: 'PENDING_ORIGIN_TX',
         })
       );
-      // Restore the stake toggle preference: if the persisted value differs
-      // from the current Redux value, toggle it before locking.
-      if (pending.stakeOnGoliath !== stakeOnGoliath) {
-        dispatch(migrationActions.toggleStakePreference());
-      }
       dispatch(migrationActions.lockToggle());
     }
-  }, [account, dispatch]); // eslint-disable-line react-hooks/exhaustive-deps
-  // Note: stakeOnGoliath deliberately excluded from deps to avoid re-running
-  // on toggle changes -- we only want to restore on mount.
+  }, [account, dispatch]);
 
   // ---------------------------------------------------------------------------
   // Flow derivation
@@ -153,7 +146,7 @@ export default function Migrate() {
   // Determine loading state
   // ---------------------------------------------------------------------------
 
-  const isLoading = dataLoading && !dataError && !isEmpty && !isStatusView;
+  const isLoading = dataLoading && !dataError && !isStatusView;
 
   // ---------------------------------------------------------------------------
   // Render
@@ -223,8 +216,8 @@ export default function Migrate() {
                 </ContentSection>
               )}
 
-              {/* Empty state: no XCN to migrate (handled by stepper, but also shown at page level if isEmpty and not loading) */}
-              {!isLoading && !isStatusView && isEmpty && (
+              {/* Empty state: no XCN to migrate (only when fetch succeeded with zero balances, not on error) */}
+              {!isLoading && !isStatusView && isEmpty && !dataError && (
                 <MigrationStepper
                   executeClaim={executeClaim}
                   executeApprove={executeApprove}

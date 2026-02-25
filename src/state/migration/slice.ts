@@ -65,6 +65,16 @@ const migrationSlice = createSlice({
       state.snapshot = action.payload;
     },
 
+    /**
+     * Marks the snapshot as loading without zeroing existing balance values.
+     * This prevents the UI from briefly showing "No XCN to migrate" while
+     * a refetch is in flight.
+     */
+    setSnapshotLoading(state, action: PayloadAction<{ loading: boolean; error: string | null }>) {
+      state.snapshot.loading = action.payload.loading;
+      state.snapshot.error = action.payload.error;
+    },
+
     // ========================================
     // Flow
     // ========================================
