@@ -22,6 +22,7 @@ jest.mock('hooks', () => ({
 
 jest.mock('services/bridgeProviders', () => ({
   getReadonlyProvider: jest.fn(() => ({ _isProvider: true })),
+  ensureSepoliaProviderReady: jest.fn(() => Promise.resolve()),
 }));
 
 // Contract method mocks. These must be declared as `var` so they are hoisted

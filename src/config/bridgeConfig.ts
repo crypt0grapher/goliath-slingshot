@@ -3,6 +3,7 @@ export interface BridgeConfig {
   sepolia: {
     chainId: 11155111;
     rpcUrl: string;
+    rpcUrlFallback: string;
     explorerUrl: string;
     bridgeAddress: string;
   };
@@ -32,7 +33,8 @@ function loadBridgeConfig(): BridgeConfig {
   return {
     sepolia: {
       chainId: 11155111 as const,
-      rpcUrl: process.env.REACT_APP_SEPOLIA_RPC_URL || 'https://eth-sepolia.g.alchemy.com/v2/demo',
+      rpcUrl: process.env.REACT_APP_SEPOLIA_RPC_URL || 'https://ethereum-sepolia-rpc.publicnode.com',
+      rpcUrlFallback: process.env.REACT_APP_SEPOLIA_RPC_URL_FALLBACK || 'https://eth-sepolia.g.alchemy.com/v2/demo',
       explorerUrl: process.env.REACT_APP_SEPOLIA_EXPLORER_URL || 'https://sepolia.etherscan.io',
       bridgeAddress: process.env.REACT_APP_BRIDGE_SEPOLIA_ADDRESS || '0x0000000000000000000000000000000000000000',
     },

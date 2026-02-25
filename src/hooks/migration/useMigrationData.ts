@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useDispatch } from 'react-redux';
 import { ethers } from 'ethers';
 import { useActiveWeb3React } from 'hooks';
-import { getReadonlyProvider } from 'services/bridgeProviders';
+import { getReadonlyProvider, ensureSepoliaProviderReady } from 'services/bridgeProviders';
 import { BridgeNetwork } from 'constants/bridge/networks';
 import { migrationConfig } from 'config/migrationConfig';
 import { bridgeConfig } from 'config/bridgeConfig';
@@ -147,6 +147,7 @@ export function useMigrationData(): UseMigrationDataResult {
     );
 
     try {
+      await ensureSepoliaProviderReady();
       const provider = getReadonlyProvider(BridgeNetwork.SEPOLIA);
       const data = await fetchMigrationSnapshot(account, provider);
 
