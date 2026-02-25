@@ -140,7 +140,7 @@ export default function Migrate() {
   // Client-side staking (after bridge COMPLETED)
   // ---------------------------------------------------------------------------
 
-  const resolvedStakeOnGoliath = migrationFields?.stakeOnGoliath ?? operation?.stakeOnGoliath ?? true;
+  const resolvedStakeOnGoliath = operation?.stakeOnGoliath ?? migrationFields?.stakeOnGoliath ?? true;
   const bridgedAmount = operation?.amount ?? migrationFields?.amount ?? undefined;
   const isBridgeCompleted = operationStatus === 'COMPLETED';
 

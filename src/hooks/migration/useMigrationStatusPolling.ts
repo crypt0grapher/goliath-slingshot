@@ -142,12 +142,15 @@ export function useMigrationStatusPolling(
         setMigrationFields(fields);
 
         // Dispatch to Redux
+        // Guard: never downgrade stakeOnGoliath from true to false via polling.
+        // The local operation state (set during executeBridge) is the source of truth.
+        // Only propagate stakeOnGoliath when the backend confirms it as true.
         dispatch(
           migrationActions.updateOperationStatus({
             status,
             destinationTxHash: response.destinationTxHash ?? undefined,
             completedAt: response.timestamps?.completedAt ?? undefined,
-            stakeOnGoliath: response.stakeOnGoliath,
+            ...(response.stakeOnGoliath === true ? { stakeOnGoliath: true } : {}),
             amount: response.amount ?? undefined,
             stakingTxHash: response.stakingTxHash ?? undefined,
             stakingError: response.stakingError ?? undefined,

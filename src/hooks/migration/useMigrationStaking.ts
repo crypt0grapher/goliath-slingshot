@@ -83,6 +83,7 @@ export function useMigrationStaking(
 
   const executingRef = useRef(false);
   const mountedRef = useRef(true);
+  const hasAutoTriggeredRef = useRef(false);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -215,6 +216,29 @@ export function useMigrationStaking(
       executeStake();
     }
   }, [stakingStatus, isNetworkCorrect, isReadyToStake, stakeOnGoliath, executeStake]);
+
+  // Auto-trigger staking when bridge completes and wallet is already on Goliath.
+  // Uses hasAutoTriggeredRef to prevent re-firing after user rejection (which resets
+  // stakingStatus back to 'idle').
+  useEffect(() => {
+    if (!isReadyToStake) {
+      // Reset for next operation
+      hasAutoTriggeredRef.current = false;
+      return;
+    }
+
+    if (
+      stakingStatus === 'idle' &&
+      isReadyToStake &&
+      isNetworkCorrect &&
+      stakeOnGoliath &&
+      !executingRef.current &&
+      !hasAutoTriggeredRef.current
+    ) {
+      hasAutoTriggeredRef.current = true;
+      executeStake();
+    }
+  }, [stakingStatus, isReadyToStake, isNetworkCorrect, stakeOnGoliath, executeStake]);
 
   const retry = useCallback(() => {
     setStakingStatus('idle');
