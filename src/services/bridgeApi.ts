@@ -201,6 +201,38 @@ export class BridgeApiClient {
   }
 
   /**
+   * Register an XCN withdraw intent (Goliath -> Sepolia)
+   */
+  async registerXcnWithdrawIntent(params: {
+    senderAddress: string;
+    recipientAddress: string;
+    amountAtomic: string;
+    idempotencyKey: string;
+    deadline: number;
+    nonce: string;
+    signature: string;
+  }): Promise<{ intentId: string; relayerWalletAddress: string; expiresAt: string }> {
+    return this.fetch('/bridge/xcn-withdraw-intent', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
+  /**
+   * Bind an origin tx hash to an XCN withdraw intent
+   */
+  async bindXcnWithdrawOrigin(params: {
+    intentId: string;
+    senderAddress: string;
+    originTxHash: string;
+  }): Promise<{ intentId: string; originTxHash: string }> {
+    return this.fetch('/bridge/xcn-withdraw-intent/bind-origin', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
+  /**
    * Check if bridge is paused
    */
   async isPaused(): Promise<boolean> {
@@ -209,6 +241,44 @@ export class BridgeApiClient {
       return health.status !== 'healthy';
     } catch {
       return true; // Assume paused if we can't reach the API
+    }
+  }
+
+  /**
+   * Check if the backend supports XCN withdraw (Goliath -> Sepolia) routes.
+   *
+   * Probes the service root endpoint and checks whether
+   * `xcnWithdrawIntent` and `xcnWithdrawBindOrigin` keys appear
+   * in the endpoints map. Returns false if the probe fails or
+   * the required keys are absent — callers MUST NOT initiate a
+   * native XCN transfer when this returns false.
+   */
+  async checkXcnWithdrawCapability(): Promise<boolean> {
+    try {
+      // The root endpoint is one level above the API base
+      // e.g. baseUrl = ".../bridge/api/v1" -> root = ".../bridge/"
+      const rootUrl = this.baseUrl.replace(/\/api\/v1\/?$/, '/');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), this.timeout);
+
+      const response = await fetch(rootUrl, {
+        signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' },
+      });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) return false;
+
+      const data = await response.json();
+      const endpoints = data?.endpoints;
+      if (!endpoints) return false;
+
+      return (
+        typeof endpoints.xcnWithdrawIntent === 'string' &&
+        typeof endpoints.xcnWithdrawBindOrigin === 'string'
+      );
+    } catch {
+      return false;
     }
   }
 }

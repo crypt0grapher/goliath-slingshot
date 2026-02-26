@@ -158,11 +158,15 @@ export async function ensureSepoliaProviderReady(): Promise<void> {
   await _validationPromise;
 }
 
+const shouldEagerlyValidateProviders = process.env.NODE_ENV !== 'test';
+
 // Kick off validation eagerly (non-blocking) — consumers still await via ensureSepoliaProviderReady()
-ensureSepoliaProviderReady().catch(() => {
-  // Intentionally ignored; consumers call ensureSepoliaProviderReady() and
-  // will surface failures in their own error handling paths.
-});
+if (shouldEagerlyValidateProviders) {
+  ensureSepoliaProviderReady().catch(() => {
+    // Intentionally ignored; consumers call ensureSepoliaProviderReady() and
+    // will surface failures in their own error handling paths.
+  });
+}
 
 function getSepoliaProvider(): ethers.providers.JsonRpcProvider {
   if (!_sepoliaProvider) {
@@ -235,7 +239,9 @@ export async function ensureGoliathProviderReady(): Promise<void> {
 }
 
 // Kick off Goliath validation eagerly (non-blocking)
-ensureGoliathProviderReady().catch(() => {});
+if (shouldEagerlyValidateProviders) {
+  ensureGoliathProviderReady().catch(() => {});
+}
 
 function getGoliathProvider(): ethers.providers.JsonRpcProvider {
   if (!_goliathProvider) {

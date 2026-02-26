@@ -314,6 +314,8 @@
   "errorDepositFailedRetry": "Deposit failed after multiple attempts",
   "errorTransactionReverted": "Transaction reverted",
   "errorNativeBurnNotSupported": "Native token burning is not supported. Please use wrapped token.",
+  "errorSignatureFailed": "Failed to sign the bridge intent. Please try again.",
+  "errorBridgeApiUnavailable": "Bridge service is temporarily unavailable. Please try again later.",
   "errorBurnFailedRetry": "Burn failed after multiple attempts",
   "errorBridgeParamRequired": "One of originTxHash, depositId, or withdrawId is required",
   "errorInsufficientLiquidityLow": "Insufficient liquidity or token amounts are too low",

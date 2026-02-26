@@ -162,7 +162,7 @@ export default function BridgeForm() {
 
         <BridgeSummary direction={direction} recipient={null} account={account} />
 
-        {originNetwork === BridgeNetwork.GOLIATH && (
+        {originNetwork === BridgeNetwork.GOLIATH && selectedToken === 'ETH' && (
           <InfoMessage>
             {t('testnetLimitMessage', { amount: GOLIATH_TO_SEPOLIA_MAX_ETH })}
           </InfoMessage>

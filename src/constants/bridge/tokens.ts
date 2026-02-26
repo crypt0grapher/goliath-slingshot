@@ -1,8 +1,7 @@
 import { BridgeNetwork } from './networks';
 import { bridgeConfig } from '../../config/bridgeConfig';
 
-// v1.0: USDC and ETH. Future versions will add 'XCN' | 'BTC'
-export type BridgeTokenSymbol = 'USDC' | 'ETH';
+export type BridgeTokenSymbol = 'USDC' | 'ETH' | 'XCN';
 
 export interface ChainTokenConfig {
   address: string | null; // null = native asset
@@ -18,7 +17,6 @@ export interface BridgeTokenConfig {
   goliath: ChainTokenConfig;
 }
 
-// v1.0: USDC and ETH configuration
 // Token addresses are loaded from bridgeConfig (environment variables) for consistency with backend
 export const BRIDGE_TOKENS: Record<BridgeTokenSymbol, BridgeTokenConfig> = {
   USDC: {
@@ -54,10 +52,26 @@ export const BRIDGE_TOKENS: Record<BridgeTokenSymbol, BridgeTokenConfig> = {
       isNative: false,
     },
   },
+  XCN: {
+    symbol: 'XCN',
+    name: 'Onyxcoin',
+    logoUrl: 'https://bridge.onyx.org/img/networks/80888.svg',
+    sepolia: {
+      // XCN is ERC-20 on Sepolia
+      address: bridgeConfig.tokens.sepolia.xcn,
+      decimals: 18,
+      isNative: false,
+    },
+    goliath: {
+      // XCN is NATIVE on Goliath
+      address: null,
+      decimals: 18,
+      isNative: true,
+    },
+  },
 };
 
-// v1.0: ETH only
-export const BRIDGE_TOKEN_LIST: BridgeTokenSymbol[] = ['ETH'];
+export const BRIDGE_TOKEN_LIST: BridgeTokenSymbol[] = ['ETH', 'XCN'];
 
 // Default token for bridge form
 export const DEFAULT_BRIDGE_TOKEN: BridgeTokenSymbol = 'ETH';
