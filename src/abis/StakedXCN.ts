@@ -71,7 +71,7 @@ export const STAKED_XCN_ABI = [
   {
     inputs: [],
     name: 'getLastUpdateTimestamp',
-    outputs: [{ name: '', type: 'uint40' }],
+    outputs: [{ name: '', type: 'uint256' }],
     stateMutability: 'view',
     type: 'function',
   },
