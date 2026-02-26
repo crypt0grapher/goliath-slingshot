@@ -28,17 +28,15 @@ export function useYieldData(): { refetch: () => void; isLoading: boolean } {
           rewardRateRay: rewardRate.toString(),
           feePercentBps: feePercent.toNumber(),
           cumulativeIndex: cumulativeIndex.toString(),
-          lastUpdateTimestamp: lastTimestamp.toNumber(),
+          lastUpdateTimestamp: typeof lastTimestamp === 'number' ? lastTimestamp : lastTimestamp.toNumber(),
           isPaused,
         })
       );
       dispatch(yieldActions.clearError());
     } catch (err) {
       console.error('Failed to fetch protocol data:', err);
-      if (attempt < 1) {
+      if (attempt < 2) {
         setTimeout(() => fetchProtocolData(attempt + 1), 2000);
-      } else {
-        dispatch(yieldActions.setError('Unable to load protocol data. Please check your connection.'));
       }
     }
   }, [contract, dispatch]);
