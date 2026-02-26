@@ -179,7 +179,7 @@ export function useBridgeXcnWithdraw(): UseXcnWithdrawReturn {
             try {
               await apiClient.bindXcnWithdrawOrigin({
                 intentId: intentResponse.intentId,
-                senderAddress: account,
+                senderAddress: account.toLowerCase(),
                 originTxHash: tx.hash,
               });
               return;
