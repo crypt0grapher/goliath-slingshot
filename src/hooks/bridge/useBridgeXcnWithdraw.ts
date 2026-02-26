@@ -82,6 +82,16 @@ export function useBridgeXcnWithdraw(): UseXcnWithdrawReturn {
           await wait(300);
         }
 
+        // 0. Capability gate: verify backend supports XCN withdraw routes
+        const apiClientCheck = new BridgeApiClient(bridgeConfig.statusApiBaseUrl);
+        const xcnCapable = await apiClientCheck.checkXcnWithdrawCapability();
+        if (!xcnCapable) {
+          throw new Error(
+            t('errorXcnWithdrawUnavailable') ||
+              'XCN bridge (Goliath → Sepolia) is temporarily unavailable. The backend does not currently support this route. Please try again later or contact support.'
+          );
+        }
+
         const amountAtomic = parseAmount(amountHuman, token, BridgeNetwork.GOLIATH);
         const signer = library.getSigner(account);
 

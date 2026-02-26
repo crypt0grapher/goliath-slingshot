@@ -20,6 +20,11 @@ const MAX_CONSECUTIVE_ERRORS = 3;
 // Exponential back-off cap for 404/null responses
 const MAX_BACKOFF_INTERVAL_MS = 30000;
 
+// Max consecutive 404/null responses before transitioning to degraded/failed state.
+// With exponential back-off starting at ~500ms and capping at 30s, this gives
+// roughly 3-5 minutes of retries before giving up.
+export const MAX_CONSECUTIVE_NULLS = 10;
+
 export function useBridgeStatusPolling(operation: BridgeOperation | null) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -102,6 +107,19 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
         );
         currentIntervalRef.current = backoff;
         console.log(`[Bridge Polling] Null response #${consecutiveNullsRef.current}, next poll in ${backoff}ms`);
+
+        // Bounded 404: transition to FAILED after too many consecutive null responses
+        if (consecutiveNullsRef.current >= MAX_CONSECUTIVE_NULLS) {
+          dispatch(
+            bridgeActions.updateOperationStatus({
+              id: operation.id,
+              status: 'FAILED',
+              errorMessage:
+                t('errorBridgeOperationNotFound') ||
+                'Bridge operation not found after extended polling. Your origin transaction may have been sent but the backend has not yet created a matching operation. Please save your transaction hash and contact support for assistance.',
+            })
+          );
+        }
       }
     } catch (error) {
       console.error('[Bridge Polling] Status polling error:', error);
