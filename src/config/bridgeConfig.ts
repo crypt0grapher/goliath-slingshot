@@ -16,12 +16,14 @@ export interface BridgeConfig {
   tokens: {
     sepolia: {
       usdc: string;
+      xcn: string;
     };
     goliath: {
       eth: string;
       usdc: string;
     };
   };
+  relayerWalletAddress: string;
   statusApiBaseUrl: string;
   bridgeEnabled: boolean;
   allowCustomRecipient: boolean;
@@ -47,12 +49,14 @@ function loadBridgeConfig(): BridgeConfig {
     tokens: {
       sepolia: {
         usdc: process.env.REACT_APP_SEPOLIA_USDC_ADDRESS || '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
+        xcn: process.env.REACT_APP_SEPOLIA_XCN_ADDRESS || '0x7a8adc542A35c93da263A188367F4bF4c445B8E9',
       },
       goliath: {
         eth: process.env.REACT_APP_ETH_TOKEN_ADDRESS || '0xEd02AA7dd3f105EDab8702D859781CAfF111324b',
         usdc: process.env.REACT_APP_USDC_ADDRESS || '0x4BE65Dce1D79B8728485B759eE06cC8053E824F4',
       },
     },
+    relayerWalletAddress: process.env.REACT_APP_BRIDGE_RELAYER_WALLET || '0xE708B75F7b6914479E63D3897bEF9e0dedcA3640',
     statusApiBaseUrl: process.env.REACT_APP_BRIDGE_STATUS_API_URL || 'https://testnet.mirrornode.goliath.net/bridge/api/v1',
     bridgeEnabled: process.env.REACT_APP_BRIDGE_ENABLED === 'true',
     allowCustomRecipient: process.env.REACT_APP_BRIDGE_ALLOW_CUSTOM_RECIPIENT === 'true',

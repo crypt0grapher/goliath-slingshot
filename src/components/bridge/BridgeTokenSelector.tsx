@@ -39,6 +39,7 @@ const TokenIcon = styled.img`
 const TOKEN_LOGOS: Record<BridgeTokenSymbol, string> = {
   ETH: EthereumLogo,
   USDC: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
+  XCN: 'https://bridge.onyx.org/img/networks/80888.svg',
 };
 
 const TokenSymbol = styled.span`

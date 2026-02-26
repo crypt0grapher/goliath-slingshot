@@ -201,6 +201,38 @@ export class BridgeApiClient {
   }
 
   /**
+   * Register an XCN withdraw intent (Goliath -> Sepolia)
+   */
+  async registerXcnWithdrawIntent(params: {
+    senderAddress: string;
+    recipientAddress: string;
+    amountAtomic: string;
+    idempotencyKey: string;
+    deadline: number;
+    nonce: string;
+    signature: string;
+  }): Promise<{ intentId: string; relayerWalletAddress: string; expiresAt: string }> {
+    return this.fetch('/bridge/xcn-withdraw-intent', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
+  /**
+   * Bind an origin tx hash to an XCN withdraw intent
+   */
+  async bindXcnWithdrawOrigin(params: {
+    intentId: string;
+    senderAddress: string;
+    originTxHash: string;
+  }): Promise<{ intentId: string; originTxHash: string }> {
+    return this.fetch('/bridge/xcn-withdraw-intent/bind-origin', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    });
+  }
+
+  /**
    * Check if bridge is paused
    */
   async isPaused(): Promise<boolean> {

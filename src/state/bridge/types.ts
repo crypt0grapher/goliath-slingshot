@@ -9,8 +9,7 @@ export enum BridgeNetwork {
 
 export type BridgeDirection = 'SEPOLIA_TO_GOLIATH' | 'GOLIATH_TO_SEPOLIA';
 
-// v1.0: USDC and ETH. Future versions will add 'XCN' | 'BTC'
-export type BridgeTokenSymbol = 'USDC' | 'ETH';
+export type BridgeTokenSymbol = 'USDC' | 'ETH' | 'XCN';
 
 export type BridgeStatus =
   | 'PENDING_ORIGIN_TX' // User submitted tx, waiting for mining

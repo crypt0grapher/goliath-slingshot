@@ -8,7 +8,7 @@ import { selectBridgeForm, selectIsConfirmModalOpen } from '../../state/bridge/s
 import { bridgeActions } from '../../state/bridge/reducer';
 import { BridgeNetwork, NETWORK_METADATA } from '../../constants/bridge/networks';
 import { useActiveWeb3React } from '../../hooks';
-import { useBridgeDeposit, useBridgeBurn, useBridgeForm } from '../../hooks/bridge';
+import { useBridgeDeposit, useBridgeBurn, useBridgeXcnWithdraw, useBridgeForm } from '../../hooks/bridge';
 import { getStaticEtaEstimate } from '../../utils/bridge/eta';
 
 const ContentWrapper = styled.div`
@@ -93,9 +93,10 @@ export default function BridgeConfirmModal() {
   const form = useSelector(selectBridgeForm);
   const { deposit, isLoading: isDepositing } = useBridgeDeposit();
   const { burn, isLoading: isBurning } = useBridgeBurn();
+  const { withdraw: xcnWithdraw, isLoading: isXcnWithdrawing } = useBridgeXcnWithdraw();
   const { triggerBalanceRefresh } = useBridgeForm();
 
-  const isLoading = isDepositing || isBurning;
+  const isLoading = isDepositing || isBurning || isXcnWithdrawing;
 
   const originMetadata = NETWORK_METADATA[form.originNetwork];
   const destMetadata = NETWORK_METADATA[form.destinationNetwork];
@@ -115,11 +116,11 @@ export default function BridgeConfirmModal() {
     try {
       if (form.originNetwork === BridgeNetwork.SEPOLIA) {
         await deposit(form.selectedToken, form.inputAmount, account);
+      } else if (form.selectedToken === 'XCN') {
+        await xcnWithdraw(form.selectedToken, form.inputAmount, account);
       } else {
         await burn(form.selectedToken, form.inputAmount, account);
       }
-      // Trigger aggressive balance polling after successful transaction
-      // This ensures balances update quickly without requiring network switch
       triggerBalanceRefresh();
     } catch (error) {
       console.error('Bridge transaction failed:', error);
