@@ -27,8 +27,9 @@ describe('bridgeProviders', () => {
       bridgeConfig: {
         sepolia: {
           chainId: 11155111,
-          rpcUrl: 'https://primary-rpc.example.com',
-          rpcUrlFallback: 'https://fallback-rpc.example.com',
+          rpcUrls: ['https://primary-rpc.example.com', 'https://fallback-rpc.example.com'],
+          get rpcUrl() { return this.rpcUrls[0]; },
+          get rpcUrlFallback() { return this.rpcUrls[1] || ''; },
         },
         goliath: {
           chainId: 8901,

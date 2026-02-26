@@ -6,9 +6,9 @@ import { getNativeBalance, getTokenBalance } from '../../services/bridgeProvider
 import { formatAmount } from '../../utils/bridge/amounts';
 
 // Configuration for aggressive polling after transactions
-const AGGRESSIVE_POLL_INTERVAL = 500; // ms - faster polling right after tx
-const AGGRESSIVE_POLL_DURATION = 15000; // ms - how long to poll aggressively
-const NORMAL_POLL_INTERVAL = 2000; // ms - normal polling interval
+const AGGRESSIVE_POLL_INTERVAL = 2000; // ms - faster polling right after tx
+const AGGRESSIVE_POLL_DURATION = 10000; // ms - how long to poll aggressively
+const NORMAL_POLL_INTERVAL = 5000; // ms - normal polling interval
 
 interface UseBridgeBalancesReturn {
   balance: string;
@@ -31,6 +31,7 @@ export function useBridgeBalances(
   const previousAccountRef = useRef<string | null | undefined>(null);
   const aggressivePollingUntilRef = useRef<number>(0); // Timestamp when aggressive polling should stop
   const lastFetchedBalanceRef = useRef<bigint>(BigInt(0)); // Track last balance to detect changes
+  const lastFetchFailedRef = useRef(false); // Skip a poll cycle after a failed fetch
 
   // Reset balance only when account actually changes to a different account
   useEffect(() => {
@@ -97,11 +98,13 @@ export function useBridgeBalances(
 
       setBalanceAtomic(balance);
       hasFetchedRef.current = true;
+      lastFetchFailedRef.current = false;
       if (!silent) {
         setError(null);
       }
     } catch (err) {
       console.error('Error fetching balance:', err);
+      lastFetchFailedRef.current = true;
       if (!silent) {
         setError('Failed to fetch balance');
         // Don't reset balance on error - keep showing the previous value
@@ -135,7 +138,12 @@ export function useBridgeBalances(
       const isAggressiveMode = Date.now() < aggressivePollingUntilRef.current;
       const interval = isAggressiveMode ? AGGRESSIVE_POLL_INTERVAL : NORMAL_POLL_INTERVAL;
 
-      fetchBalance(true);
+      // Skip this cycle if the last fetch failed (reduces RPC pressure after errors)
+      if (lastFetchFailedRef.current) {
+        lastFetchFailedRef.current = false; // Allow the next cycle
+      } else {
+        fetchBalance(true);
+      }
 
       // Schedule next poll with appropriate interval
       intervalId = setTimeout(poll, interval);

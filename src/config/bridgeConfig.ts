@@ -2,7 +2,10 @@
 export interface BridgeConfig {
   sepolia: {
     chainId: 11155111;
+    rpcUrls: string[];
+    /** @deprecated Use rpcUrls[0] — kept for backwards compatibility */
     rpcUrl: string;
+    /** @deprecated Use rpcUrls[1] — kept for backwards compatibility */
     rpcUrlFallback: string;
     explorerUrl: string;
     bridgeAddress: string;
@@ -31,12 +34,23 @@ export interface BridgeConfig {
   statusPollInterval: number;
 }
 
+function parseRpcUrls(raw: string): string[] {
+  return raw.split(',').map(u => u.trim()).filter(Boolean);
+}
+
 function loadBridgeConfig(): BridgeConfig {
+  const sepoliaRpcUrls = parseRpcUrls(
+    process.env.REACT_APP_SEPOLIA_RPC_URLS ||
+    process.env.REACT_APP_SEPOLIA_RPC_URL ||
+    'https://ethereum-sepolia.core.chainstack.com/994184e51c801ad4cdcaee72e84c28ed'
+  );
+
   return {
     sepolia: {
       chainId: 11155111 as const,
-      rpcUrl: process.env.REACT_APP_SEPOLIA_RPC_URL || 'https://eth-sepolia.g.alchemy.com/v2/demo',
-      rpcUrlFallback: process.env.REACT_APP_SEPOLIA_RPC_URL_FALLBACK || 'https://ethereum-sepolia-rpc.publicnode.com',
+      rpcUrls: sepoliaRpcUrls,
+      get rpcUrl() { return this.rpcUrls[0]; },
+      get rpcUrlFallback() { return this.rpcUrls[1] || ''; },
       explorerUrl: process.env.REACT_APP_SEPOLIA_EXPLORER_URL || 'https://sepolia.etherscan.io',
       bridgeAddress: process.env.REACT_APP_BRIDGE_SEPOLIA_ADDRESS || '0x0000000000000000000000000000000000000000',
     },

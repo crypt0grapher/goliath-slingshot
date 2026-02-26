@@ -6,13 +6,15 @@ import { BridgeNetwork } from '../constants/bridge/networks';
  * Read-only providers for both chains (lazy-loaded).
  * Used for balance queries and tx monitoring independent of wallet connection.
  *
- * Sepolia provider includes automatic fallback: if the primary RPC returns a
- * rate-limit (HTTP 429) or network error on first use, it switches to the
- * fallback RPC endpoint transparently.
+ * Sepolia provider cycles through a sequential RPC list on failure.
+ * A 5-minute promotion cooldown periodically re-checks higher-priority RPCs.
  */
 let _sepoliaProvider: ethers.providers.JsonRpcProvider | null = null;
 let _goliathProvider: ethers.providers.JsonRpcProvider | null = null;
 let _sepoliaValidated = false;
+let _currentRpcIndex = 0;
+let _lastPromotionCheck = 0;
+const PROMOTION_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
 
 function createSepoliaProvider(rpcUrl: string): ethers.providers.JsonRpcProvider {
   console.log('[BridgeProviders] Creating Sepolia provider:', rpcUrl);
@@ -23,38 +25,34 @@ function createSepoliaProvider(rpcUrl: string): ethers.providers.JsonRpcProvider
 }
 
 /**
- * Returns the Sepolia provider, validating on first call.
- * If the primary RPC fails validation, transparently switches to the fallback.
+ * Validate Sepolia provider by cycling through the RPC list sequentially.
+ * Starts from _currentRpcIndex, tries each URL until one succeeds.
  */
 async function validateSepoliaProvider(): Promise<void> {
   if (_sepoliaValidated) return;
 
-  if (!_sepoliaProvider) {
-    _sepoliaProvider = createSepoliaProvider(bridgeConfig.sepolia.rpcUrl);
-  }
+  const rpcUrls = bridgeConfig.sepolia.rpcUrls;
 
-  try {
-    await _sepoliaProvider.getBlockNumber();
-    _sepoliaValidated = true;
-  } catch (err: any) {
-    const isRateLimited = err?.code === 429 ||
-      err?.error?.code === 429 ||
-      err?.message?.includes('429') ||
-      err?.message?.includes('capacity limit') ||
-      err?.code === 'NETWORK_ERROR' ||
-      err?.code === 'SERVER_ERROR';
-
-    if (isRateLimited && bridgeConfig.sepolia.rpcUrlFallback) {
-      console.warn(
-        '[BridgeProviders] Primary Sepolia RPC failed, switching to fallback:',
-        bridgeConfig.sepolia.rpcUrlFallback
-      );
-      _sepoliaProvider = createSepoliaProvider(bridgeConfig.sepolia.rpcUrlFallback);
+  for (let i = _currentRpcIndex; i < rpcUrls.length; i++) {
+    try {
+      _sepoliaProvider = createSepoliaProvider(rpcUrls[i]);
+      await _sepoliaProvider.getBlockNumber();
+      _currentRpcIndex = i;
       _sepoliaValidated = true;
-    } else {
-      throw err;
+      if (i > 0) {
+        console.warn(`[BridgeProviders] Using Sepolia RPC #${i}: ${rpcUrls[i]}`);
+      }
+      return;
+    } catch (err: any) {
+      console.warn(`[BridgeProviders] Sepolia RPC #${i} failed:`, rpcUrls[i], err?.message);
+      continue;
     }
   }
+
+  // All RPCs failed — use the last one anyway and let individual calls handle errors
+  _sepoliaProvider = createSepoliaProvider(rpcUrls[rpcUrls.length - 1]);
+  _currentRpcIndex = rpcUrls.length - 1;
+  _sepoliaValidated = true;
 }
 
 // Kick off validation eagerly (non-blocking)
@@ -62,7 +60,7 @@ validateSepoliaProvider().catch(() => {});
 
 function getSepoliaProvider(): ethers.providers.JsonRpcProvider {
   if (!_sepoliaProvider) {
-    _sepoliaProvider = createSepoliaProvider(bridgeConfig.sepolia.rpcUrl);
+    _sepoliaProvider = createSepoliaProvider(bridgeConfig.sepolia.rpcUrls[_currentRpcIndex]);
   }
   return _sepoliaProvider;
 }
@@ -101,35 +99,63 @@ function isRpcFailure(err: any): boolean {
     err?.message?.includes('429') ||
     err?.message?.includes('capacity limit') ||
     err?.code === 'NETWORK_ERROR' ||
-    err?.code === 'SERVER_ERROR'
+    err?.code === 'SERVER_ERROR' ||
+    err?.code === 'TIMEOUT'
   );
 }
 
 /**
- * Re-validate the Sepolia provider (switch to fallback if needed).
- * Only applicable when the network is Sepolia.
+ * Advance to the next RPC in the sequence and revalidate.
+ * Returns true if a new RPC was successfully validated, false if already on the last one.
  */
-async function revalidateSepoliaIfNeeded(network: BridgeNetwork): Promise<void> {
-  if (network !== BridgeNetwork.SEPOLIA) return;
+async function advanceSepoliaRpc(): Promise<boolean> {
+  const rpcUrls = bridgeConfig.sepolia.rpcUrls;
+  if (_currentRpcIndex >= rpcUrls.length - 1) return false;
+
+  _currentRpcIndex++;
   _sepoliaValidated = false;
   await validateSepoliaProvider();
+  return true;
+}
+
+/**
+ * Periodically re-check higher-priority RPCs and promote back if available.
+ */
+async function maybePromotePrimaryRpc(): Promise<void> {
+  if (_currentRpcIndex === 0) return;
+  if (Date.now() - _lastPromotionCheck < PROMOTION_COOLDOWN_MS) return;
+  _lastPromotionCheck = Date.now();
+
+  try {
+    const testProvider = createSepoliaProvider(bridgeConfig.sepolia.rpcUrls[0]);
+    await testProvider.getBlockNumber();
+    // Primary is back — switch to it
+    _sepoliaProvider = testProvider;
+    _currentRpcIndex = 0;
+    console.log('[BridgeProviders] Promoted back to primary Sepolia RPC');
+  } catch {
+    // Primary still down, stay on current
+  }
 }
 
 /**
  * Get balance for an address on a specific network.
- * Retries once with fallback provider if the primary RPC fails.
+ * Retries once with the next RPC in sequence if the current one fails.
  */
 export async function getNativeBalance(address: string, network: BridgeNetwork): Promise<bigint> {
   try {
     const provider = readonlyProviders[network];
     const balance = await provider.getBalance(address);
+    if (network === BridgeNetwork.SEPOLIA) await maybePromotePrimaryRpc();
     return balance.toBigInt();
   } catch (err) {
-    if (isRpcFailure(err)) {
-      await revalidateSepoliaIfNeeded(network);
-      const provider = readonlyProviders[network];
-      const balance = await provider.getBalance(address);
-      return balance.toBigInt();
+    if (isRpcFailure(err) && network === BridgeNetwork.SEPOLIA) {
+      const advanced = await advanceSepoliaRpc();
+      if (advanced) {
+        const provider = readonlyProviders[network];
+        const balance = await provider.getBalance(address);
+        return balance.toBigInt();
+      }
     }
     throw err;
   }
@@ -137,7 +163,7 @@ export async function getNativeBalance(address: string, network: BridgeNetwork):
 
 /**
  * Get ERC-20 token balance.
- * Retries once with fallback provider if the primary RPC fails.
+ * Retries once with the next RPC in sequence if the current one fails.
  */
 export async function getTokenBalance(
   tokenAddress: string,
@@ -149,15 +175,18 @@ export async function getTokenBalance(
     const erc20Abi = ['function balanceOf(address) view returns (uint256)'];
     const contract = new ethers.Contract(tokenAddress, erc20Abi, provider);
     const balance = await contract.balanceOf(ownerAddress);
+    if (network === BridgeNetwork.SEPOLIA) await maybePromotePrimaryRpc();
     return balance.toBigInt();
   } catch (err) {
-    if (isRpcFailure(err)) {
-      await revalidateSepoliaIfNeeded(network);
-      const provider = readonlyProviders[network];
-      const erc20Abi = ['function balanceOf(address) view returns (uint256)'];
-      const contract = new ethers.Contract(tokenAddress, erc20Abi, provider);
-      const balance = await contract.balanceOf(ownerAddress);
-      return balance.toBigInt();
+    if (isRpcFailure(err) && network === BridgeNetwork.SEPOLIA) {
+      const advanced = await advanceSepoliaRpc();
+      if (advanced) {
+        const provider = readonlyProviders[network];
+        const erc20Abi = ['function balanceOf(address) view returns (uint256)'];
+        const contract = new ethers.Contract(tokenAddress, erc20Abi, provider);
+        const balance = await contract.balanceOf(ownerAddress);
+        return balance.toBigInt();
+      }
     }
     throw err;
   }
@@ -185,7 +214,7 @@ export async function waitForTransaction(
 
 /**
  * Get token allowance.
- * Retries once with fallback provider if the primary RPC fails.
+ * Retries once with the next RPC in sequence if the current one fails.
  */
 export async function getTokenAllowance(
   tokenAddress: string,
@@ -198,15 +227,18 @@ export async function getTokenAllowance(
     const erc20Abi = ['function allowance(address owner, address spender) view returns (uint256)'];
     const contract = new ethers.Contract(tokenAddress, erc20Abi, provider);
     const allowance = await contract.allowance(ownerAddress, spenderAddress);
+    if (network === BridgeNetwork.SEPOLIA) await maybePromotePrimaryRpc();
     return allowance.toBigInt();
   } catch (err) {
-    if (isRpcFailure(err)) {
-      await revalidateSepoliaIfNeeded(network);
-      const provider = readonlyProviders[network];
-      const erc20Abi = ['function allowance(address owner, address spender) view returns (uint256)'];
-      const contract = new ethers.Contract(tokenAddress, erc20Abi, provider);
-      const allowance = await contract.allowance(ownerAddress, spenderAddress);
-      return allowance.toBigInt();
+    if (isRpcFailure(err) && network === BridgeNetwork.SEPOLIA) {
+      const advanced = await advanceSepoliaRpc();
+      if (advanced) {
+        const provider = readonlyProviders[network];
+        const erc20Abi = ['function allowance(address owner, address spender) view returns (uint256)'];
+        const contract = new ethers.Contract(tokenAddress, erc20Abi, provider);
+        const allowance = await contract.allowance(ownerAddress, spenderAddress);
+        return allowance.toBigInt();
+      }
     }
     throw err;
   }

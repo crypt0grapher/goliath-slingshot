@@ -17,6 +17,9 @@ const TX_STUCK_THRESHOLD_MS = 5 * 60 * 1000;
 // Max consecutive polling errors before showing warning
 const MAX_CONSECUTIVE_ERRORS = 3;
 
+// Exponential back-off cap for 404/null responses
+const MAX_BACKOFF_INTERVAL_MS = 30000;
+
 export function useBridgeStatusPolling(operation: BridgeOperation | null) {
   const { t } = useTranslation();
   const dispatch = useDispatch();
@@ -24,6 +27,8 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
   const apiClient = useRef(new BridgeApiClient(bridgeConfig.statusApiBaseUrl));
   const destinationPollCountRef = useRef(0);
   const consecutiveErrorsRef = useRef(0);
+  const consecutiveNullsRef = useRef(0);
+  const currentIntervalRef = useRef(bridgeConfig.statusPollInterval);
 
   const pollStatus = useCallback(async () => {
     if (!operation || !operation.originTxHash) {
@@ -68,6 +73,10 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
       dispatch(bridgeActions.clearPollingError());
 
       if (response) {
+        // Got a real response — reset back-off
+        consecutiveNullsRef.current = 0;
+        currentIntervalRef.current = bridgeConfig.statusPollInterval;
+
         // Defensive check: never decrease confirmations (prevents UI flicker if API returns stale data)
         const safeConfirmations = Math.max(
           response.originConfirmations,
@@ -84,6 +93,15 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
             errorMessage: response.error ?? undefined,
           })
         );
+      } else {
+        // Null response (404) — apply exponential back-off
+        consecutiveNullsRef.current += 1;
+        const backoff = Math.min(
+          bridgeConfig.statusPollInterval * Math.pow(2, consecutiveNullsRef.current),
+          MAX_BACKOFF_INTERVAL_MS
+        );
+        currentIntervalRef.current = backoff;
+        console.log(`[Bridge Polling] Null response #${consecutiveNullsRef.current}, next poll in ${backoff}ms`);
       }
     } catch (error) {
       console.error('[Bridge Polling] Status polling error:', error);
@@ -102,6 +120,8 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
   useEffect(() => {
     destinationPollCountRef.current = 0;
     consecutiveErrorsRef.current = 0;
+    consecutiveNullsRef.current = 0;
+    currentIntervalRef.current = bridgeConfig.statusPollInterval;
     dispatch(bridgeActions.clearPollingError());
   }, [operation?.id, dispatch]);
 
@@ -109,7 +129,7 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
   useEffect(() => {
     if (!operation) {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+        clearTimeout(intervalRef.current);
         intervalRef.current = null;
       }
       return;
@@ -129,7 +149,7 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
 
     if (shouldStopPolling) {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+        clearTimeout(intervalRef.current);
         intervalRef.current = null;
       }
       return;
@@ -138,12 +158,18 @@ export function useBridgeStatusPolling(operation: BridgeOperation | null) {
     // Initial poll
     pollStatus();
 
-    // Set up interval
-    intervalRef.current = setInterval(pollStatus, bridgeConfig.statusPollInterval);
+    // Use setTimeout loop so interval adapts to back-off
+    const scheduleNext = () => {
+      intervalRef.current = setTimeout(() => {
+        pollStatus();
+        scheduleNext();
+      }, currentIntervalRef.current);
+    };
+    scheduleNext();
 
     return () => {
       if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+        clearTimeout(intervalRef.current);
         intervalRef.current = null;
       }
     };
