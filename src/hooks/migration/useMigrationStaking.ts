@@ -1,11 +1,12 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { BigNumber } from '@ethersproject/bignumber';
 import { ethers } from 'ethers';
 import { useActiveWeb3React } from '../index';
 import { STAKED_XCN_ABI } from '../../abis/StakedXCN';
 import { STAKED_XCN_ADDRESS } from '../../constants/staking';
 import { migrationActions } from '../../state/migration/slice';
+import { selectOperation } from '../../state/migration/selectors';
 import { ClientStakingStatus } from '../../state/migration/types';
 
 // ---------------------------------------------------------------------------
@@ -76,14 +77,22 @@ export function useMigrationStaking(
 ): UseMigrationStakingResult {
   const dispatch = useDispatch();
   const { account, library, chainId } = useActiveWeb3React();
+  const operation = useSelector(selectOperation);
 
-  const [stakingStatus, setStakingStatus] = useState<ClientStakingStatus>('idle');
-  const [stakingTxHash, setStakingTxHash] = useState<string | null>(null);
-  const [stakingError, setStakingError] = useState<string | null>(null);
+  // Hydrate from Redux operation state on mount to prevent re-triggering
+  // staking for already-confirmed operations after tab navigation.
+  const initialStatus = operation?.clientStakingStatus ?? 'idle';
+  const [stakingStatus, setStakingStatus] = useState<ClientStakingStatus>(initialStatus);
+  const [stakingTxHash, setStakingTxHash] = useState<string | null>(operation?.stakingTxHash ?? null);
+  const [stakingError, setStakingError] = useState<string | null>(operation?.stakingError ?? null);
 
   const executingRef = useRef(false);
   const mountedRef = useRef(true);
-  const hasAutoTriggeredRef = useRef(false);
+  // If staking was already attempted (confirmed, tx_pending, or failed), mark
+  // auto-trigger as already fired so we don't re-prompt the user.
+  const hasAutoTriggeredRef = useRef(
+    initialStatus === 'confirmed' || initialStatus === 'tx_pending' || initialStatus === 'failed'
+  );
 
   useEffect(() => {
     mountedRef.current = true;

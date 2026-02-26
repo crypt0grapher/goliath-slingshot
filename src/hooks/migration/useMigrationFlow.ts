@@ -54,7 +54,7 @@ export function deriveSteps(
   // ------------------------------------------------------------------
   // 1. Status view: operation exists (any status, including terminal).
   //    Terminal operations stay in status view until explicitly cleared
-  //    via clearOperation (e.g. "Start New Migration" button).
+  //    via clearOperation (auto-cleared on unmount when fully completed).
   // ------------------------------------------------------------------
   if (operation) {
     return {

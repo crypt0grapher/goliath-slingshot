@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback } from 'react';
+import React, { useMemo } from 'react';
 import styled, { keyframes } from 'styled-components';
 import {
   Check,
@@ -9,7 +9,6 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
-  ArrowRight,
 } from 'react-feather';
 import { useTranslation } from 'react-i18next';
 import { darken } from 'polished';
@@ -55,8 +54,6 @@ export interface MigrationStatusPanelProps {
   pollingError: string | null;
   /** Error message from the backend (for FAILED/EXPIRED states). */
   errorMessage?: string | null;
-  /** Callback to start a new migration. */
-  onStartNewMigration?: () => void;
   /** Client-side staking status from useMigrationStaking. */
   clientStakingStatus?: ClientStakingStatus;
   /** Client-side staking tx hash. */
@@ -331,42 +328,6 @@ const TerminalMessage = styled.div`
   line-height: 1.5;
 `;
 
-const NewMigrationButton = styled.button`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  width: 100%;
-  padding: 12px 20px;
-  margin-top: 8px;
-  border-radius: 12px;
-  border: none;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
-  outline: none;
-  transition: background-color 0.2s ease;
-  background-color: ${({ theme }) => theme.primary1};
-  color: ${({ theme }) => theme.white};
-
-  &:hover {
-    background-color: ${({ theme }) => darken(0.05, theme.primary1)};
-  }
-
-  &:active {
-    background-color: ${({ theme }) => darken(0.1, theme.primary1)};
-  }
-
-  &:focus-visible {
-    box-shadow: 0 0 0 2px ${({ theme }) => theme.primary1};
-  }
-
-  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-    padding: 10px 16px;
-    font-size: 14px;
-  `}
-`;
-
 const PollingErrorText = styled.div`
   font-size: 12px;
   color: ${({ theme }) => theme.yellow2 ?? theme.yellow1};
@@ -627,7 +588,6 @@ export default function MigrationStatusPanel({
   delayWarning,
   pollingError,
   errorMessage,
-  onStartNewMigration,
   clientStakingStatus,
   clientStakingTxHash,
   clientStakingError,
@@ -656,10 +616,6 @@ export default function MigrationStatusPanel({
   // Determine staking tx hash: prefer client-side, fallback to backend
   const stakingTxHash = clientStakingTxHash ?? migrationFields?.stakingTxHash ?? null;
   const stakingError = clientStakingError ?? migrationFields?.stakingError ?? null;
-
-  const handleStartNew = useCallback(() => {
-    onStartNewMigration?.();
-  }, [onStartNewMigration]);
 
   return (
     <PanelContainer role="region" aria-label={t('migration.panel.title')}>
@@ -827,42 +783,26 @@ export default function MigrationStatusPanel({
               ? t('migration.panel.successWithStaking')
               : t('migration.panel.successMessage')}
           </TerminalMessage>
-          {onStartNewMigration && (
-            <NewMigrationButton onClick={handleStartNew} type="button">
-              {t('migration.panel.startNewMigration')}
-              <ArrowRight size={16} aria-hidden="true" />
-            </NewMigrationButton>
-          )}
         </TerminalStateContainer>
       )}
 
       {/* Failed / Expired State */}
       {isFailed && (
-        <>
-          <ErrorBanner role="alert">
-            <XCircle size={18} style={{ flexShrink: 0, marginTop: 1 }} aria-hidden="true" />
+        <ErrorBanner role="alert">
+          <XCircle size={18} style={{ flexShrink: 0, marginTop: 1 }} aria-hidden="true" />
+          <div>
             <div>
-              <div>
-                {operationStatus === 'EXPIRED'
-                  ? t('migration.panel.expiredMessage')
-                  : t('migration.panel.failedMessage')}
-              </div>
-              {errorMessage && (
-                <div style={{ marginTop: 4, opacity: 0.85 }}>
-                  {t('migration.panel.errorDetails', { message: errorMessage })}
-                </div>
-              )}
+              {operationStatus === 'EXPIRED'
+                ? t('migration.panel.expiredMessage')
+                : t('migration.panel.failedMessage')}
             </div>
-          </ErrorBanner>
-          {onStartNewMigration && (
-            <TerminalStateContainer>
-              <NewMigrationButton onClick={handleStartNew} type="button">
-                {t('migration.panel.startNewMigration')}
-                <ArrowRight size={16} aria-hidden="true" />
-              </NewMigrationButton>
-            </TerminalStateContainer>
-          )}
-        </>
+            {errorMessage && (
+              <div style={{ marginTop: 4, opacity: 0.85 }}>
+                {t('migration.panel.errorDetails', { message: errorMessage })}
+              </div>
+            )}
+          </div>
+        </ErrorBanner>
       )}
     </PanelContainer>
   );

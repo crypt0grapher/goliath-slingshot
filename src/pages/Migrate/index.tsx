@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import { AlertCircle, Lock, Wifi } from 'react-feather';
@@ -152,12 +152,43 @@ export default function Migrate() {
     retry: retryStake,
   } = useMigrationStaking(bridgedAmount, resolvedStakeOnGoliath, isBridgeCompleted);
 
-  // Callback for "Start New Migration" from the status panel
-  const handleStartNewMigration = useCallback(() => {
-    dispatch(migrationActions.clearOperation());
-    dispatch(migrationActions.setUiFlags({ isStatusView: false, isEmpty: false, isResumeMode: false }));
-    refetch();
-  }, [dispatch, refetch]);
+  // ---------------------------------------------------------------------------
+  // Auto-clear fully completed operation on unmount
+  // ---------------------------------------------------------------------------
+  // When the user navigates away from the Migrate page after a fully completed
+  // migration (bridge COMPLETED + staking confirmed, or no staking), clear the
+  // operation from Redux so returning to the page shows a clean state instead
+  // of re-entering status view and re-triggering staking.
+
+  const operationRef = useRef(operation);
+  const clientStakingStatusRef = useRef(clientStakingStatus);
+  const operationStatusRef = useRef(operationStatus);
+  const resolvedStakeOnGoliathRef = useRef(resolvedStakeOnGoliath);
+
+  useEffect(() => {
+    operationRef.current = operation;
+    clientStakingStatusRef.current = clientStakingStatus;
+    operationStatusRef.current = operationStatus;
+    resolvedStakeOnGoliathRef.current = resolvedStakeOnGoliath;
+  });
+
+  useEffect(() => {
+    return () => {
+      const op = operationRef.current;
+      const status = operationStatusRef.current;
+      const stakingDone = clientStakingStatusRef.current;
+      const wantsStake = resolvedStakeOnGoliathRef.current;
+
+      if (!op) return;
+
+      const isFullyCompleted =
+        status === 'COMPLETED' && (!wantsStake || stakingDone === 'confirmed');
+
+      if (isFullyCompleted) {
+        dispatch(migrationActions.clearOperation());
+      }
+    };
+  }, [dispatch]);
 
   // ---------------------------------------------------------------------------
   // Network switch handlers
@@ -287,7 +318,6 @@ export default function Migrate() {
                   destinationTxHash={migrationFields?.destinationTxHash ?? operation.destinationTxHash ?? null}
                   delayWarning={delayWarning}
                   pollingError={pollingError}
-                  onStartNewMigration={handleStartNewMigration}
                   clientStakingStatus={clientStakingStatus}
                   clientStakingTxHash={clientStakingTxHash}
                   clientStakingError={clientStakingError}
