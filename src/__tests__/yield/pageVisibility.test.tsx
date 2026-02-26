@@ -38,7 +38,7 @@ jest.mock('../../state/application/hooks', () => ({
 }));
 
 jest.mock('../../hooks/yield', () => ({
-  useYieldData: jest.fn(),
+  useYieldData: () => ({ refetch: jest.fn(), isLoading: false }),
   useStake: () => ({ stake: jest.fn(), isLoading: false }),
   useUnstake: () => ({ unstake: jest.fn(), isLoading: false }),
   useStakingEvents: () => ({ events: [], isLoading: false, totalPrincipal: require('@ethersproject/bignumber').BigNumber.from(0) }),

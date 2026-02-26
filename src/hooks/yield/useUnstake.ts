@@ -8,7 +8,9 @@ import { useTransactionAdder } from '../../state/transactions/hooks';
 import { yieldActions } from '../../state/yield/slice';
 import { parseTransactionError } from './useStake';
 
-export function useUnstake(): { unstake: (amountWad: string) => Promise<void>; isLoading: boolean } {
+export function useUnstake(
+  refetch?: () => void
+): { unstake: (amountWad: string) => Promise<void>; isLoading: boolean } {
   const contract = useStakedXCNContract(true);
   const { account, chainId } = useActiveWeb3React();
   const addTransaction = useTransactionAdder();
@@ -29,6 +31,7 @@ export function useUnstake(): { unstake: (amountWad: string) => Promise<void>; i
         addTransaction(tx, { summary: `Unstake ${parseFloat(formattedAmount).toFixed(4)} stXCN` });
         dispatch(yieldActions.setPendingTxHash(tx.hash));
         await tx.wait();
+        refetch?.();
         dispatch(yieldActions.setUnstakeInput(''));
         dispatch(yieldActions.closeConfirmModal());
       } catch (err: any) {
@@ -37,7 +40,7 @@ export function useUnstake(): { unstake: (amountWad: string) => Promise<void>; i
         setIsLoading(false);
       }
     },
-    [contract, account, chainId, addTransaction, dispatch]
+    [contract, account, chainId, addTransaction, dispatch, refetch]
   );
 
   return { unstake, isLoading };

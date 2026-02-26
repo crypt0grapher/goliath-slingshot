@@ -11,7 +11,7 @@ export function useYieldData(): { refetch: () => void; isLoading: boolean } {
   const dispatch = useDispatch();
   const isLoadingRef = useRef(false);
 
-  const fetchProtocolData = useCallback(async () => {
+  const fetchProtocolData = useCallback(async (attempt = 0) => {
     if (!contract) return;
     try {
       const [totalSupply, cumulativeIndex, rewardRate, feePercent, lastTimestamp, isPaused] = await Promise.all([
@@ -32,8 +32,14 @@ export function useYieldData(): { refetch: () => void; isLoading: boolean } {
           isPaused,
         })
       );
+      dispatch(yieldActions.clearError());
     } catch (err) {
       console.error('Failed to fetch protocol data:', err);
+      if (attempt < 1) {
+        setTimeout(() => fetchProtocolData(attempt + 1), 2000);
+      } else {
+        dispatch(yieldActions.setError('Unable to load protocol data. Please check your connection.'));
+      }
     }
   }, [contract, dispatch]);
 

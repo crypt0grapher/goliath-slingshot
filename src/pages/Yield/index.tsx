@@ -48,9 +48,9 @@ export default function Yield() {
   const { switchToGoliath, isLoading: isSwitching } = useNetworkSwitch();
 
   // Hooks -- useYieldData auto-polls protocol + user data on mount
-  useYieldData();
-  const { stake, isLoading: isStaking } = useStake();
-  const { unstake, isLoading: isUnstaking } = useUnstake();
+  const { refetch } = useYieldData();
+  const { stake, isLoading: isStaking } = useStake(refetch);
+  const { unstake, isLoading: isUnstaking } = useUnstake(refetch);
   const { events, isLoading: isEventsLoading, totalPrincipal } = useStakingEvents();
 
   // XCN balance via the same multicall approach used in Swap.

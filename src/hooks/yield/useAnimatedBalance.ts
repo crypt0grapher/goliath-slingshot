@@ -2,6 +2,13 @@ import { useRef, useState, useEffect } from 'react';
 import { formatUnits } from '@ethersproject/units';
 import { ANIMATION_DECIMAL_PLACES } from '../../constants/staking';
 
+function formatStatic(value: number): string {
+  const fixed = value.toFixed(ANIMATION_DECIMAL_PLACES);
+  const [intPart, decPart] = fixed.split('.');
+  const formattedInt = Number(intPart).toLocaleString('en-US');
+  return decPart ? `${formattedInt}.${decPart}` : formattedInt;
+}
+
 export function useAnimatedBalance(
   balance: string | null,
   rewardRateRay: string | null,
@@ -17,7 +24,7 @@ export function useAnimatedBalance(
 
   // Recompute base values when inputs change
   useEffect(() => {
-    if (!balance || balance === '0' || !rewardRateRay || feePercentBps === null) {
+    if (!balance || balance === '0') {
       setDisplayValue('0.000000');
       setIsAnimating(false);
       return;
@@ -26,6 +33,13 @@ export function useAnimatedBalance(
     const balanceFloat = parseFloat(formatUnits(balance, 18));
     if (balanceFloat <= 0) {
       setDisplayValue('0.000000');
+      setIsAnimating(false);
+      return;
+    }
+
+    // Show static balance when animation params are not yet available
+    if (!rewardRateRay || feePercentBps === null) {
+      setDisplayValue(formatStatic(balanceFloat));
       setIsAnimating(false);
       return;
     }

@@ -33,7 +33,9 @@ function suggestStXCNToken(): void {
   }
 }
 
-export function useStake(): { stake: (amountWad: string) => Promise<void>; isLoading: boolean } {
+export function useStake(
+  refetch?: () => void
+): { stake: (amountWad: string) => Promise<void>; isLoading: boolean } {
   const contract = useStakedXCNContract(true);
   const { account, chainId } = useActiveWeb3React();
   const addTransaction = useTransactionAdder();
@@ -54,6 +56,7 @@ export function useStake(): { stake: (amountWad: string) => Promise<void>; isLoa
         addTransaction(tx, { summary: `Stake ${parseFloat(formattedAmount).toFixed(4)} XCN` });
         dispatch(yieldActions.setPendingTxHash(tx.hash));
         await tx.wait();
+        refetch?.();
         dispatch(yieldActions.setStakeInput(''));
         dispatch(yieldActions.closeConfirmModal());
         suggestStXCNToken();
@@ -63,7 +66,7 @@ export function useStake(): { stake: (amountWad: string) => Promise<void>; isLoa
         setIsLoading(false);
       }
     },
-    [contract, account, chainId, addTransaction, dispatch]
+    [contract, account, chainId, addTransaction, dispatch, refetch]
   );
 
   return { stake, isLoading };
