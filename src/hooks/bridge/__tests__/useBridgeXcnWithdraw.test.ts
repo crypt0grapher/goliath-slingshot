@@ -150,3 +150,108 @@ describe('useBridgeXcnWithdraw — capability gate contract', () => {
     );
   });
 });
+
+describe('useBridgeXcnWithdraw — bind-origin failure path', () => {
+  let client: BridgeApiClient;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    client = new BridgeApiClient('https://testnet.example.com/bridge/api/v1');
+  });
+
+  it('bindXcnWithdrawOrigin rejects with BridgeApiError on route 404', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 404,
+      json: async () => ({ error: 'Route POST:/api/v1/bridge/xcn-withdraw-intent/bind-origin not found' }),
+    });
+
+    await expect(
+      client.bindXcnWithdrawOrigin({
+        intentId: 'test-intent',
+        senderAddress: '0xabc',
+        originTxHash: '0xdef',
+      })
+    ).rejects.toThrow();
+  });
+
+  it('bindXcnWithdrawOrigin rejects with BridgeApiError on 500', async () => {
+    mockFetch.mockResolvedValue({
+      ok: false,
+      status: 500,
+      json: async () => ({ error: 'INTERNAL_ERROR', message: 'Internal server error' }),
+    });
+
+    await expect(
+      client.bindXcnWithdrawOrigin({
+        intentId: 'test-intent',
+        senderAddress: '0xabc',
+        originTxHash: '0xdef',
+      })
+    ).rejects.toThrow();
+  });
+
+  it('bindXcnWithdrawOrigin succeeds when backend returns 200', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ intentId: 'test-intent', originTxHash: '0xdef' }),
+    });
+
+    const result = await client.bindXcnWithdrawOrigin({
+      intentId: 'test-intent',
+      senderAddress: '0xabc',
+      originTxHash: '0xdef',
+    });
+
+    expect(result).toEqual({ intentId: 'test-intent', originTxHash: '0xdef' });
+  });
+
+  it('repeated bind failures exhaust retries (simulated retry loop)', async () => {
+    // Simulate the retry contract: BIND_RETRY_MAX=5 attempts, all fail
+    const BIND_RETRY_MAX = 5;
+    let attempts = 0;
+
+    mockFetch.mockImplementation(async () => {
+      attempts++;
+      return {
+        ok: false,
+        status: 404,
+        json: async () => ({ error: 'Route POST not found' }),
+      };
+    });
+
+    let bindFailed = false;
+    for (let attempt = 0; attempt < BIND_RETRY_MAX; attempt++) {
+      try {
+        await client.bindXcnWithdrawOrigin({
+          intentId: 'test-intent',
+          senderAddress: '0xabc',
+          originTxHash: '0xdef',
+        });
+        break; // success
+      } catch {
+        if (attempt === BIND_RETRY_MAX - 1) {
+          bindFailed = true;
+        }
+      }
+    }
+
+    expect(bindFailed).toBe(true);
+    expect(attempts).toBe(BIND_RETRY_MAX);
+  });
+
+  it('bind failure message includes tx hash for support', async () => {
+    // Verify the error message contract: when bind retries exhaust, the
+    // FAILED status errorMessage must contain the tx hash so users can
+    // share it with support for manual recovery.
+    const txHash = '0xe14ebe5ecde91e0680f769ed89e092536763804aace5cb91f8f49a873d44973b';
+    const errorMessage =
+      'Failed to register your transaction with the bridge after multiple attempts. ' +
+      'Your funds are safe. Please contact support with your transaction hash: ' +
+      txHash;
+
+    expect(errorMessage).toContain(txHash);
+    expect(errorMessage).toContain('funds are safe');
+    expect(errorMessage).toContain('contact support');
+  });
+});

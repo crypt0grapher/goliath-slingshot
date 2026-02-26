@@ -192,17 +192,29 @@ export function useBridgeXcnWithdraw(): UseXcnWithdrawReturn {
                 senderAddress: account.toLowerCase(),
                 originTxHash: tx.hash,
               });
-              return;
+              return; // success
             } catch (err) {
               if (attempt < BIND_RETRY_MAX - 1) {
                 await wait(BIND_RETRY_BASE_DELAY_MS * Math.pow(2, attempt));
               } else {
                 console.error('Failed to bind XCN withdraw origin after retries:', err);
+                // All retries exhausted — mark operation as FAILED so UI stops spinning
+                dispatch(
+                  bridgeActions.updateOperationStatus({
+                    id: operationId,
+                    status: 'FAILED',
+                    errorMessage:
+                      t('errorBindOriginFailed') ||
+                      'Failed to register your transaction with the bridge after multiple attempts. ' +
+                      'Your funds are safe. Please contact support with your transaction hash: ' +
+                      tx.hash,
+                  })
+                );
               }
             }
           }
         };
-        // Fire-and-forget bind (don't block the user)
+        // Background bind — failure is now observable via Redux state
         bindWithRetry();
 
         // 6. Wait for tx to be mined
