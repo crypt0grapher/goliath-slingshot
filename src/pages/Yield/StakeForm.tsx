@@ -78,10 +78,11 @@ export default function StakeForm({ xcnBalance, isPaused, onStake }: StakeFormPr
       </InputContainer>
       <PreviewRow>
         <span>Balance: {formatTokenAmount(xcnBalance)} XCN</span>
+
       </PreviewRow>
       {preview && (
         <PreviewRow>
-          <span>You will receive ~{formatTokenAmount(preview.toString(), 8)} stXCN</span>
+          <span>You will receive ~{formatTokenAmount(preview.toString())} stXCN</span>
         </PreviewRow>
       )}
       <ButtonPrimary onClick={handleSubmit} disabled={isDisabled} style={{ marginTop: '8px' }}>

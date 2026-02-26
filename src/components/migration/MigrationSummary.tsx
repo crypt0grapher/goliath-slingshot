@@ -15,7 +15,7 @@ import { selectStakingSnapshot } from '../../state/migration/selectors';
 const XCN_DECIMALS = 18;
 
 /** Maximum display decimals for formatted token amounts. */
-const DISPLAY_DECIMALS = 4;
+const DISPLAY_DECIMALS = 1;
 
 /** Zero threshold for allowance comparison. */
 const ZERO = BigNumber.from(0);

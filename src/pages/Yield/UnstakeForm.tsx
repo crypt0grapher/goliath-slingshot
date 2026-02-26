@@ -78,7 +78,7 @@ export default function UnstakeForm({ stXCNBalance, isPaused, onUnstake }: Unsta
       </PreviewRow>
       {parsedAmount && !inputError && (
         <PreviewRow>
-          <span>You will receive ~{formatTokenAmount(parsedAmount.toString(), 4)} XCN</span>
+          <span>You will receive ~{formatTokenAmount(parsedAmount.toString())} XCN</span>
         </PreviewRow>
       )}
       <ButtonPrimary onClick={handleSubmit} disabled={isDisabled} style={{ marginTop: '8px' }}>

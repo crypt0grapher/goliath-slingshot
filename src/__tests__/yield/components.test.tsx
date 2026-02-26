@@ -55,7 +55,7 @@ describe('ProtocolStats', () => {
 
   it('FE-UT-025: renders total staked', () => {
     renderWithProviders(<ProtocolStats {...defaultProps} />);
-    expect(screen.getByText(/500,000/)).toBeTruthy();
+    expect(screen.getByText(/500000\.0/)).toBeTruthy();
   });
 
   it('FE-UT-026: renders dashes when data is null', () => {

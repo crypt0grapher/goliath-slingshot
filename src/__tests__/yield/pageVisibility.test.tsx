@@ -42,7 +42,7 @@ jest.mock('../../hooks/yield', () => ({
   useStake: () => ({ stake: jest.fn(), isLoading: false }),
   useUnstake: () => ({ unstake: jest.fn(), isLoading: false }),
   useStakingEvents: () => ({ events: [], isLoading: false, totalPrincipal: require('@ethersproject/bignumber').BigNumber.from(0) }),
-  useAnimatedBalance: () => ({ displayValue: '0.0000' }),
+  useAnimatedBalance: () => ({ displayValue: '0.0' }),
 }));
 
 jest.mock('../../state/wallet/hooks', () => ({

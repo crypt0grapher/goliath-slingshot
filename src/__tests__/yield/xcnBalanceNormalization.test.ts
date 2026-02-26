@@ -18,9 +18,9 @@ describe('xcnBalance display – 18-dec raw from RPC', () => {
     expect(formatTokenAmount(raw)).toBe('1.0');
   });
 
-  it('1,000 XCN displays as "1,000.0"', () => {
+  it('1,000 XCN displays as "1000.0" (no commas)', () => {
     const raw = parseUnits('1000', 18).toString();
-    expect(formatTokenAmount(raw)).toBe('1,000.0');
+    expect(formatTokenAmount(raw)).toBe('1000.0');
   });
 
   it('0.5 XCN displays as "0.5"', () => {
@@ -28,27 +28,27 @@ describe('xcnBalance display – 18-dec raw from RPC', () => {
     expect(formatTokenAmount(raw)).toBe('0.5');
   });
 
-  it('fractional XCN with >4 decimals truncates correctly', () => {
+  it('fractional XCN with >1 decimal truncates to 1 decimal', () => {
     const raw = parseUnits('1.23456789', 18).toString();
-    expect(formatTokenAmount(raw)).toBe('1.2345');
+    expect(formatTokenAmount(raw)).toBe('1.2');
   });
 
   it('zero balance displays as "0"', () => {
     expect(formatTokenAmount('0')).toBe('0');
   });
 
-  it('reference wallet 130,199.8855 XCN displays correctly', () => {
+  it('reference wallet 130,199.8 XCN displays correctly (1 decimal, no commas)', () => {
     // Exact raw value from RPC for 0xe359...78d
     const raw = '130199885583430000000000';
-    expect(formatTokenAmount(raw)).toBe('130,199.8855');
+    expect(formatTokenAmount(raw)).toBe('130199.8');
   });
 
   it('regression: old *10^10 normalization would inflate display by 10^10', () => {
     const raw = parseUnits('1', 18);
     const inflated = raw.mul(BigNumber.from(10).pow(10));
-    // If the old scaling were applied, 1 XCN would display as 10,000,000,000
+    // If the old scaling were applied, 1 XCN would display as 10000000000
     expect(formatTokenAmount(inflated.toString())).not.toBe('1.0');
-    expect(formatTokenAmount(inflated.toString())).toBe('10,000,000,000.0');
+    expect(formatTokenAmount(inflated.toString())).toBe('10000000000.0');
   });
 });
 

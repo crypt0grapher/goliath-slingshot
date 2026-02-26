@@ -6,7 +6,7 @@ import { stakingConfig } from '../../config/stakingConfig';
 import { STXCN_DECIMALS } from '../../constants/staking';
 
 const POLL_INTERVAL_MS = 30_000;
-const DISPLAY_DECIMALS = 4;
+const DISPLAY_DECIMALS = 1;
 
 const BALANCE_OF_ABI = ['function balanceOf(address) view returns (uint256)'];
 

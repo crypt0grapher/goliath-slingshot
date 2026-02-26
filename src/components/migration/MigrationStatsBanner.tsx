@@ -129,7 +129,7 @@ function formatAmount(value: string): string {
   try {
     const num = parseFloat(value);
     if (isNaN(num)) return '0';
-    return num.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return num.toLocaleString('en-US', { maximumFractionDigits: 1, useGrouping: false });
   } catch {
     return '0';
   }

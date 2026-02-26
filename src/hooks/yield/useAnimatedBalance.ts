@@ -5,8 +5,7 @@ import { ANIMATION_DECIMAL_PLACES } from '../../constants/staking';
 function formatStatic(value: number): string {
   const fixed = value.toFixed(ANIMATION_DECIMAL_PLACES);
   const [intPart, decPart] = fixed.split('.');
-  const formattedInt = Number(intPart).toLocaleString('en-US');
-  return decPart ? `${formattedInt}.${decPart}` : formattedInt;
+  return decPart ? `${intPart}.${decPart}` : intPart;
 }
 
 export function useAnimatedBalance(
@@ -14,7 +13,7 @@ export function useAnimatedBalance(
   rewardRateRay: string | null,
   feePercentBps: number | null
 ): { displayValue: string; isAnimating: boolean } {
-  const [displayValue, setDisplayValue] = useState('0.000000');
+  const [displayValue, setDisplayValue] = useState('0.0');
   const [isAnimating, setIsAnimating] = useState(false);
 
   const rafRef = useRef<number>(0);
@@ -25,14 +24,14 @@ export function useAnimatedBalance(
   // Recompute base values when inputs change
   useEffect(() => {
     if (!balance || balance === '0') {
-      setDisplayValue('0.000000');
+      setDisplayValue('0.0');
       setIsAnimating(false);
       return;
     }
 
     const balanceFloat = parseFloat(formatUnits(balance, 18));
     if (balanceFloat <= 0) {
-      setDisplayValue('0.000000');
+      setDisplayValue('0.0');
       setIsAnimating(false);
       return;
     }
@@ -65,8 +64,7 @@ export function useAnimatedBalance(
 
       const fixed = currentBalance.toFixed(ANIMATION_DECIMAL_PLACES);
       const [intPart, decPart] = fixed.split('.');
-      const formattedInt = Number(intPart).toLocaleString('en-US');
-      setDisplayValue(decPart ? `${formattedInt}.${decPart}` : formattedInt);
+      setDisplayValue(decPart ? `${intPart}.${decPart}` : intPart);
 
       rafRef.current = requestAnimationFrame(animate);
     };

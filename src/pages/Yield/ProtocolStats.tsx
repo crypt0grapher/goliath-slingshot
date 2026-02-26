@@ -22,8 +22,8 @@ function computeRewards(userBalance: string | null, totalPrincipal: BigNumber): 
   if (!userBalance) return '--';
   try {
     const rewards = BigNumber.from(userBalance).sub(totalPrincipal);
-    if (rewards.lt(0)) return formatTokenAmount('0', 4);
-    return formatTokenAmount(rewards.toString(), 4) + ' stXCN';
+    if (rewards.lt(0)) return formatTokenAmount('0');
+    return formatTokenAmount(rewards.toString()) + ' stXCN';
   } catch {
     return '--';
   }
@@ -41,7 +41,7 @@ export default function ProtocolStats({
     <StatsContainer>
       <StatRow>
         <StatLabel>Total Staked</StatLabel>
-        <StatValue>{totalSupply ? formatTokenAmount(totalSupply, 2) + ' XCN' : '--'}</StatValue>
+        <StatValue>{totalSupply ? formatTokenAmount(totalSupply) + ' XCN' : '--'}</StatValue>
       </StatRow>
       <StatRow>
         <StatLabel>Net APY</StatLabel>

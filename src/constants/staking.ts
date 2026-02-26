@@ -26,5 +26,5 @@ export const BALANCE_POLL_INTERVAL_MS = stakingConfig.balancePollMs;
 export const PROTOCOL_DATA_POLL_INTERVAL_MS = stakingConfig.protocolPollMs;
 
 // UI constants
-export const ANIMATION_DECIMAL_PLACES = 6;
+export const ANIMATION_DECIMAL_PLACES = 1;
 export const BLOCKSCOUT_BASE_URL = 'https://testnet.explorer.goliath.net';

@@ -154,9 +154,10 @@ export const MaxButton = styled.button`
 
 export const PreviewRow = styled.div`
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   font-size: 14px;
+  font-weight: 500;
   color: ${({ theme }) => theme.text2};
   padding: 4px 0;
 `;
@@ -261,7 +262,7 @@ export const PausedBanner = styled.div`
 
 // ── Utilities ────────────────────────────────────────────────────────────────
 
-export function formatTokenAmount(weiString: string | null, decimals = 4, addCommas = true): string {
+export function formatTokenAmount(weiString: string | null, decimals = 1, addCommas = false): string {
   if (!weiString || weiString === '0') return '0';
   try {
     const formatted = formatUnits(weiString, 18);

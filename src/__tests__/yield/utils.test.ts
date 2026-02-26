@@ -8,9 +8,9 @@ describe('formatTokenAmount', () => {
     expect(formatTokenAmount('0')).toBe('0');
   });
 
-  it('FE-UT-002: formats large numbers with commas and truncated decimals', () => {
+  it('FE-UT-002: formats large numbers with 1 decimal, no commas', () => {
     const result = formatTokenAmount('1250234567000000000000');
-    expect(result).toMatch(/1,250\.2345/);
+    expect(result).toBe('1250.2');
   });
 
   it('FE-UT-003: handles null', () => {

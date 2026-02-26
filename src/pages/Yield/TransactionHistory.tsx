@@ -58,7 +58,7 @@ export default function TransactionHistory({ events, isLoading }: TransactionHis
           <HistoryType type={event.type}>
             {event.type === 'stake' ? 'Staked' : 'Unstaked'}
           </HistoryType>
-          <HistoryAmount>{formatTokenAmount(event.xcnAmount, 4)} XCN</HistoryAmount>
+          <HistoryAmount>{formatTokenAmount(event.xcnAmount)} XCN</HistoryAmount>
           <HistoryTimestamp>{formatDate(event.timestamp, event.blockNumber)}</HistoryTimestamp>
           <HistoryLink
             href={`${BLOCKSCOUT_BASE_URL}/tx/${event.txHash}`}
