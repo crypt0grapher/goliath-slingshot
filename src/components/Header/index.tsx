@@ -110,6 +110,9 @@ const HeaderLinks = styled(Row)`
     border-top: 1px solid ${({ theme }) => theme.bg3};
     grid-column: auto;
     grid-row: auto;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    justify-content: center;
   `};
 `;
 
@@ -258,11 +261,11 @@ const StyledNavLink = styled(NavLink).attrs({
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
     border-radius: 8px;
-    padding: 0.3rem 7%;
+    padding: 0.3rem 0.75rem;
     border: 1px solid ${({ theme }) => theme.bg3};
 
     &:not(:last-child) {
-      margin-inline-end: 2%;
+      margin-inline-end: 0;
     }
   `};
 `;
@@ -287,11 +290,11 @@ const DisabledNavLink = styled.span`
 
   ${({ theme }) => theme.mediaWidth.upToSmall`
     border-radius: 8px;
-    padding: 0.3rem 7%;
+    padding: 0.3rem 0.75rem;
     border: 1px solid ${({ theme }) => theme.bg3};
 
     &:not(:last-child) {
-      margin-inline-end: 2%;
+      margin-inline-end: 0;
     }
   `};
 `;
