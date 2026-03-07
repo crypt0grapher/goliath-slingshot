@@ -50,7 +50,8 @@ export default function BridgeForm() {
   };
   const { approve, isLoading: isApproveLoading } = useBridgeApprove(
     bridgeForm.selectedToken,
-    bridgeForm.originNetwork
+    bridgeForm.originNetwork,
+    bridgeForm.inputAmount
   );
   const { switchNetwork } = useBridgeNetworkSwitch();
 
