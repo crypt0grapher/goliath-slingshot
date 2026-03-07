@@ -8,6 +8,8 @@ import { BridgeNetwork } from '../../constants/bridge/networks';
 import { BridgeTokenSymbol, getTokenConfigForChain } from '../../constants/bridge/tokens';
 import { getBridgeContractAddress } from '../../constants/bridge/contracts';
 import { ERC20_ABI } from '../../constants/bridge/abis';
+import { calculateGasMargin } from '../../utils';
+import { parseAmount } from '../../utils/bridge/amounts';
 
 // Configuration for retry behavior (matches useApproveCallback)
 const APPROVE_RETRY_CONFIG = {
@@ -40,9 +42,13 @@ interface UseBridgeApproveReturn {
   error: string | null;
 }
 
+/** Timeout for tx.wait() to prevent indefinite hanging (5 minutes). */
+const TX_WAIT_TIMEOUT_MS = 5 * 60 * 1000;
+
 export function useBridgeApprove(
   token: BridgeTokenSymbol,
-  network: BridgeNetwork
+  network: BridgeNetwork,
+  amount?: string
 ): UseBridgeApproveReturn {
   const { account, library } = useActiveWeb3React();
   const { isReady: providerReady, recheckProvider } = useProviderReady();
@@ -66,17 +72,39 @@ export function useBridgeApprove(
     setError(null);
     dispatch(bridgeActions.setApproving(true));
 
-    // Core approval execution logic
+    // Core approval execution logic (with explicit gas estimation matching swap pattern)
     const executeApproval = async (): Promise<boolean> => {
       const signer = library.getSigner(account);
       const tokenContract = new ethers.Contract(tokenConfig.address!, ERC20_ABI, signer as any);
       const bridgeAddress = getBridgeContractAddress(network);
 
-      // Approve max uint256 for unlimited approval
-      const tx = await tokenContract.approve(bridgeAddress, ethers.constants.MaxUint256);
+      // Estimate gas explicitly with fallback to exact amount
+      let useExact = false;
+      const estimatedGas = await tokenContract.estimateGas
+        .approve(bridgeAddress, ethers.constants.MaxUint256)
+        .catch(() => {
+          // Fallback for tokens that restrict MaxUint256 or when estimation fails
+          useExact = true;
+          const exactAmount = amount ? parseAmount(amount, token, network).toString() : '0';
+          return tokenContract.estimateGas.approve(bridgeAddress, exactAmount);
+        });
 
-      // Wait for transaction to be mined
-      const receipt = await tx.wait();
+      const tx = await tokenContract.approve(
+        bridgeAddress,
+        useExact && amount ? parseAmount(amount, token, network).toString() : ethers.constants.MaxUint256,
+        { gasLimit: calculateGasMargin(estimatedGas) }
+      );
+
+      // Wait for transaction with timeout to prevent indefinite hanging
+      const receipt = await Promise.race([
+        tx.wait(),
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () => reject(new Error('Approval confirmation timed out. Your transaction may still be pending — check your wallet.')),
+            TX_WAIT_TIMEOUT_MS
+          )
+        ),
+      ]);
 
       if (receipt.status === 0) {
         throw new Error('Approval transaction failed');
@@ -141,7 +169,7 @@ export function useBridgeApprove(
       setIsLoading(false);
       dispatch(bridgeActions.setApproving(false));
     }
-  }, [account, library, token, network, dispatch, providerReady, recheckProvider]);
+  }, [account, library, token, network, amount, dispatch, providerReady, recheckProvider]);
 
   return {
     approve,

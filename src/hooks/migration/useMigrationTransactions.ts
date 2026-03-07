@@ -9,6 +9,7 @@ import { bridgeConfig } from 'config/bridgeConfig';
 import { CHN_STAKING_ABI } from 'abis/CHNStaking';
 import { ERC20_ABI } from 'abis/ERC20';
 import { BRIDGE_SEPOLIA_ABI } from 'constants/bridge/abis';
+import { calculateGasMargin } from 'utils';
 import { MigrationStep, StepExecutionStatus } from 'constants/migration';
 import { migrationActions } from 'state/migration/slice';
 import { selectStakingSnapshot } from 'state/migration/selectors';
@@ -341,9 +342,22 @@ export function useMigrationTransactions(
           ERC20_ABI as readonly Record<string, unknown>[],
           signer as any
         );
+        const bridgeAddress = bridgeConfig.sepolia.bridgeAddress;
+
+        // Estimate gas explicitly with fallback to exact amount
+        let useExact = false;
+        const fallbackAmount = snapshot.walletXcn || snapshot.staked || '0';
+        const estimatedGas = await xcnContract.estimateGas
+          .approve(bridgeAddress, ethers.constants.MaxUint256)
+          .catch(() => {
+            useExact = true;
+            return xcnContract.estimateGas.approve(bridgeAddress, fallbackAmount);
+          });
+
         return xcnContract.approve(
-          bridgeConfig.sepolia.bridgeAddress,
-          ethers.constants.MaxUint256
+          bridgeAddress,
+          useExact ? fallbackAmount : ethers.constants.MaxUint256,
+          { gasLimit: calculateGasMargin(estimatedGas) }
         );
       });
 
