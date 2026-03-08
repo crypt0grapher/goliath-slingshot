@@ -324,16 +324,13 @@
   "errorInvalidTokenConfig": "無効なトークン設定",
   "addLiquidityEarningsInfo": "流動性を追加することで、プールのシェアに比例してこのペアの全取引の0.3%を獲得できます。手数料はプールに追加され、リアルタイムで蓄積され、流動性を引き出すことで請求できます。",
   "removeLiquidityTip": "プールトークンを削除すると、プールのシェアに比例して現在のレートで基礎トークンにポジションが変換されます。蓄積された手数料は受け取る金額に含まれています。",
-
   "migration.nav.title": "移行",
   "migration.nav.pageTitle": "ステーキング中のXCNを移行",
   "migration.nav.deadlineIndicator": "期限: {{date}}",
-
   "migration.summary.stakedXCN": "ステーキング中のXCN",
   "migration.summary.pendingRewards": "保留中の報酬",
   "migration.summary.walletXCN": "ウォレットのXCN",
   "migration.summary.bridgeAllowance": "ブリッジ許可額",
-
   "migration.step.claimRewards.title": "報酬を請求",
   "migration.step.claimRewards.description": "unstakeする前にXCN stakingの保留中の報酬を請求してください。",
   "migration.step.approve.title": "XCNを承認",
@@ -342,36 +339,28 @@
   "migration.step.unstake.description": "stakingコントラクトからステーキング中のXCNを引き出してください。",
   "migration.step.bridge.title": "Goliathへブリッジ",
   "migration.step.bridge.description": "XCNトークンをGoliathネットワークにブリッジしてください。",
-
   "migration.toggle.stakeOnGoliath": "Goliathでステーキング",
   "migration.toggle.autoStakeDescription": "移行後にXCNトークンを自動的にステーキング",
   "migration.toggle.lockedHint": "bridge送信後に設定がロックされます",
-
   "migration.status.depositConfirmed": "入金確認済み",
   "migration.status.waitingForConfirmations": "確認待ち",
   "migration.status.deliveringOnGoliath": "Goliathに配信中",
   "migration.status.stakingOnGoliath": "Goliathでステーキング中",
   "migration.status.migrationComplete": "移行完了",
   "migration.status.migrationFailed": "移行失敗",
-
   "migration.error.transactionRejected": "トランザクションが拒否されました",
   "migration.error.transactionFailedRetry": "トランザクション失敗 — リトライ",
   "migration.error.stakeIntentFailed": "ステーキング意図が失敗 — リトライしてください",
   "migration.error.bindFailed": "バインド失敗 — バックグラウンドでリトライ中",
   "migration.error.switchNetworkPrompt": "移行を続行するには{{network}}に切り替えてください。",
-
   "migration.empty.noXCNToMigrate": "Ethereumに移行するステーキング中のXCNがありません",
   "migration.empty.bridgeLinkText": "代わりにトークンをブリッジ",
-
   "migration.resumeHint": "以前unstakeしたようです。ブリッジから続行してください。",
-
   "migration.process.title": "Goliathへの自動移行",
   "migration.process.description": "このプロセスはステーキング中のXCNをEthereum（Sepolia）からGoliathテストネットに、1回の開始アクションと進捗追跡で移動します。",
   "migration.process.signatureNotice": "通常、ウォレットで3回署名します：(1) unstakeトランザクション、(2) 移行承認署名（gasレス）、(3) bridgeトランザクション。「XCNを承認」が表示される場合、bridge許可のための追加署名が1回あります。",
-
   "migration.deadline.banner": "移行期限: {{date}}",
   "migration.deadline.ended": "移行期間は終了しました",
-
   "migration.action.execute": "実行",
   "migration.action.retry": "リトライ",
   "migration.action.waitingForWallet": "ウォレット待ち...",
@@ -381,7 +370,6 @@
   "migration.action.ready": "実行可能",
   "migration.action.waitingForPrevious": "前のステップを待機中",
   "migration.action.viewTransaction": "トランザクションを表示",
-
   "migration.panel.title": "移行ステータス",
   "migration.panel.originTx": "オリジントランザクション",
   "migration.panel.destinationTx": "デスティネーショントランザクション",
@@ -403,7 +391,6 @@
   "migration.panel.errorDetails": "エラー: {{message}}",
   "migration.panel.pollingError": "ステータスを取得できません。リトライ中...",
   "migration.panel.viewExplorer": "エクスプローラーで表示",
-
   "migration.stepper.title": "移行ステップ",
   "migration.stepper.automationDescription": "一度開始してウォレットのプロンプトに従ってください。標準フローは3回の署名が必要です（unstake、承認署名、bridgeトランザクション）。承認が必要な場合は4回の署名になります。",
   "migration.stepper.automationStart": "移行を開始",
@@ -413,14 +400,12 @@
   "migration.stepper.automationStepFailed": "ステップ失敗: {{step}}",
   "migration.stepper.completionMessage": "すべてのステップが完了しました！移行が処理されています。",
   "migration.stepper.resumeHint": "以前unstakeしたようです。ブリッジから続行してください。",
-
   "migration.stats.title": "移行概要",
   "migration.stats.totalMigrated": "移行合計",
   "migration.stats.totalCount": "移行数",
   "migration.stats.totalStaked": "ステーキング済み",
   "migration.stats.activeMigrations": "アクティブ",
   "migration.stats.unavailable": "統計は一時的に利用できません。",
-
   "migration.history.title": "移行履歴",
   "migration.history.empty": "移行履歴はまだありません。",
   "migration.history.errorLoading": "移行履歴を読み込めません。",
@@ -432,7 +417,41 @@
   "migration.history.unstakeTx": "Unstake",
   "migration.history.bridgeTx": "Bridge",
   "migration.history.stakeTx": "Stake",
-
   "migration.goliathBalance.title": "Goliathでステーキング中",
-  "migration.goliathBalance.stxcn": "stXCN残高"
+  "migration.goliathBalance.stxcn": "stXCN残高",
+  "yield.pageTitle": "イールド",
+  "yield.connectWalletPrompt": "ウォレットを接続してイールドの獲得を開始",
+  "yield.connectWallet": "ウォレットを接続",
+  "yield.switchNetworkPrompt": "ステーキングにはGoliath Testnetに切り替えてください",
+  "yield.switchingNetwork": "切り替え中...",
+  "yield.switchToGoliath": "Goliath Testnetに切り替え",
+  "yield.stakingPausedBanner": "ステーキングは一時停止中です",
+  "yield.tabStake": "ステーク",
+  "yield.tabUnstake": "アンステーク",
+  "yield.stakingPending": "XCNをステーキング中...",
+  "yield.unstakingPending": "stXCNをアンステーキング中...",
+  "yield.stakingPaused": "ステーキング停止中",
+  "yield.enterAmount": "金額を入力",
+  "yield.insufficientXCN": "XCN残高不足",
+  "yield.stakeXCN": "XCNをステーク",
+  "yield.noStXCN": "アンステークするstXCNがありません",
+  "yield.insufficientStXCN": "stXCN残高不足",
+  "yield.unstakeStXCN": "stXCNをアンステーク",
+  "yield.max": "最大",
+  "yield.balanceXCN": "残高: {{amount}} XCN",
+  "yield.balanceStXCN": "残高: {{amount}} stXCN",
+  "yield.receiveStXCN": "約{{amount}} stXCNを受け取ります",
+  "yield.receiveXCN": "約{{amount}} XCNを受け取ります",
+  "yield.totalStaked": "合計ステーク量",
+  "yield.netAPY": "ネットAPY",
+  "yield.yourRewards": "あなたの報酬",
+  "yield.transactionHistory": "取引履歴",
+  "yield.noTransactions": "まだ取引がありません",
+  "yield.eventStaked": "ステーク済み",
+  "yield.eventUnstaked": "アンステーク済み",
+  "yield.yourStXCNBalance": "stXCN残高",
+  "migration.summary.allowanceSufficient": "十分",
+  "migration.summary.allowanceInsufficient": "不十分",
+  "errorBridgeApiUnavailable": "ブリッジサービスは一時的に利用できません。後でもう一度お試しください。",
+  "errorSignatureFailed": "ブリッジインテントの署名に失敗しました。もう一度お試しください。"
 }

@@ -324,16 +324,13 @@
   "errorInvalidTokenConfig": "Configurație token invalidă",
   "addLiquidityEarningsInfo": "Adăugând lichiditate, vei câștiga 0,3% din toate tranzacțiile pe această pereche, proporțional cu cota ta din pool. Comisioanele sunt adăugate la pool, se acumulează în timp real și pot fi revendicate prin retragerea lichidității tale.",
   "removeLiquidityTip": "Eliminarea tokenurilor de pool convertește poziția ta înapoi în tokenurile subiacente la cursul actual, proporțional cu cota ta din pool. Comisioanele acumulate sunt incluse în sumele pe care le primești.",
-
   "migration.nav.title": "Migrare",
   "migration.nav.pageTitle": "Migrează XCN în Staking",
   "migration.nav.deadlineIndicator": "Termen limită: {{date}}",
-
   "migration.summary.stakedXCN": "XCN în Staking",
   "migration.summary.pendingRewards": "Recompense în Așteptare",
   "migration.summary.walletXCN": "XCN în Portofel",
   "migration.summary.bridgeAllowance": "Permisiune Bridge",
-
   "migration.step.claimRewards.title": "Revendică Recompensele",
   "migration.step.claimRewards.description": "Revendică recompensele de staking XCN înainte de a face unstake.",
   "migration.step.approve.title": "Aprobă XCN",
@@ -342,36 +339,28 @@
   "migration.step.unstake.description": "Retrage XCN-ul tău din contractul de staking.",
   "migration.step.bridge.title": "Bridge către Goliath",
   "migration.step.bridge.description": "Transferă tokenurile tale XCN în rețeaua Goliath.",
-
   "migration.toggle.stakeOnGoliath": "Staking pe Goliath",
   "migration.toggle.autoStakeDescription": "Staking automat al tokenurilor XCN după migrare",
   "migration.toggle.lockedHint": "Preferința blocată după trimiterea bridge",
-
   "migration.status.depositConfirmed": "Depozit Confirmat",
   "migration.status.waitingForConfirmations": "Se Așteaptă Confirmări",
   "migration.status.deliveringOnGoliath": "Se Livrează pe Goliath",
   "migration.status.stakingOnGoliath": "Se Face Staking pe Goliath",
   "migration.status.migrationComplete": "Migrare Completă",
   "migration.status.migrationFailed": "Migrare Eșuată",
-
   "migration.error.transactionRejected": "Tranzacție respinsă",
   "migration.error.transactionFailedRetry": "Tranzacție eșuată — încearcă din nou",
   "migration.error.stakeIntentFailed": "Intenția de staking a eșuat — te rugăm să încerci din nou",
   "migration.error.bindFailed": "Legătura a eșuat — se reîncearcă în fundal",
   "migration.error.switchNetworkPrompt": "Te rog schimbă la {{network}} pentru a continua migrarea.",
-
   "migration.empty.noXCNToMigrate": "Nu există XCN în staking pe Ethereum de migrat",
   "migration.empty.bridgeLinkText": "Fă bridge de tokeni în schimb",
-
   "migration.resumeHint": "Se pare că ai făcut unstake anterior. Continuă cu bridge-ul.",
-
   "migration.process.title": "Migrare automatizată către Goliath",
   "migration.process.description": "Acest proces mută XCN-ul tău din staking de pe Ethereum (Sepolia) pe Goliath Testnet cu o singură acțiune de pornire și urmărire a progresului.",
   "migration.process.signatureNotice": "De obicei vei semna de 3 ori în portofel: (1) Tranzacție de unstake, (2) semnătură de autorizare a migrării (fără gas), și (3) Tranzacție de bridge. Dacă apare \"Aprobă XCN\", există o semnătură suplimentară pentru a acorda permisiunea de bridge.",
-
   "migration.deadline.banner": "Termen limită migrare: {{date}}",
   "migration.deadline.ended": "Perioada de migrare s-a încheiat",
-
   "migration.action.execute": "Execută",
   "migration.action.retry": "Reîncearcă",
   "migration.action.waitingForWallet": "Se așteaptă portofelul...",
@@ -381,7 +370,6 @@
   "migration.action.ready": "Gata de executare",
   "migration.action.waitingForPrevious": "Se așteaptă pașii anteriori",
   "migration.action.viewTransaction": "Vezi tranzacția",
-
   "migration.panel.title": "Starea Migrării",
   "migration.panel.originTx": "Tranzacția de Origine",
   "migration.panel.destinationTx": "Tranzacția de Destinație",
@@ -403,7 +391,6 @@
   "migration.panel.errorDetails": "Eroare: {{message}}",
   "migration.panel.pollingError": "Nu se poate obține starea. Se reîncearcă...",
   "migration.panel.viewExplorer": "Vezi pe Explorer",
-
   "migration.stepper.title": "Pașii Migrării",
   "migration.stepper.automationDescription": "Pornește o dată și urmează instrucțiunile portofelului. Fluxul standard necesită 3 semnături (unstake, semnătură de autorizare, tranzacție bridge). Dacă este necesară aprobarea, vei vedea 4 semnături.",
   "migration.stepper.automationStart": "Începe Migrarea",
@@ -413,14 +400,12 @@
   "migration.stepper.automationStepFailed": "Pas eșuat: {{step}}",
   "migration.stepper.completionMessage": "Toți pașii completați! Migrarea ta este în procesare.",
   "migration.stepper.resumeHint": "Se pare că ai făcut unstake anterior. Continuă cu bridge-ul.",
-
   "migration.stats.title": "Prezentare Generală a Migrării",
   "migration.stats.totalMigrated": "Total Migrat",
   "migration.stats.totalCount": "Migrări",
   "migration.stats.totalStaked": "În Staking",
   "migration.stats.activeMigrations": "Active",
   "migration.stats.unavailable": "Statisticile sunt temporar indisponibile.",
-
   "migration.history.title": "Istoricul Migrării",
   "migration.history.empty": "Niciun istoric de migrare încă.",
   "migration.history.errorLoading": "Nu se poate încărca istoricul migrării.",
@@ -432,7 +417,41 @@
   "migration.history.unstakeTx": "Unstake",
   "migration.history.bridgeTx": "Bridge",
   "migration.history.stakeTx": "Stake",
-
   "migration.goliathBalance.title": "În Staking pe Goliath",
-  "migration.goliathBalance.stxcn": "Sold stXCN"
+  "migration.goliathBalance.stxcn": "Sold stXCN",
+  "yield.pageTitle": "Randament",
+  "yield.connectWalletPrompt": "Conectează-ți portofelul pentru a începe să câștigi randament",
+  "yield.connectWallet": "Conectează Portofelul",
+  "yield.switchNetworkPrompt": "Te rugăm să treci pe Goliath Testnet pentru staking",
+  "yield.switchingNetwork": "Se schimbă...",
+  "yield.switchToGoliath": "Treci pe Goliath Testnet",
+  "yield.stakingPausedBanner": "Staking-ul este temporar suspendat",
+  "yield.tabStake": "Staking",
+  "yield.tabUnstake": "Retrage",
+  "yield.stakingPending": "Se face staking XCN...",
+  "yield.unstakingPending": "Se retrage stXCN...",
+  "yield.stakingPaused": "Staking suspendat",
+  "yield.enterAmount": "Introdu o sumă",
+  "yield.insufficientXCN": "Sold XCN insuficient",
+  "yield.stakeXCN": "Staking XCN",
+  "yield.noStXCN": "Nu ai stXCN de retras",
+  "yield.insufficientStXCN": "Sold stXCN insuficient",
+  "yield.unstakeStXCN": "Retrage stXCN",
+  "yield.max": "Max",
+  "yield.balanceXCN": "Sold: {{amount}} XCN",
+  "yield.balanceStXCN": "Sold: {{amount}} stXCN",
+  "yield.receiveStXCN": "Vei primi ~{{amount}} stXCN",
+  "yield.receiveXCN": "Vei primi ~{{amount}} XCN",
+  "yield.totalStaked": "Total în staking",
+  "yield.netAPY": "APY net",
+  "yield.yourRewards": "Recompensele tale",
+  "yield.transactionHistory": "Istoricul tranzacțiilor",
+  "yield.noTransactions": "Nicio tranzacție încă",
+  "yield.eventStaked": "În staking",
+  "yield.eventUnstaked": "Retras",
+  "yield.yourStXCNBalance": "Soldul tău stXCN",
+  "migration.summary.allowanceSufficient": "Suficient",
+  "migration.summary.allowanceInsufficient": "Insuficient",
+  "errorBridgeApiUnavailable": "Serviciul bridge este temporar indisponibil. Te rugăm să încerci din nou mai târziu.",
+  "errorSignatureFailed": "Semnarea intenției bridge a eșuat. Te rugăm să încerci din nou."
 }

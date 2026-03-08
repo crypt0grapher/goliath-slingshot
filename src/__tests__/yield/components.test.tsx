@@ -10,6 +10,14 @@ import ProtocolStats from '../../pages/Yield/ProtocolStats';
 import TransactionHistory from '../../pages/Yield/TransactionHistory';
 import { StakingEvent } from '../../state/yield/types';
 
+// Mock react-i18next — t() returns the key as-is for deterministic assertions
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { language: 'en', changeLanguage: jest.fn() },
+  }),
+}));
+
 // Build a real styled-components theme object (dark mode, LTR)
 const darkTheme = theme(true);
 
@@ -83,13 +91,13 @@ describe('ProtocolStats', () => {
         totalPrincipal={BigNumber.from('100000000000000000000')}
       />
     );
-    expect(screen.getByText('Your Rewards')).toBeTruthy();
+    expect(screen.getByText('yield.yourRewards')).toBeTruthy();
     expect(screen.getByText(/stXCN/)).toBeTruthy();
   });
 
   it('FE-UT-028: hides rewards row when disconnected', () => {
     renderWithProviders(<ProtocolStats {...defaultProps} isConnected={false} />);
-    expect(screen.queryByText('Your Rewards')).toBeNull();
+    expect(screen.queryByText('yield.yourRewards')).toBeNull();
   });
 });
 
@@ -107,7 +115,7 @@ describe('TransactionHistory', () => {
       },
     ];
     renderWithProviders(<TransactionHistory events={events} isLoading={false} />);
-    expect(screen.getByText('Staked')).toBeTruthy();
+    expect(screen.getByText('yield.eventStaked')).toBeTruthy();
     expect(screen.getByText(/100/)).toBeTruthy();
   });
 
@@ -124,12 +132,12 @@ describe('TransactionHistory', () => {
       },
     ];
     renderWithProviders(<TransactionHistory events={events} isLoading={false} />);
-    expect(screen.getByText('Unstaked')).toBeTruthy();
+    expect(screen.getByText('yield.eventUnstaked')).toBeTruthy();
   });
 
   it('FE-UT-031: renders empty state', () => {
     renderWithProviders(<TransactionHistory events={[]} isLoading={false} />);
-    expect(screen.getByText('No transactions yet')).toBeTruthy();
+    expect(screen.getByText('yield.noTransactions')).toBeTruthy();
   });
 
   it('FE-UT-032: falls back to block number when timestamp is null', () => {

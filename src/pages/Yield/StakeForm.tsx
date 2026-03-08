@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { BigNumber } from '@ethersproject/bignumber';
 import { parseUnits, formatUnits } from '@ethersproject/units';
@@ -19,6 +20,7 @@ interface StakeFormProps {
 export default function StakeForm({ xcnBalance, isPaused, onStake }: StakeFormProps) {
   const dispatch = useDispatch();
   const stakeInput = useSelector(selectStakeInput);
+  const { t } = useTranslation();
 
   const handleInput = (value: string) => {
     dispatch(yieldActions.setStakeInput(value));
@@ -54,10 +56,10 @@ export default function StakeForm({ xcnBalance, isPaused, onStake }: StakeFormPr
   }, [stakeInput, xcnBalance]);
 
   const buttonText = useMemo(() => {
-    if (isPaused) return 'Staking Paused';
-    if (!parsedAmount) return 'Enter an amount';
-    if (inputError === 'insufficient') return 'Insufficient XCN balance';
-    return 'Stake XCN';
+    if (isPaused) return t('yield.stakingPaused');
+    if (!parsedAmount) return t('yield.enterAmount');
+    if (inputError === 'insufficient') return t('yield.insufficientXCN');
+    return t('yield.stakeXCN');
   }, [isPaused, parsedAmount, inputError]);
 
   const isDisabled = isPaused || !parsedAmount || !!inputError;
@@ -73,16 +75,16 @@ export default function StakeForm({ xcnBalance, isPaused, onStake }: StakeFormPr
       <InputContainer>
         <InputRow>
           <Input value={stakeInput} onUserInput={handleInput} placeholder="0.0" fontSize="24px" />
-          <MaxButton onClick={handleMax}>Max</MaxButton>
+          <MaxButton onClick={handleMax}>{t('yield.max')}</MaxButton>
         </InputRow>
       </InputContainer>
       <PreviewRow>
-        <span>Balance: {formatTokenAmount(xcnBalance)} XCN</span>
+        <span>{t('yield.balanceXCN', { amount: formatTokenAmount(xcnBalance) })}</span>
 
       </PreviewRow>
       {preview && (
         <PreviewRow>
-          <span>You will receive ~{formatTokenAmount(preview.toString())} stXCN</span>
+          <span>{t('yield.receiveStXCN', { amount: formatTokenAmount(preview.toString()) })}</span>
         </PreviewRow>
       )}
       <ButtonPrimary onClick={handleSubmit} disabled={isDisabled} style={{ marginTop: '8px' }}>

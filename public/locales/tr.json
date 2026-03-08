@@ -324,16 +324,13 @@
   "errorInvalidTokenConfig": "Geçersiz token yapılandırması",
   "addLiquidityEarningsInfo": "Likidite ekleyerek bu çiftteki tüm işlemlerin %0,3'ünü havuzdaki payınıza orantılı olarak kazanırsınız. Ücretler havuza eklenir, gerçek zamanlı olarak birikir ve likiditenizi çekerek talep edilebilir.",
   "removeLiquidityTip": "Havuz tokenlerini kaldırmak, pozisyonunuzu havuzdaki payınıza orantılı olarak mevcut kurdan temel tokenlere geri dönüştürür. Biriken ücretler aldığınız miktarlara dahildir.",
-
   "migration.nav.title": "Göç",
   "migration.nav.pageTitle": "Staking Edilen XCN'yi Göç Ettir",
   "migration.nav.deadlineIndicator": "Son tarih: {{date}}",
-
   "migration.summary.stakedXCN": "Staking Edilen XCN",
   "migration.summary.pendingRewards": "Bekleyen Ödüller",
   "migration.summary.walletXCN": "Cüzdandaki XCN",
   "migration.summary.bridgeAllowance": "Köprü İzni",
-
   "migration.step.claimRewards.title": "Ödülleri Talep Et",
   "migration.step.claimRewards.description": "Unstake etmeden önce bekleyen XCN staking ödüllerinizi talep edin.",
   "migration.step.approve.title": "XCN'yi Onayla",
@@ -342,36 +339,28 @@
   "migration.step.unstake.description": "Staking edilen XCN'nizi staking sözleşmesinden çekin.",
   "migration.step.bridge.title": "Goliath'a Köprüle",
   "migration.step.bridge.description": "XCN tokenlerinizi Goliath ağına köprüleyin.",
-
   "migration.toggle.stakeOnGoliath": "Goliath'ta Staking Et",
   "migration.toggle.autoStakeDescription": "Göç sonrası XCN tokenlerini otomatik olarak staking et",
   "migration.toggle.lockedHint": "Bridge gönderiminden sonra tercih kilitlenir",
-
   "migration.status.depositConfirmed": "Yatırma Onaylandı",
   "migration.status.waitingForConfirmations": "Onaylar Bekleniyor",
   "migration.status.deliveringOnGoliath": "Goliath'ta Teslim Ediliyor",
   "migration.status.stakingOnGoliath": "Goliath'ta Staking Yapılıyor",
   "migration.status.migrationComplete": "Göç Tamamlandı",
   "migration.status.migrationFailed": "Göç Başarısız",
-
   "migration.error.transactionRejected": "İşlem reddedildi",
   "migration.error.transactionFailedRetry": "İşlem başarısız — tekrar deneyin",
   "migration.error.stakeIntentFailed": "Staking niyeti başarısız — lütfen tekrar deneyin",
   "migration.error.bindFailed": "Bağlama başarısız — arka planda tekrar deneniyor",
   "migration.error.switchNetworkPrompt": "Göçe devam etmek için lütfen {{network}} ağına geçin.",
-
   "migration.empty.noXCNToMigrate": "Ethereum'da göç ettirilecek staking edilmiş XCN yok",
   "migration.empty.bridgeLinkText": "Bunun yerine tokenleri köprüleyin",
-
   "migration.resumeHint": "Daha önce unstake etmiş görünüyorsunuz. Köprüleme ile devam edin.",
-
   "migration.process.title": "Goliath'a otomatik göç",
   "migration.process.description": "Bu süreç, staking edilen XCN'nizi Ethereum'dan (Sepolia) Goliath Testnet'e tek bir başlatma eylemi ve ilerleme takibi ile taşır.",
   "migration.process.signatureNotice": "Genellikle cüzdanınızda 3 kez imzalarsınız: (1) Unstake işlemi, (2) göç yetkilendirme imzası (gas'sız), ve (3) Bridge işlemi. \"XCN'yi Onayla\" görünürse, bridge izni vermek için bir ek imza vardır.",
-
   "migration.deadline.banner": "Göç son tarihi: {{date}}",
   "migration.deadline.ended": "Göç süresi sona erdi",
-
   "migration.action.execute": "Çalıştır",
   "migration.action.retry": "Tekrar Dene",
   "migration.action.waitingForWallet": "Cüzdan bekleniyor...",
@@ -381,7 +370,6 @@
   "migration.action.ready": "Çalıştırmaya hazır",
   "migration.action.waitingForPrevious": "Önceki adımlar bekleniyor",
   "migration.action.viewTransaction": "İşlemi görüntüle",
-
   "migration.panel.title": "Göç Durumu",
   "migration.panel.originTx": "Kaynak İşlemi",
   "migration.panel.destinationTx": "Hedef İşlemi",
@@ -403,7 +391,6 @@
   "migration.panel.errorDetails": "Hata: {{message}}",
   "migration.panel.pollingError": "Durum alınamadı. Tekrar deneniyor...",
   "migration.panel.viewExplorer": "Explorer'da Görüntüle",
-
   "migration.stepper.title": "Göç Adımları",
   "migration.stepper.automationDescription": "Bir kez başlatın ve cüzdan istemlerini takip edin. Standart akış 3 imza gerektirir (unstake, yetkilendirme imzası, bridge işlemi). Onay gerekiyorsa 4 imza göreceksiniz.",
   "migration.stepper.automationStart": "Göçü Başlat",
@@ -413,14 +400,12 @@
   "migration.stepper.automationStepFailed": "Adım başarısız: {{step}}",
   "migration.stepper.completionMessage": "Tüm adımlar tamamlandı! Göçünüz işleniyor.",
   "migration.stepper.resumeHint": "Daha önce unstake etmiş görünüyorsunuz. Köprüleme ile devam edin.",
-
   "migration.stats.title": "Göç Özeti",
   "migration.stats.totalMigrated": "Toplam Göç Edilen",
   "migration.stats.totalCount": "Göçler",
   "migration.stats.totalStaked": "Staking Edilen",
   "migration.stats.activeMigrations": "Aktif",
   "migration.stats.unavailable": "İstatistikler geçici olarak kullanılamıyor.",
-
   "migration.history.title": "Göç Geçmişi",
   "migration.history.empty": "Henüz göç geçmişi yok.",
   "migration.history.errorLoading": "Göç geçmişi yüklenemedi.",
@@ -432,7 +417,41 @@
   "migration.history.unstakeTx": "Unstake",
   "migration.history.bridgeTx": "Bridge",
   "migration.history.stakeTx": "Stake",
-
   "migration.goliathBalance.title": "Goliath'ta Staking Edilen",
-  "migration.goliathBalance.stxcn": "stXCN Bakiyesi"
+  "migration.goliathBalance.stxcn": "stXCN Bakiyesi",
+  "yield.pageTitle": "Getiri",
+  "yield.connectWalletPrompt": "Getiri kazanmaya başlamak için cüzdanınızı bağlayın",
+  "yield.connectWallet": "Cüzdanı Bağla",
+  "yield.switchNetworkPrompt": "Stake yapmak için Goliath Testnet'e geçin",
+  "yield.switchingNetwork": "Geçiş yapılıyor...",
+  "yield.switchToGoliath": "Goliath Testnet'e Geç",
+  "yield.stakingPausedBanner": "Staking geçici olarak duraklatıldı",
+  "yield.tabStake": "Stake",
+  "yield.tabUnstake": "Çek",
+  "yield.stakingPending": "XCN stake ediliyor...",
+  "yield.unstakingPending": "stXCN çekiliyor...",
+  "yield.stakingPaused": "Staking Duraklatıldı",
+  "yield.enterAmount": "Bir miktar girin",
+  "yield.insufficientXCN": "Yetersiz XCN bakiyesi",
+  "yield.stakeXCN": "XCN Stake Et",
+  "yield.noStXCN": "Çekilecek stXCN yok",
+  "yield.insufficientStXCN": "Yetersiz stXCN bakiyesi",
+  "yield.unstakeStXCN": "stXCN Çek",
+  "yield.max": "Maks",
+  "yield.balanceXCN": "Bakiye: {{amount}} XCN",
+  "yield.balanceStXCN": "Bakiye: {{amount}} stXCN",
+  "yield.receiveStXCN": "Yaklaşık ~{{amount}} stXCN alacaksınız",
+  "yield.receiveXCN": "Yaklaşık ~{{amount}} XCN alacaksınız",
+  "yield.totalStaked": "Toplam Stake",
+  "yield.netAPY": "Net APY",
+  "yield.yourRewards": "Ödülleriniz",
+  "yield.transactionHistory": "İşlem Geçmişi",
+  "yield.noTransactions": "Henüz işlem yok",
+  "yield.eventStaked": "Stake edildi",
+  "yield.eventUnstaked": "Çekildi",
+  "yield.yourStXCNBalance": "stXCN Bakiyeniz",
+  "migration.summary.allowanceSufficient": "Yeterli",
+  "migration.summary.allowanceInsufficient": "Yetersiz",
+  "errorBridgeApiUnavailable": "Köprü hizmeti geçici olarak kullanılamıyor. Lütfen daha sonra tekrar deneyin.",
+  "errorSignatureFailed": "Köprü niyeti imzalanamadı. Lütfen tekrar deneyin."
 }

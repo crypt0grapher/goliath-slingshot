@@ -324,16 +324,13 @@
   "errorInvalidTokenConfig": "Konfigurasi token tidak valid",
   "addLiquidityEarningsInfo": "Dengan menambahkan likuiditas, Anda akan mendapatkan 0,3% dari semua perdagangan pada pasangan ini secara proporsional dengan bagian Anda di pool. Biaya ditambahkan ke pool, terakumulasi secara real-time, dan dapat diklaim dengan menarik likuiditas Anda.",
   "removeLiquidityTip": "Menghapus token pool mengonversi posisi Anda kembali ke token dasar pada kurs saat ini, proporsional dengan bagian Anda di pool. Biaya yang terakumulasi termasuk dalam jumlah yang Anda terima.",
-
   "migration.nav.title": "Migrasi",
   "migration.nav.pageTitle": "Migrasi XCN yang Di-stake",
   "migration.nav.deadlineIndicator": "Batas waktu: {{date}}",
-
   "migration.summary.stakedXCN": "XCN yang Di-stake",
   "migration.summary.pendingRewards": "Hadiah Tertunda",
   "migration.summary.walletXCN": "XCN di Dompet",
   "migration.summary.bridgeAllowance": "Izin Bridge",
-
   "migration.step.claimRewards.title": "Klaim Hadiah",
   "migration.step.claimRewards.description": "Klaim hadiah staking XCN Anda sebelum melakukan unstake.",
   "migration.step.approve.title": "Setujui XCN",
@@ -342,36 +339,28 @@
   "migration.step.unstake.description": "Tarik XCN yang di-stake dari kontrak staking.",
   "migration.step.bridge.title": "Bridge ke Goliath",
   "migration.step.bridge.description": "Bridge token XCN Anda ke jaringan Goliath.",
-
   "migration.toggle.stakeOnGoliath": "Stake di Goliath",
   "migration.toggle.autoStakeDescription": "Otomatis stake token XCN setelah migrasi",
   "migration.toggle.lockedHint": "Preferensi terkunci setelah pengiriman bridge",
-
   "migration.status.depositConfirmed": "Deposit Dikonfirmasi",
   "migration.status.waitingForConfirmations": "Menunggu Konfirmasi",
   "migration.status.deliveringOnGoliath": "Mengirim di Goliath",
   "migration.status.stakingOnGoliath": "Melakukan Staking di Goliath",
   "migration.status.migrationComplete": "Migrasi Selesai",
   "migration.status.migrationFailed": "Migrasi Gagal",
-
   "migration.error.transactionRejected": "Transaksi ditolak",
   "migration.error.transactionFailedRetry": "Transaksi gagal — coba lagi",
   "migration.error.stakeIntentFailed": "Niat stake gagal — silakan coba lagi",
   "migration.error.bindFailed": "Pengikatan gagal — mencoba ulang di latar belakang",
   "migration.error.switchNetworkPrompt": "Silakan beralih ke {{network}} untuk melanjutkan migrasi.",
-
   "migration.empty.noXCNToMigrate": "Tidak ada XCN yang di-stake di Ethereum untuk dimigrasi",
   "migration.empty.bridgeLinkText": "Bridge token sebagai gantinya",
-
   "migration.resumeHint": "Sepertinya Anda sebelumnya telah melakukan unstake. Lanjutkan dengan bridge.",
-
   "migration.process.title": "Migrasi otomatis ke Goliath",
   "migration.process.description": "Proses ini memindahkan XCN yang di-stake dari Ethereum (Sepolia) ke Goliath Testnet dengan satu tindakan mulai dan pelacakan progres.",
   "migration.process.signatureNotice": "Anda biasanya akan menandatangani 3 kali di dompet Anda: (1) Transaksi unstake, (2) tanda tangan otorisasi migrasi (tanpa gas), dan (3) Transaksi bridge. Jika \"Setujui XCN\" muncul, ada satu tanda tangan tambahan untuk memberikan izin bridge.",
-
   "migration.deadline.banner": "Batas waktu migrasi: {{date}}",
   "migration.deadline.ended": "Periode migrasi telah berakhir",
-
   "migration.action.execute": "Jalankan",
   "migration.action.retry": "Coba Lagi",
   "migration.action.waitingForWallet": "Menunggu dompet...",
@@ -381,7 +370,6 @@
   "migration.action.ready": "Siap dijalankan",
   "migration.action.waitingForPrevious": "Menunggu langkah sebelumnya",
   "migration.action.viewTransaction": "Lihat transaksi",
-
   "migration.panel.title": "Status Migrasi",
   "migration.panel.originTx": "Transaksi Asal",
   "migration.panel.destinationTx": "Transaksi Tujuan",
@@ -403,7 +391,6 @@
   "migration.panel.errorDetails": "Error: {{message}}",
   "migration.panel.pollingError": "Tidak dapat mengambil status. Mencoba ulang...",
   "migration.panel.viewExplorer": "Lihat di Explorer",
-
   "migration.stepper.title": "Langkah Migrasi",
   "migration.stepper.automationDescription": "Mulai sekali dan ikuti petunjuk dompet. Alur standar memerlukan 3 tanda tangan (unstake, tanda tangan otorisasi, transaksi bridge). Jika persetujuan diperlukan, Anda akan melihat 4 tanda tangan.",
   "migration.stepper.automationStart": "Mulai Migrasi",
@@ -413,14 +400,12 @@
   "migration.stepper.automationStepFailed": "Langkah gagal: {{step}}",
   "migration.stepper.completionMessage": "Semua langkah selesai! Migrasi Anda sedang diproses.",
   "migration.stepper.resumeHint": "Sepertinya Anda sebelumnya telah melakukan unstake. Lanjutkan dengan bridge.",
-
   "migration.stats.title": "Ringkasan Migrasi",
   "migration.stats.totalMigrated": "Total Dimigrasi",
   "migration.stats.totalCount": "Migrasi",
   "migration.stats.totalStaked": "Di-stake",
   "migration.stats.activeMigrations": "Aktif",
   "migration.stats.unavailable": "Statistik sementara tidak tersedia.",
-
   "migration.history.title": "Riwayat Migrasi",
   "migration.history.empty": "Belum ada riwayat migrasi.",
   "migration.history.errorLoading": "Tidak dapat memuat riwayat migrasi.",
@@ -432,7 +417,41 @@
   "migration.history.unstakeTx": "Unstake",
   "migration.history.bridgeTx": "Bridge",
   "migration.history.stakeTx": "Stake",
-
   "migration.goliathBalance.title": "Di-stake di Goliath",
-  "migration.goliathBalance.stxcn": "Saldo stXCN"
+  "migration.goliathBalance.stxcn": "Saldo stXCN",
+  "yield.pageTitle": "Imbal Hasil",
+  "yield.connectWalletPrompt": "Hubungkan dompet Anda untuk mulai mendapatkan imbal hasil",
+  "yield.connectWallet": "Hubungkan Dompet",
+  "yield.switchNetworkPrompt": "Silakan beralih ke Goliath Testnet untuk staking",
+  "yield.switchingNetwork": "Beralih...",
+  "yield.switchToGoliath": "Beralih ke Goliath Testnet",
+  "yield.stakingPausedBanner": "Staking sementara dijeda",
+  "yield.tabStake": "Staking",
+  "yield.tabUnstake": "Tarik",
+  "yield.stakingPending": "Staking XCN...",
+  "yield.unstakingPending": "Menarik stXCN...",
+  "yield.stakingPaused": "Staking Dijeda",
+  "yield.enterAmount": "Masukkan jumlah",
+  "yield.insufficientXCN": "Saldo XCN tidak cukup",
+  "yield.stakeXCN": "Staking XCN",
+  "yield.noStXCN": "Tidak ada stXCN untuk ditarik",
+  "yield.insufficientStXCN": "Saldo stXCN tidak cukup",
+  "yield.unstakeStXCN": "Tarik stXCN",
+  "yield.max": "Maks",
+  "yield.balanceXCN": "Saldo: {{amount}} XCN",
+  "yield.balanceStXCN": "Saldo: {{amount}} stXCN",
+  "yield.receiveStXCN": "Anda akan menerima ~{{amount}} stXCN",
+  "yield.receiveXCN": "Anda akan menerima ~{{amount}} XCN",
+  "yield.totalStaked": "Total Staking",
+  "yield.netAPY": "APY Bersih",
+  "yield.yourRewards": "Hadiah Anda",
+  "yield.transactionHistory": "Riwayat Transaksi",
+  "yield.noTransactions": "Belum ada transaksi",
+  "yield.eventStaked": "Di-stake",
+  "yield.eventUnstaked": "Ditarik",
+  "yield.yourStXCNBalance": "Saldo stXCN Anda",
+  "migration.summary.allowanceSufficient": "Cukup",
+  "migration.summary.allowanceInsufficient": "Tidak Cukup",
+  "errorBridgeApiUnavailable": "Layanan bridge sementara tidak tersedia. Silakan coba lagi nanti.",
+  "errorSignatureFailed": "Gagal menandatangani niat bridge. Silakan coba lagi."
 }

@@ -324,16 +324,13 @@
   "errorInvalidTokenConfig": "Configuration de jeton invalide",
   "addLiquidityEarningsInfo": "En ajoutant de la liquidité, vous gagnerez 0,3% de toutes les transactions sur cette paire, proportionnellement à votre part du pool. Les frais sont ajoutés au pool, s'accumulent en temps réel et peuvent être réclamés en retirant votre liquidité.",
   "removeLiquidityTip": "En retirant les jetons du pool, votre position est reconvertie en jetons sous-jacents au taux actuel, proportionnellement à votre part du pool. Les frais accumulés sont inclus dans les montants que vous recevez.",
-
   "migration.nav.title": "Migrer",
   "migration.nav.pageTitle": "Migrer les XCN Stakés",
   "migration.nav.deadlineIndicator": "Date limite : {{date}}",
-
   "migration.summary.stakedXCN": "XCN en Staking",
   "migration.summary.pendingRewards": "Récompenses en Attente",
   "migration.summary.walletXCN": "XCN du Wallet",
   "migration.summary.bridgeAllowance": "Autorisation du Bridge",
-
   "migration.step.claimRewards.title": "Réclamer les Récompenses",
   "migration.step.claimRewards.description": "Réclamez vos récompenses de staking XCN en attente avant le unstake.",
   "migration.step.approve.title": "Approuver XCN",
@@ -342,36 +339,28 @@
   "migration.step.unstake.description": "Retirez vos XCN stakés du contrat de staking.",
   "migration.step.bridge.title": "Bridge vers Goliath",
   "migration.step.bridge.description": "Transférez vos tokens XCN vers le réseau Goliath via le bridge.",
-
   "migration.toggle.stakeOnGoliath": "Staking sur Goliath",
   "migration.toggle.autoStakeDescription": "Staking automatique des tokens XCN après la migration",
   "migration.toggle.lockedHint": "Préférence verrouillée après l'envoi du bridge",
-
   "migration.status.depositConfirmed": "Dépôt Confirmé",
   "migration.status.waitingForConfirmations": "En Attente de Confirmations",
   "migration.status.deliveringOnGoliath": "Livraison sur Goliath",
   "migration.status.stakingOnGoliath": "Staking sur Goliath",
   "migration.status.migrationComplete": "Migration Terminée",
   "migration.status.migrationFailed": "Migration Échouée",
-
   "migration.error.transactionRejected": "Transaction rejetée",
   "migration.error.transactionFailedRetry": "Transaction échouée — réessayer",
   "migration.error.stakeIntentFailed": "Intention de staking échouée — veuillez réessayer",
   "migration.error.bindFailed": "Bind échoué — nouvelle tentative en arrière-plan",
   "migration.error.switchNetworkPrompt": "Veuillez passer sur {{network}} pour continuer la migration.",
-
   "migration.empty.noXCNToMigrate": "Aucun XCN staké sur Ethereum à migrer",
   "migration.empty.bridgeLinkText": "Transférer des tokens via le bridge",
-
   "migration.resumeHint": "Il semble que vous ayez déjà fait le unstake. Continuez avec le bridge.",
-
   "migration.process.title": "Migration automatisée vers Goliath",
   "migration.process.description": "Ce processus déplace vos XCN stakés d'Ethereum (Sepolia) vers Goliath Testnet avec une seule action initiale et un suivi de la progression.",
   "migration.process.signatureNotice": "Vous signerez généralement 3 fois dans votre wallet : (1) Transaction de unstake, (2) Signature d'autorisation de migration (sans gas), et (3) Transaction de bridge. Si « Approuver XCN » apparaît, il y a une signature supplémentaire pour accorder l'autorisation au bridge.",
-
   "migration.deadline.banner": "Date limite de migration : {{date}}",
   "migration.deadline.ended": "La fenêtre de migration est terminée",
-
   "migration.action.execute": "Exécuter",
   "migration.action.retry": "Réessayer",
   "migration.action.waitingForWallet": "En attente du wallet...",
@@ -381,7 +370,6 @@
   "migration.action.ready": "Prêt à exécuter",
   "migration.action.waitingForPrevious": "En attente des étapes précédentes",
   "migration.action.viewTransaction": "Voir la transaction",
-
   "migration.panel.title": "État de la Migration",
   "migration.panel.originTx": "Transaction d'Origine",
   "migration.panel.destinationTx": "Transaction de Destination",
@@ -403,7 +391,6 @@
   "migration.panel.errorDetails": "Erreur : {{message}}",
   "migration.panel.pollingError": "Impossible de récupérer le statut. Nouvelle tentative...",
   "migration.panel.viewExplorer": "Voir sur l'Explorer",
-
   "migration.stepper.title": "Étapes de Migration",
   "migration.stepper.automationDescription": "Lancez une fois et suivez les invites du wallet. Le flux standard nécessite 3 signatures (unstake, signature d'autorisation, bridge tx). Si une approbation est requise, vous verrez 4 signatures.",
   "migration.stepper.automationStart": "Démarrer la Migration",
@@ -413,14 +400,12 @@
   "migration.stepper.automationStepFailed": "Étape échouée : {{step}}",
   "migration.stepper.completionMessage": "Toutes les étapes sont terminées ! Votre migration est en cours de traitement.",
   "migration.stepper.resumeHint": "Il semble que vous ayez déjà fait le unstake. Continuez avec le bridge.",
-
   "migration.stats.title": "Aperçu de la Migration",
   "migration.stats.totalMigrated": "Total Migré",
   "migration.stats.totalCount": "Migrations",
   "migration.stats.totalStaked": "En Staking",
   "migration.stats.activeMigrations": "Actives",
   "migration.stats.unavailable": "Les statistiques sont temporairement indisponibles.",
-
   "migration.history.title": "Historique des Migrations",
   "migration.history.empty": "Aucun historique de migration.",
   "migration.history.errorLoading": "Impossible de charger l'historique des migrations.",
@@ -432,7 +417,41 @@
   "migration.history.unstakeTx": "Unstake",
   "migration.history.bridgeTx": "Bridge",
   "migration.history.stakeTx": "Staking",
-
   "migration.goliathBalance.title": "En Staking sur Goliath",
-  "migration.goliathBalance.stxcn": "Solde stXCN"
+  "migration.goliathBalance.stxcn": "Solde stXCN",
+  "yield.pageTitle": "Rendement",
+  "yield.connectWalletPrompt": "Connectez votre portefeuille pour commencer à gagner du rendement",
+  "yield.connectWallet": "Connecter le portefeuille",
+  "yield.switchNetworkPrompt": "Veuillez passer à Goliath Testnet pour staker",
+  "yield.switchingNetwork": "Changement...",
+  "yield.switchToGoliath": "Passer à Goliath Testnet",
+  "yield.stakingPausedBanner": "Le staking est temporairement suspendu",
+  "yield.tabStake": "Staker",
+  "yield.tabUnstake": "Retirer",
+  "yield.stakingPending": "Staking de XCN en cours...",
+  "yield.unstakingPending": "Retrait de stXCN en cours...",
+  "yield.stakingPaused": "Staking suspendu",
+  "yield.enterAmount": "Entrez un montant",
+  "yield.insufficientXCN": "Solde XCN insuffisant",
+  "yield.stakeXCN": "Staker XCN",
+  "yield.noStXCN": "Pas de stXCN à retirer",
+  "yield.insufficientStXCN": "Solde stXCN insuffisant",
+  "yield.unstakeStXCN": "Retirer stXCN",
+  "yield.max": "Max",
+  "yield.balanceXCN": "Solde : {{amount}} XCN",
+  "yield.balanceStXCN": "Solde : {{amount}} stXCN",
+  "yield.receiveStXCN": "Vous recevrez ~{{amount}} stXCN",
+  "yield.receiveXCN": "Vous recevrez ~{{amount}} XCN",
+  "yield.totalStaked": "Total staké",
+  "yield.netAPY": "APY net",
+  "yield.yourRewards": "Vos récompenses",
+  "yield.transactionHistory": "Historique des transactions",
+  "yield.noTransactions": "Pas encore de transactions",
+  "yield.eventStaked": "Staké",
+  "yield.eventUnstaked": "Retiré",
+  "yield.yourStXCNBalance": "Votre solde stXCN",
+  "migration.summary.allowanceSufficient": "Suffisant",
+  "migration.summary.allowanceInsufficient": "Insuffisant",
+  "errorBridgeApiUnavailable": "Le service de bridge est temporairement indisponible. Veuillez réessayer plus tard.",
+  "errorSignatureFailed": "Échec de la signature de l'intention du bridge. Veuillez réessayer."
 }

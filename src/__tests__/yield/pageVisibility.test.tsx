@@ -8,6 +8,14 @@ import yieldReducer from '../../state/yield/slice';
 import applicationReducer from '../../state/application/reducer';
 import Yield from '../../pages/Yield/index';
 
+// Mock react-i18next — t() returns the key as-is for deterministic assertions
+jest.mock('react-i18next', () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: { language: 'en', changeLanguage: jest.fn() },
+  }),
+}));
+
 const darkTheme = theme(true);
 
 // ── Mocks ──────────────────────────────────────────────────────────────────
@@ -85,10 +93,10 @@ describe('Yield page visibility', () => {
 
     renderYield();
 
-    expect(screen.getByText('Total Staked')).toBeTruthy();
-    expect(screen.getByText('Net APY')).toBeTruthy();
+    expect(screen.getByText('yield.totalStaked')).toBeTruthy();
+    expect(screen.getByText('yield.netAPY')).toBeTruthy();
     // Connect wallet CTA should still be visible
-    expect(screen.getByText('Connect Wallet')).toBeTruthy();
+    expect(screen.getByText('yield.connectWallet')).toBeTruthy();
   });
 
   it('FE-UT-041: shows Total Staked and Net APY when on wrong network', () => {
@@ -97,10 +105,10 @@ describe('Yield page visibility', () => {
 
     renderYield();
 
-    expect(screen.getByText('Total Staked')).toBeTruthy();
-    expect(screen.getByText('Net APY')).toBeTruthy();
+    expect(screen.getByText('yield.totalStaked')).toBeTruthy();
+    expect(screen.getByText('yield.netAPY')).toBeTruthy();
     // Switch network CTA should still be visible
-    expect(screen.getByText('Switch to Goliath Testnet')).toBeTruthy();
+    expect(screen.getByText('yield.switchToGoliath')).toBeTruthy();
   });
 
   it('FE-UT-042: shows staking controls and stats when connected to Goliath', () => {
@@ -109,10 +117,10 @@ describe('Yield page visibility', () => {
 
     renderYield();
 
-    expect(screen.getByText('Total Staked')).toBeTruthy();
-    expect(screen.getByText('Net APY')).toBeTruthy();
-    expect(screen.getByText('Stake')).toBeTruthy();
-    expect(screen.getByText('Unstake')).toBeTruthy();
+    expect(screen.getByText('yield.totalStaked')).toBeTruthy();
+    expect(screen.getByText('yield.netAPY')).toBeTruthy();
+    expect(screen.getByText('yield.tabStake')).toBeTruthy();
+    expect(screen.getByText('yield.tabUnstake')).toBeTruthy();
   });
 
   it('FE-UT-043: hides stake/unstake forms when disconnected', () => {
@@ -122,8 +130,8 @@ describe('Yield page visibility', () => {
     renderYield();
 
     // Stake/Unstake tabs should not be rendered
-    expect(screen.queryByText('Stake')).toBeNull();
-    expect(screen.queryByText('Unstake')).toBeNull();
+    expect(screen.queryByText('yield.tabStake')).toBeNull();
+    expect(screen.queryByText('yield.tabUnstake')).toBeNull();
   });
 
   it('FE-UT-044: hides stake/unstake forms when on wrong network', () => {
@@ -133,7 +141,7 @@ describe('Yield page visibility', () => {
     renderYield();
 
     // Stake/Unstake tabs should not be rendered
-    expect(screen.queryByText('Stake')).toBeNull();
-    expect(screen.queryByText('Unstake')).toBeNull();
+    expect(screen.queryByText('yield.tabStake')).toBeNull();
+    expect(screen.queryByText('yield.tabUnstake')).toBeNull();
   });
 });

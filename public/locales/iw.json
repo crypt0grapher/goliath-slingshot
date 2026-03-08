@@ -324,16 +324,13 @@
   "errorInvalidTokenConfig": "תצורת טוקן לא תקינה",
   "addLiquidityEarningsInfo": "על ידי הוספת נזילות תרוויח 0.3% מכל העסקאות בצמד זה, באופן יחסי לחלק שלך במאגר. העמלות מתווספות למאגר, מצטברות בזמן אמת וניתן לדרוש אותן על ידי משיכת הנזילות שלך.",
   "removeLiquidityTip": "הסרת טוקני המאגר ממירה את הפוזיציה שלך בחזרה לטוקנים הבסיסיים בשער הנוכחי, באופן יחסי לחלק שלך במאגר. העמלות שנצברו כלולות בסכומים שאתה מקבל.",
-
   "migration.nav.title": "העברה",
   "migration.nav.pageTitle": "העברת XCN בהימור",
   "migration.nav.deadlineIndicator": "מועד אחרון: {{date}}",
-
   "migration.summary.stakedXCN": "XCN בהימור",
   "migration.summary.pendingRewards": "תגמולים ממתינים",
   "migration.summary.walletXCN": "XCN בארנק",
   "migration.summary.bridgeAllowance": "הרשאת גשר",
-
   "migration.step.claimRewards.title": "דרוש תגמולים",
   "migration.step.claimRewards.description": "דרוש את תגמולי ה-staking של XCN לפני ביצוע unstake.",
   "migration.step.approve.title": "אשר XCN",
@@ -342,36 +339,28 @@
   "migration.step.unstake.description": "משוך את ה-XCN שבהימור מחוזה ה-staking.",
   "migration.step.bridge.title": "גשר ל-Goliath",
   "migration.step.bridge.description": "גשר את טוקני ה-XCN שלך לרשת Goliath.",
-
   "migration.toggle.stakeOnGoliath": "הימור ב-Goliath",
   "migration.toggle.autoStakeDescription": "הימור אוטומטי של טוקני XCN לאחר ההעברה",
   "migration.toggle.lockedHint": "ההעדפה נעולה לאחר שליחת bridge",
-
   "migration.status.depositConfirmed": "הפקדה אושרה",
   "migration.status.waitingForConfirmations": "ממתין לאישורים",
   "migration.status.deliveringOnGoliath": "מספק ב-Goliath",
   "migration.status.stakingOnGoliath": "מבצע staking ב-Goliath",
   "migration.status.migrationComplete": "ההעברה הושלמה",
   "migration.status.migrationFailed": "ההעברה נכשלה",
-
   "migration.error.transactionRejected": "העסקה נדחתה",
   "migration.error.transactionFailedRetry": "העסקה נכשלה — נסה שוב",
   "migration.error.stakeIntentFailed": "כוונת ה-staking נכשלה — אנא נסה שוב",
   "migration.error.bindFailed": "הקישור נכשל — מנסה שוב ברקע",
   "migration.error.switchNetworkPrompt": "אנא עבור ל-{{network}} כדי להמשיך בהעברה.",
-
   "migration.empty.noXCNToMigrate": "אין XCN בהימור ב-Ethereum להעברה",
   "migration.empty.bridgeLinkText": "גשר טוקנים במקום זאת",
-
   "migration.resumeHint": "נראה שביצעת unstake בעבר. המשך עם הגישור.",
-
   "migration.process.title": "העברה אוטומטית ל-Goliath",
   "migration.process.description": "תהליך זה מעביר את ה-XCN שבהימור מ-Ethereum (Sepolia) ל-Goliath Testnet עם פעולת התחלה אחת ומעקב אחר ההתקדמות.",
   "migration.process.signatureNotice": "בדרך כלל תחתום 3 פעמים בארנק שלך: (1) עסקת unstake, (2) חתימת הרשאת העברה (ללא gas), ו-(3) עסקת bridge. אם מופיע \"אשר XCN\", יש חתימה נוספת אחת למתן הרשאת bridge.",
-
   "migration.deadline.banner": "מועד אחרון להעברה: {{date}}",
   "migration.deadline.ended": "חלון ההעברה הסתיים",
-
   "migration.action.execute": "בצע",
   "migration.action.retry": "נסה שוב",
   "migration.action.waitingForWallet": "ממתין לארנק...",
@@ -381,7 +370,6 @@
   "migration.action.ready": "מוכן לביצוע",
   "migration.action.waitingForPrevious": "ממתין לשלבים קודמים",
   "migration.action.viewTransaction": "צפה בעסקה",
-
   "migration.panel.title": "סטטוס העברה",
   "migration.panel.originTx": "עסקת מקור",
   "migration.panel.destinationTx": "עסקת יעד",
@@ -403,7 +391,6 @@
   "migration.panel.errorDetails": "שגיאה: {{message}}",
   "migration.panel.pollingError": "לא ניתן לאחזר סטטוס. מנסה שוב...",
   "migration.panel.viewExplorer": "צפה ב-Explorer",
-
   "migration.stepper.title": "שלבי ההעברה",
   "migration.stepper.automationDescription": "התחל פעם אחת ועקוב אחר הנחיות הארנק. הזרימה הסטנדרטית דורשת 3 חתימות (unstake, חתימת הרשאה, עסקת bridge). אם נדרש אישור, תראה 4 חתימות.",
   "migration.stepper.automationStart": "התחל העברה",
@@ -413,14 +400,12 @@
   "migration.stepper.automationStepFailed": "שלב נכשל: {{step}}",
   "migration.stepper.completionMessage": "כל השלבים הושלמו! ההעברה שלך מעובדת.",
   "migration.stepper.resumeHint": "נראה שביצעת unstake בעבר. המשך עם הגישור.",
-
   "migration.stats.title": "סקירת העברה",
   "migration.stats.totalMigrated": "סה\"כ הועבר",
   "migration.stats.totalCount": "העברות",
   "migration.stats.totalStaked": "בהימור",
   "migration.stats.activeMigrations": "פעיל",
   "migration.stats.unavailable": "הסטטיסטיקות אינן זמינות באופן זמני.",
-
   "migration.history.title": "היסטוריית העברה",
   "migration.history.empty": "אין היסטוריית העברה עדיין.",
   "migration.history.errorLoading": "לא ניתן לטעון את היסטוריית ההעברה.",
@@ -432,7 +417,41 @@
   "migration.history.unstakeTx": "Unstake",
   "migration.history.bridgeTx": "Bridge",
   "migration.history.stakeTx": "Stake",
-
   "migration.goliathBalance.title": "בהימור ב-Goliath",
-  "migration.goliathBalance.stxcn": "יתרת stXCN"
+  "migration.goliathBalance.stxcn": "יתרת stXCN",
+  "yield.pageTitle": "תשואה",
+  "yield.connectWalletPrompt": "חבר את הארנק שלך כדי להתחיל להרוויח תשואה",
+  "yield.connectWallet": "חבר ארנק",
+  "yield.switchNetworkPrompt": "אנא עבור ל-Goliath Testnet לצורך הימור",
+  "yield.switchingNetwork": "מעביר...",
+  "yield.switchToGoliath": "עבור ל-Goliath Testnet",
+  "yield.stakingPausedBanner": "ההימור מושהה זמנית",
+  "yield.tabStake": "הימור",
+  "yield.tabUnstake": "משיכה",
+  "yield.stakingPending": "מבצע הימור XCN...",
+  "yield.unstakingPending": "מושך stXCN...",
+  "yield.stakingPaused": "ההימור מושהה",
+  "yield.enterAmount": "הזן סכום",
+  "yield.insufficientXCN": "יתרת XCN לא מספיקה",
+  "yield.stakeXCN": "הימור XCN",
+  "yield.noStXCN": "אין stXCN למשיכה",
+  "yield.insufficientStXCN": "יתרת stXCN לא מספיקה",
+  "yield.unstakeStXCN": "משוך stXCN",
+  "yield.max": "מקס",
+  "yield.balanceXCN": "יתרה: {{amount}} XCN",
+  "yield.balanceStXCN": "יתרה: {{amount}} stXCN",
+  "yield.receiveStXCN": "תקבל ~{{amount}} stXCN",
+  "yield.receiveXCN": "תקבל ~{{amount}} XCN",
+  "yield.totalStaked": "סה\"כ בהימור",
+  "yield.netAPY": "APY נטו",
+  "yield.yourRewards": "הפרסים שלך",
+  "yield.transactionHistory": "היסטוריית עסקאות",
+  "yield.noTransactions": "אין עסקאות עדיין",
+  "yield.eventStaked": "הומר",
+  "yield.eventUnstaked": "נמשך",
+  "yield.yourStXCNBalance": "יתרת stXCN שלך",
+  "migration.summary.allowanceSufficient": "מספיק",
+  "migration.summary.allowanceInsufficient": "לא מספיק",
+  "errorBridgeApiUnavailable": "שירות הגשר אינו זמין זמנית. אנא נסה שוב מאוחר יותר.",
+  "errorSignatureFailed": "חתימת כוונת הגשר נכשלה. אנא נסה שוב."
 }

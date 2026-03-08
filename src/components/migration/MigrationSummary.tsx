@@ -327,12 +327,12 @@ export default function MigrationSummary({ onRetry }: MigrationSummaryProps) {
             {allowanceSufficient ? (
               <>
                 <CheckCircle size={14} aria-hidden="true" />
-                Sufficient
+                {t('migration.summary.allowanceSufficient')}
               </>
             ) : (
               <>
                 <XCircle size={14} aria-hidden="true" />
-                Insufficient
+                {t('migration.summary.allowanceInsufficient')}
               </>
             )}
           </AllowanceBadge>

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAnimatedBalance } from '../../hooks/yield';
 import { BalanceContainer, BalanceLabel, BalanceValue, BalanceSymbol } from './styleds';
 
@@ -15,11 +16,12 @@ export default function AnimatedBalance({
   feePercentBps,
   isConnected,
 }: AnimatedBalanceProps) {
+  const { t } = useTranslation();
   const { displayValue } = useAnimatedBalance(balance, rewardRateRay, feePercentBps);
 
   return (
     <BalanceContainer>
-      <BalanceLabel>Your stXCN Balance</BalanceLabel>
+      <BalanceLabel>{t('yield.yourStXCNBalance')}</BalanceLabel>
       {!isConnected ? (
         <BalanceValue>--</BalanceValue>
       ) : (

@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { BigNumber } from '@ethersproject/bignumber';
 import { formatTokenAmount, StatsContainer, StatRow, StatLabel, StatValue } from './styleds';
 
@@ -37,19 +38,20 @@ export default function ProtocolStats({
   totalPrincipal,
   isConnected,
 }: ProtocolStatsProps) {
+  const { t } = useTranslation();
   return (
     <StatsContainer>
       <StatRow>
-        <StatLabel>Total Staked</StatLabel>
+        <StatLabel>{t('yield.totalStaked')}</StatLabel>
         <StatValue>{totalSupply ? formatTokenAmount(totalSupply) + ' XCN' : '--'}</StatValue>
       </StatRow>
       <StatRow>
-        <StatLabel>Net APY</StatLabel>
+        <StatLabel>{t('yield.netAPY')}</StatLabel>
         <StatValue>{computeNetAPY(rewardRateRay, feePercentBps)}</StatValue>
       </StatRow>
       {isConnected && (
         <StatRow>
-          <StatLabel>Your Rewards</StatLabel>
+          <StatLabel>{t('yield.yourRewards')}</StatLabel>
           <StatValue>{computeRewards(userBalance, totalPrincipal)}</StatValue>
         </StatRow>
       )}

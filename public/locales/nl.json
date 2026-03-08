@@ -324,16 +324,13 @@
   "errorInvalidTokenConfig": "Ongeldige tokenconfiguratie",
   "addLiquidityEarningsInfo": "Door liquiditeit toe te voegen verdien je 0,3% van alle transacties op dit paar, evenredig met je aandeel in de pool. Vergoedingen worden aan de pool toegevoegd, lopen in real-time op en kunnen worden opgeëist door je liquiditeit op te nemen.",
   "removeLiquidityTip": "Het verwijderen van pool-tokens converteert je positie terug naar de onderliggende tokens tegen de huidige koers, evenredig met je aandeel in de pool. Opgelopen vergoedingen zijn inbegrepen in de bedragen die je ontvangt.",
-
   "migration.nav.title": "Migreren",
   "migration.nav.pageTitle": "Gestakete XCN Migreren",
   "migration.nav.deadlineIndicator": "Deadline: {{date}}",
-
   "migration.summary.stakedXCN": "Gestakete XCN",
   "migration.summary.pendingRewards": "Openstaande Beloningen",
   "migration.summary.walletXCN": "XCN in Wallet",
   "migration.summary.bridgeAllowance": "Bridge Toestemming",
-
   "migration.step.claimRewards.title": "Beloningen Claimen",
   "migration.step.claimRewards.description": "Claim je openstaande XCN staking beloningen voordat je unstaked.",
   "migration.step.approve.title": "XCN Goedkeuren",
@@ -342,36 +339,28 @@
   "migration.step.unstake.description": "Neem je gestakete XCN op uit het staking-contract.",
   "migration.step.bridge.title": "Bridge naar Goliath",
   "migration.step.bridge.description": "Bridge je XCN tokens naar het Goliath netwerk.",
-
   "migration.toggle.stakeOnGoliath": "Staken op Goliath",
   "migration.toggle.autoStakeDescription": "XCN tokens automatisch staken na migratie",
   "migration.toggle.lockedHint": "Voorkeur vergrendeld na bridge-indiening",
-
   "migration.status.depositConfirmed": "Storting Bevestigd",
   "migration.status.waitingForConfirmations": "Wachten op Bevestigingen",
   "migration.status.deliveringOnGoliath": "Leveren op Goliath",
   "migration.status.stakingOnGoliath": "Staken op Goliath",
   "migration.status.migrationComplete": "Migratie Voltooid",
   "migration.status.migrationFailed": "Migratie Mislukt",
-
   "migration.error.transactionRejected": "Transactie afgewezen",
   "migration.error.transactionFailedRetry": "Transactie mislukt — probeer opnieuw",
   "migration.error.stakeIntentFailed": "Stake-intentie mislukt — probeer opnieuw",
   "migration.error.bindFailed": "Binding mislukt — wordt op de achtergrond opnieuw geprobeerd",
   "migration.error.switchNetworkPrompt": "Schakel over naar {{network}} om de migratie voort te zetten.",
-
   "migration.empty.noXCNToMigrate": "Geen gestakete XCN op Ethereum om te migreren",
   "migration.empty.bridgeLinkText": "Bridge tokens in plaats daarvan",
-
   "migration.resumeHint": "Het lijkt erop dat je eerder hebt unstaked. Ga verder met bridgen.",
-
   "migration.process.title": "Geautomatiseerde migratie naar Goliath",
   "migration.process.description": "Dit proces verplaatst je gestakete XCN van Ethereum (Sepolia) naar Goliath Testnet met één startactie en voortgangsregistratie.",
   "migration.process.signatureNotice": "Je tekent meestal 3 keer in je wallet: (1) Unstake-transactie, (2) migratie-autorisatiehandtekening (gasloos), en (3) Bridge-transactie. Als \"XCN Goedkeuren\" verschijnt, is er één extra handtekening om bridge-toestemming te verlenen.",
-
   "migration.deadline.banner": "Migratie-deadline: {{date}}",
   "migration.deadline.ended": "Migratieperiode is beëindigd",
-
   "migration.action.execute": "Uitvoeren",
   "migration.action.retry": "Opnieuw proberen",
   "migration.action.waitingForWallet": "Wachten op wallet...",
@@ -381,7 +370,6 @@
   "migration.action.ready": "Klaar om uit te voeren",
   "migration.action.waitingForPrevious": "Wachten op vorige stappen",
   "migration.action.viewTransaction": "Transactie bekijken",
-
   "migration.panel.title": "Migratiestatus",
   "migration.panel.originTx": "Oorspronkelijke Transactie",
   "migration.panel.destinationTx": "Bestemmingtransactie",
@@ -403,7 +391,6 @@
   "migration.panel.errorDetails": "Fout: {{message}}",
   "migration.panel.pollingError": "Kan status niet ophalen. Opnieuw proberen...",
   "migration.panel.viewExplorer": "Bekijk op Explorer",
-
   "migration.stepper.title": "Migratiestappen",
   "migration.stepper.automationDescription": "Start eenmaal en volg de wallet-prompts. De standaardstroom vereist 3 handtekeningen (unstake, autorisatiehandtekening, bridge-transactie). Als goedkeuring vereist is, zie je 4 handtekeningen.",
   "migration.stepper.automationStart": "Migratie Starten",
@@ -413,14 +400,12 @@
   "migration.stepper.automationStepFailed": "Stap mislukt: {{step}}",
   "migration.stepper.completionMessage": "Alle stappen voltooid! Je migratie wordt verwerkt.",
   "migration.stepper.resumeHint": "Het lijkt erop dat je eerder hebt unstaked. Ga verder met bridgen.",
-
   "migration.stats.title": "Migratieoverzicht",
   "migration.stats.totalMigrated": "Totaal Gemigreerd",
   "migration.stats.totalCount": "Migraties",
   "migration.stats.totalStaked": "Gestaked",
   "migration.stats.activeMigrations": "Actief",
   "migration.stats.unavailable": "Statistieken zijn tijdelijk niet beschikbaar.",
-
   "migration.history.title": "Migratiegeschiedenis",
   "migration.history.empty": "Nog geen migratiegeschiedenis.",
   "migration.history.errorLoading": "Kan migratiegeschiedenis niet laden.",
@@ -432,7 +417,41 @@
   "migration.history.unstakeTx": "Unstake",
   "migration.history.bridgeTx": "Bridge",
   "migration.history.stakeTx": "Stake",
-
   "migration.goliathBalance.title": "Gestaked op Goliath",
-  "migration.goliathBalance.stxcn": "stXCN Saldo"
+  "migration.goliathBalance.stxcn": "stXCN Saldo",
+  "yield.pageTitle": "Rendement",
+  "yield.connectWalletPrompt": "Verbind je wallet om rendement te verdienen",
+  "yield.connectWallet": "Wallet verbinden",
+  "yield.switchNetworkPrompt": "Schakel over naar Goliath Testnet om te staken",
+  "yield.switchingNetwork": "Overschakelen...",
+  "yield.switchToGoliath": "Overschakelen naar Goliath Testnet",
+  "yield.stakingPausedBanner": "Staking is tijdelijk gepauzeerd",
+  "yield.tabStake": "Staken",
+  "yield.tabUnstake": "Unstaken",
+  "yield.stakingPending": "XCN staken...",
+  "yield.unstakingPending": "stXCN unstaken...",
+  "yield.stakingPaused": "Staking gepauzeerd",
+  "yield.enterAmount": "Voer een bedrag in",
+  "yield.insufficientXCN": "Onvoldoende XCN-saldo",
+  "yield.stakeXCN": "XCN staken",
+  "yield.noStXCN": "Geen stXCN om te unstaken",
+  "yield.insufficientStXCN": "Onvoldoende stXCN-saldo",
+  "yield.unstakeStXCN": "stXCN unstaken",
+  "yield.max": "Max",
+  "yield.balanceXCN": "Saldo: {{amount}} XCN",
+  "yield.balanceStXCN": "Saldo: {{amount}} stXCN",
+  "yield.receiveStXCN": "Je ontvangt ~{{amount}} stXCN",
+  "yield.receiveXCN": "Je ontvangt ~{{amount}} XCN",
+  "yield.totalStaked": "Totaal gestaked",
+  "yield.netAPY": "Netto APY",
+  "yield.yourRewards": "Jouw beloningen",
+  "yield.transactionHistory": "Transactiegeschiedenis",
+  "yield.noTransactions": "Nog geen transacties",
+  "yield.eventStaked": "Gestaked",
+  "yield.eventUnstaked": "Unstaked",
+  "yield.yourStXCNBalance": "Jouw stXCN-saldo",
+  "migration.summary.allowanceSufficient": "Voldoende",
+  "migration.summary.allowanceInsufficient": "Onvoldoende",
+  "errorBridgeApiUnavailable": "Bridgedienst is tijdelijk niet beschikbaar. Probeer het later opnieuw.",
+  "errorSignatureFailed": "Ondertekening van de bridge-intentie mislukt. Probeer het opnieuw."
 }

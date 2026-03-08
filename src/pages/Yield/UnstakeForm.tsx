@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { BigNumber } from '@ethersproject/bignumber';
 import { parseUnits, formatUnits } from '@ethersproject/units';
@@ -17,6 +18,7 @@ interface UnstakeFormProps {
 export default function UnstakeForm({ stXCNBalance, isPaused, onUnstake }: UnstakeFormProps) {
   const dispatch = useDispatch();
   const unstakeInput = useSelector(selectUnstakeInput);
+  const { t } = useTranslation();
 
   const handleInput = (value: string) => {
     dispatch(yieldActions.setUnstakeInput(value));
@@ -49,12 +51,12 @@ export default function UnstakeForm({ stXCNBalance, isPaused, onUnstake }: Unsta
   }, [unstakeInput, stXCNBalance]);
 
   const buttonText = useMemo(() => {
-    if (isPaused) return 'Staking Paused';
-    if (!stXCNBalance || BigNumber.from(stXCNBalance || '0').isZero()) return 'No stXCN to unstake';
-    if (!parsedAmount) return 'Enter an amount';
-    if (inputError === 'noBalance') return 'No stXCN to unstake';
-    if (inputError === 'insufficient') return 'Insufficient stXCN balance';
-    return 'Unstake stXCN';
+    if (isPaused) return t('yield.stakingPaused');
+    if (!stXCNBalance || BigNumber.from(stXCNBalance || '0').isZero()) return t('yield.noStXCN');
+    if (!parsedAmount) return t('yield.enterAmount');
+    if (inputError === 'noBalance') return t('yield.noStXCN');
+    if (inputError === 'insufficient') return t('yield.insufficientStXCN');
+    return t('yield.unstakeStXCN');
   }, [isPaused, stXCNBalance, parsedAmount, inputError]);
 
   const isDisabled = isPaused || !parsedAmount || !!inputError;
@@ -70,15 +72,15 @@ export default function UnstakeForm({ stXCNBalance, isPaused, onUnstake }: Unsta
       <InputContainer>
         <InputRow>
           <Input value={unstakeInput} onUserInput={handleInput} placeholder="0.0" fontSize="24px" />
-          <MaxButton onClick={handleMax}>Max</MaxButton>
+          <MaxButton onClick={handleMax}>{t('yield.max')}</MaxButton>
         </InputRow>
       </InputContainer>
       <PreviewRow>
-        <span>Balance: {formatTokenAmount(stXCNBalance)} stXCN</span>
+        <span>{t('yield.balanceStXCN', { amount: formatTokenAmount(stXCNBalance) })}</span>
       </PreviewRow>
       {parsedAmount && !inputError && (
         <PreviewRow>
-          <span>You will receive ~{formatTokenAmount(parsedAmount.toString())} XCN</span>
+          <span>{t('yield.receiveXCN', { amount: formatTokenAmount(parsedAmount.toString()) })}</span>
         </PreviewRow>
       )}
       <ButtonPrimary onClick={handleSubmit} disabled={isDisabled} style={{ marginTop: '8px' }}>

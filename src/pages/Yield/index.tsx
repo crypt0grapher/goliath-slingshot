@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useSelector, useDispatch } from 'react-redux';
 import { ETHER } from '@uniswap/sdk';
 import { Lock, Wifi } from 'react-feather';
@@ -42,6 +43,7 @@ import {
 } from './styleds';
 
 export default function Yield() {
+  const { t } = useTranslation();
   const { account, chainId } = useActiveWeb3React();
   const dispatch = useDispatch();
   const toggleWalletModal = useWalletModalToggle();
@@ -89,7 +91,7 @@ export default function Yield() {
     dispatch(yieldActions.closeConfirmModal());
   };
 
-  const pendingText = activeTab === 'stake' ? 'Staking XCN...' : 'Unstaking stXCN...';
+  const pendingText = activeTab === 'stake' ? t('yield.stakingPending') : t('yield.unstakingPending');
 
   const canStake = isConnected && isCorrectChain;
 
@@ -97,7 +99,7 @@ export default function Yield() {
     <PageWrapper>
       <AppBody>
         <YieldHeader>
-          <YieldTitle>Yield</YieldTitle>
+          <YieldTitle>{t('yield.pageTitle')}</YieldTitle>
         </YieldHeader>
         <YieldBody>
           {/* Gate: not connected */}
@@ -106,8 +108,8 @@ export default function Yield() {
               <GateIcon>
                 <Lock size={32} />
               </GateIcon>
-              <GateText>Connect your wallet to start earning yield</GateText>
-              <ButtonPrimary onClick={toggleWalletModal}>Connect Wallet</ButtonPrimary>
+              <GateText>{t('yield.connectWalletPrompt')}</GateText>
+              <ButtonPrimary onClick={toggleWalletModal}>{t('yield.connectWallet')}</ButtonPrimary>
             </GateContainer>
           )}
           {/* Gate: wrong network */}
@@ -116,9 +118,9 @@ export default function Yield() {
               <GateIcon>
                 <Wifi size={32} />
               </GateIcon>
-              <GateText>Please switch to Goliath Testnet to stake</GateText>
+              <GateText>{t('yield.switchNetworkPrompt')}</GateText>
               <ButtonPrimary onClick={switchToGoliath} disabled={isSwitching}>
-                {isSwitching ? 'Switching...' : 'Switch to Goliath Testnet'}
+                {isSwitching ? t('yield.switchingNetwork') : t('yield.switchToGoliath')}
               </ButtonPrimary>
             </GateContainer>
           )}
@@ -131,13 +133,13 @@ export default function Yield() {
                 feePercentBps={feePercentBps}
                 isConnected={isConnected}
               />
-              {isPaused && <PausedBanner>Staking is temporarily paused</PausedBanner>}
+              {isPaused && <PausedBanner>{t('yield.stakingPausedBanner')}</PausedBanner>}
               <TabContainer>
                 <Tab active={activeTab === 'stake'} onClick={() => dispatch(yieldActions.setActiveTab('stake'))}>
-                  Stake
+                  {t('yield.tabStake')}
                 </Tab>
                 <Tab active={activeTab === 'unstake'} onClick={() => dispatch(yieldActions.setActiveTab('unstake'))}>
-                  Unstake
+                  {t('yield.tabUnstake')}
                 </Tab>
               </TabContainer>
               {activeTab === 'stake' ? (

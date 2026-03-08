@@ -324,16 +324,13 @@
   "errorInvalidTokenConfig": "无效的代币配置",
   "addLiquidityEarningsInfo": "通过添加流动性，您将按照您在池中的份额比例赚取该交易对所有交易的 0.3% 手续费。手续费会添加到池中，实时累积，并可通过提取流动性来领取。",
   "removeLiquidityTip": "移除池代币会按照当前汇率将您的仓位转换回底层代币，比例与您在池中的份额相对应。累积的手续费包含在您收到的金额中。",
-
   "migration.nav.title": "迁移",
   "migration.nav.pageTitle": "迁移质押的 XCN",
   "migration.nav.deadlineIndicator": "截止日期：{{date}}",
-
   "migration.summary.stakedXCN": "质押的 XCN",
   "migration.summary.pendingRewards": "待领取奖励",
   "migration.summary.walletXCN": "钱包 XCN",
   "migration.summary.bridgeAllowance": "桥接授权额度",
-
   "migration.step.claimRewards.title": "领取奖励",
   "migration.step.claimRewards.description": "在解除质押前领取待发放的 XCN 质押奖励。",
   "migration.step.approve.title": "批准 XCN",
@@ -342,36 +339,28 @@
   "migration.step.unstake.description": "从质押合约中取出您质押的 XCN。",
   "migration.step.bridge.title": "桥接到 Goliath",
   "migration.step.bridge.description": "将您的 XCN 代币桥接到 Goliath 网络。",
-
   "migration.toggle.stakeOnGoliath": "在 Goliath 上质押",
   "migration.toggle.autoStakeDescription": "迁移后自动质押 XCN 代币",
   "migration.toggle.lockedHint": "提交桥接后偏好设置已锁定",
-
   "migration.status.depositConfirmed": "存款已确认",
   "migration.status.waitingForConfirmations": "等待确认",
   "migration.status.deliveringOnGoliath": "正在 Goliath 上交付",
   "migration.status.stakingOnGoliath": "正在 Goliath 上质押",
   "migration.status.migrationComplete": "迁移完成",
   "migration.status.migrationFailed": "迁移失败",
-
   "migration.error.transactionRejected": "交易被拒绝",
   "migration.error.transactionFailedRetry": "交易失败 — 重试",
   "migration.error.stakeIntentFailed": "质押意图失败 — 请重试",
   "migration.error.bindFailed": "绑定失败 — 后台重试中",
   "migration.error.switchNetworkPrompt": "请切换到 {{network}} 以继续迁移。",
-
   "migration.empty.noXCNToMigrate": "以太坊上没有可迁移的质押 XCN",
   "migration.empty.bridgeLinkText": "改为桥接代币",
-
   "migration.resumeHint": "看起来您之前已经解除了质押。请继续进行桥接。",
-
   "migration.process.title": "自动迁移到 Goliath",
   "migration.process.description": "此流程将您质押的 XCN 从以太坊（Sepolia）迁移到 Goliath 测试网，只需一次启动操作并可追踪进度。",
   "migration.process.signatureNotice": "您通常需要在钱包中签名 3 次：(1) 解除质押交易，(2) 迁移授权签名（无 Gas），(3) 桥接交易。如果出现\"批准 XCN\"，则需要额外签名一次以授予桥接授权。",
-
   "migration.deadline.banner": "迁移截止日期：{{date}}",
   "migration.deadline.ended": "迁移窗口已结束",
-
   "migration.action.execute": "执行",
   "migration.action.retry": "重试",
   "migration.action.waitingForWallet": "等待钱包...",
@@ -381,7 +370,6 @@
   "migration.action.ready": "准备执行",
   "migration.action.waitingForPrevious": "等待前序步骤",
   "migration.action.viewTransaction": "查看交易",
-
   "migration.panel.title": "迁移状态",
   "migration.panel.originTx": "源交易",
   "migration.panel.destinationTx": "目标交易",
@@ -403,7 +391,6 @@
   "migration.panel.errorDetails": "错误：{{message}}",
   "migration.panel.pollingError": "无法获取状态。正在重试...",
   "migration.panel.viewExplorer": "在浏览器中查看",
-
   "migration.stepper.title": "迁移步骤",
   "migration.stepper.automationDescription": "启动一次并按照钱包提示操作。标准流程需要 3 次签名（解除质押、授权签名、桥接交易）。如果需要批准，您将看到 4 次签名。",
   "migration.stepper.automationStart": "开始迁移",
@@ -413,14 +400,12 @@
   "migration.stepper.automationStepFailed": "步骤失败：{{step}}",
   "migration.stepper.completionMessage": "所有步骤已完成！您的迁移正在处理中。",
   "migration.stepper.resumeHint": "看起来您之前已经解除了质押。请继续进行桥接。",
-
   "migration.stats.title": "迁移概览",
   "migration.stats.totalMigrated": "已迁移总量",
   "migration.stats.totalCount": "迁移次数",
   "migration.stats.totalStaked": "已质押",
   "migration.stats.activeMigrations": "进行中",
   "migration.stats.unavailable": "统计数据暂时不可用。",
-
   "migration.history.title": "迁移历史",
   "migration.history.empty": "暂无迁移历史。",
   "migration.history.errorLoading": "无法加载迁移历史。",
@@ -432,7 +417,41 @@
   "migration.history.unstakeTx": "解除质押",
   "migration.history.bridgeTx": "桥接",
   "migration.history.stakeTx": "质押",
-
   "migration.goliathBalance.title": "在 Goliath 上已质押",
-  "migration.goliathBalance.stxcn": "stXCN 余额"
+  "migration.goliathBalance.stxcn": "stXCN 余额",
+  "yield.pageTitle": "收益",
+  "yield.connectWalletPrompt": "连接钱包开始赚取收益",
+  "yield.connectWallet": "连接钱包",
+  "yield.switchNetworkPrompt": "请切换到 Goliath Testnet 进行质押",
+  "yield.switchingNetwork": "切换中...",
+  "yield.switchToGoliath": "切换到 Goliath Testnet",
+  "yield.stakingPausedBanner": "质押暂时暂停",
+  "yield.tabStake": "质押",
+  "yield.tabUnstake": "赎回",
+  "yield.stakingPending": "正在质押 XCN...",
+  "yield.unstakingPending": "正在赎回 stXCN...",
+  "yield.stakingPaused": "质押已暂停",
+  "yield.enterAmount": "输入金额",
+  "yield.insufficientXCN": "XCN 余额不足",
+  "yield.stakeXCN": "质押 XCN",
+  "yield.noStXCN": "没有可赎回的 stXCN",
+  "yield.insufficientStXCN": "stXCN 余额不足",
+  "yield.unstakeStXCN": "赎回 stXCN",
+  "yield.max": "最大",
+  "yield.balanceXCN": "余额: {{amount}} XCN",
+  "yield.balanceStXCN": "余额: {{amount}} stXCN",
+  "yield.receiveStXCN": "您将收到约 {{amount}} stXCN",
+  "yield.receiveXCN": "您将收到约 {{amount}} XCN",
+  "yield.totalStaked": "总质押量",
+  "yield.netAPY": "净 APY",
+  "yield.yourRewards": "您的奖励",
+  "yield.transactionHistory": "交易记录",
+  "yield.noTransactions": "暂无交易",
+  "yield.eventStaked": "已质押",
+  "yield.eventUnstaked": "已赎回",
+  "yield.yourStXCNBalance": "您的 stXCN 余额",
+  "migration.summary.allowanceSufficient": "充足",
+  "migration.summary.allowanceInsufficient": "不足",
+  "errorBridgeApiUnavailable": "桥接服务暂时不可用。请稍后重试。",
+  "errorSignatureFailed": "桥接意图签名失败。请重试。"
 }
