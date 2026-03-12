@@ -145,7 +145,7 @@ export function useBridgeForm(): UseBridgeFormReturn {
     return getMinAmount(form.selectedToken, direction);
   }, [getMinAmount, form.selectedToken, direction]);
 
-  const effectiveMinAmount = limitsMinAmount?.amount ?? bridgeConfig.minAmount;
+  const effectiveMinAmount = limitsMinAmount?.formatted ?? bridgeConfig.minAmount;
   const minAmountFormatted = direction === 'GOLIATH_TO_SEPOLIA' ? (limitsMinAmount?.formatted ?? null) : null;
 
   // Fee quote (debounced, only for G2S)
