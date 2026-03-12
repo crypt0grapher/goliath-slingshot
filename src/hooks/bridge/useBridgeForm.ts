@@ -10,12 +10,15 @@ import {
 } from '../../state/bridge/selectors';
 import { useBridgeAllowance } from './useBridgeAllowance';
 import { useBridgeBalances } from './useBridgeBalances';
+import { useBridgeFee } from './useBridgeFee';
+import { useBridgeLimits } from './useBridgeLimits';
 import { validateBridgeInput, ValidationResult } from '../../utils/bridge/validation';
 import { BridgeNetwork } from '../../constants/bridge/networks';
 import { BridgeTokenSymbol, tokenRequiresApproval } from '../../constants/bridge/tokens';
 import { bridgeConfig } from '../../config/bridgeConfig';
 import { formatAmount, calculateMaxSpendable } from '../../utils/bridge/amounts';
 import { BridgeDirection } from '../../state/bridge/types';
+import { FeeQuoteResponse } from '../../services/bridgeApi';
 
 export interface UseBridgeFormReturn {
   // Form values
@@ -26,7 +29,15 @@ export interface UseBridgeFormReturn {
 
   // Derived values
   direction: BridgeDirection;
-  outputAmount: string; // Same as input (1:1 bridge)
+  outputAmount: string;
+
+  // Fee data
+  feeQuote: FeeQuoteResponse | null;
+  isFeeLoading: boolean;
+  feeError: string | null;
+
+  // Limits data
+  minAmountFormatted: string | null;
 
   // Balances
   originBalance: string;
@@ -126,6 +137,32 @@ export function useBridgeForm(): UseBridgeFormReturn {
     { skip: !needsApprovalCheck }
   );
 
+  // Limits (fetched once on mount)
+  const { getMinAmount } = useBridgeLimits();
+
+  // Determine effective minimum amount
+  const limitsMinAmount = useMemo(() => {
+    return getMinAmount(form.selectedToken, direction);
+  }, [getMinAmount, form.selectedToken, direction]);
+
+  const effectiveMinAmount = limitsMinAmount?.amount ?? bridgeConfig.minAmount;
+  const minAmountFormatted = direction === 'GOLIATH_TO_SEPOLIA' ? (limitsMinAmount?.formatted ?? null) : null;
+
+  // Fee quote (debounced, only for G2S)
+  const { feeQuote, isLoading: isFeeLoading, error: feeError } = useBridgeFee({
+    amount: form.inputAmount,
+    token: form.selectedToken,
+    direction,
+  });
+
+  // Output amount: use fee quote if available, otherwise input amount (1:1)
+  const outputAmount = useMemo(() => {
+    if (direction === 'GOLIATH_TO_SEPOLIA' && feeQuote) {
+      return feeQuote.outputFormatted;
+    }
+    return form.inputAmount;
+  }, [direction, feeQuote, form.inputAmount]);
+
   // Validation
   const validation = useMemo(() => {
     return validateBridgeInput({
@@ -135,10 +172,10 @@ export function useBridgeForm(): UseBridgeFormReturn {
       selectedToken: form.selectedToken,
       inputAmount: form.inputAmount,
       originBalance,
-      minAmount: bridgeConfig.minAmount,
+      minAmount: effectiveMinAmount,
       bridgeEnabled: bridgeConfig.bridgeEnabled,
     });
-  }, [account, chainId, form.originNetwork, form.selectedToken, form.inputAmount, originBalance]);
+  }, [account, chainId, form.originNetwork, form.selectedToken, form.inputAmount, originBalance, effectiveMinAmount]);
 
   // Derived: needs approval
   const needsApproval = useMemo(() => {
@@ -198,7 +235,15 @@ export function useBridgeForm(): UseBridgeFormReturn {
 
     // Derived
     direction,
-    outputAmount: form.inputAmount, // 1:1 bridge
+    outputAmount,
+
+    // Fee data
+    feeQuote,
+    isFeeLoading,
+    feeError,
+
+    // Limits data
+    minAmountFormatted,
 
     // Balances
     originBalance,

@@ -48,6 +48,12 @@ const DetailValue = styled.span`
   color: ${({ theme }) => theme.text1};
 `;
 
+const FreeValue = styled.span`
+  font-size: 14px;
+  font-weight: 500;
+  color: #27ae60;
+`;
+
 const AmountHighlight = styled.div`
   text-align: center;
   padding: 20px;
@@ -94,7 +100,7 @@ export default function BridgeConfirmModal() {
   const { deposit, isLoading: isDepositing } = useBridgeDeposit();
   const { burn, isLoading: isBurning } = useBridgeBurn();
   const { withdraw: xcnWithdraw, isLoading: isXcnWithdrawing } = useBridgeXcnWithdraw();
-  const { triggerBalanceRefresh } = useBridgeForm();
+  const { triggerBalanceRefresh, feeQuote } = useBridgeForm();
 
   const isLoading = isDepositing || isBurning || isXcnWithdrawing;
 
@@ -102,6 +108,7 @@ export default function BridgeConfirmModal() {
   const destMetadata = NETWORK_METADATA[form.destinationNetwork];
   const direction =
     form.originNetwork === BridgeNetwork.SEPOLIA ? 'SEPOLIA_TO_GOLIATH' : 'GOLIATH_TO_SEPOLIA';
+  const isWithdrawal = direction === 'GOLIATH_TO_SEPOLIA';
   const eta = getStaticEtaEstimate(direction);
 
   const handleClose = () => {
@@ -131,6 +138,13 @@ export default function BridgeConfirmModal() {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  // Fee display logic
+  const hasFee = isWithdrawal && feeQuote && feeQuote.feeBps > 0;
+  const feePercent = feeQuote ? (feeQuote.feeBps / 100).toFixed(feeQuote.feeBps % 100 === 0 ? 0 : 2) : '0';
+  const outputAmount = isWithdrawal && feeQuote
+    ? feeQuote.outputFormatted
+    : form.inputAmount;
+
   return (
     <Modal isOpen={isOpen} onDismiss={handleClose}>
       <ContentWrapper>
@@ -142,7 +156,7 @@ export default function BridgeConfirmModal() {
             <TokenSymbol>{form.selectedToken}</TokenSymbol>
           </AmountText>
           <DirectionText>
-            {originMetadata.shortName} → {destMetadata.shortName}
+            {originMetadata.shortName} &rarr; {destMetadata.shortName}
           </DirectionText>
         </AmountHighlight>
 
@@ -163,7 +177,21 @@ export default function BridgeConfirmModal() {
 
         <DetailRow>
           <DetailLabel>{t('bridgeFee')}</DetailLabel>
-          <DetailValue style={{ color: '#27AE60' }}>{t('free')}</DetailValue>
+          {hasFee ? (
+            <DetailValue>
+              {feeQuote!.feeFormatted} {form.selectedToken} ({feePercent}%)
+            </DetailValue>
+          ) : (
+            <FreeValue>{t('free')}</FreeValue>
+          )}
+        </DetailRow>
+
+        <DetailRow>
+          <DetailLabel>{t('bridgeYouReceive')}</DetailLabel>
+          <DetailValue>
+            {outputAmount} {form.selectedToken}{' '}
+            {t('bridgeConfirmOnNetwork', { network: destMetadata.shortName })}
+          </DetailValue>
         </DetailRow>
 
         <DetailRow>

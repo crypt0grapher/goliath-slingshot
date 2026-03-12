@@ -453,5 +453,10 @@
   "migration.summary.allowanceSufficient": "充足",
   "migration.summary.allowanceInsufficient": "不足",
   "errorBridgeApiUnavailable": "桥接服务暂时不可用。请稍后重试。",
-  "errorSignatureFailed": "桥接意图签名失败。请重试。"
+  "errorSignatureFailed": "桥接意图签名失败。请重试。",
+  "bridgeFeeUnavailable": "Fee unavailable",
+  "bridgeYouReceive": "You receive",
+  "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
+  "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
+  "bridgeConfirmOnNetwork": "on {{ network }}"
 }

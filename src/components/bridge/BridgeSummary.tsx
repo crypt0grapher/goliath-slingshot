@@ -1,7 +1,8 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import { BridgeDirection } from '../../state/bridge/types';
+import { FeeQuoteResponse } from '../../services/bridgeApi';
 import { getStaticEtaEstimate } from '../../utils/bridge/eta';
 
 const SummaryContainer = styled.div`
@@ -55,13 +56,43 @@ const FreeLabel = styled.span`
   `}
 `;
 
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
+const Spinner = styled.span`
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid ${({ theme }) => theme.text3};
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: ${spin} 0.6s linear infinite;
+  vertical-align: middle;
+`;
+
 interface BridgeSummaryProps {
   direction: BridgeDirection;
   recipient: string | null;
   account: string | null | undefined;
+  token: string;
+  inputAmount: string;
+  feeQuote: FeeQuoteResponse | null;
+  isFeeLoading: boolean;
+  feeError: string | null;
 }
 
-export default function BridgeSummary({ direction, recipient, account }: BridgeSummaryProps) {
+export default function BridgeSummary({
+  direction,
+  recipient,
+  account,
+  token,
+  inputAmount,
+  feeQuote,
+  isFeeLoading,
+  feeError,
+}: BridgeSummaryProps) {
   const { t } = useTranslation();
   const eta = getStaticEtaEstimate(direction);
   const displayRecipient = recipient || account;
@@ -71,11 +102,65 @@ export default function BridgeSummary({ direction, recipient, account }: BridgeS
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
+  const isWithdrawal = direction === 'GOLIATH_TO_SEPOLIA';
+
+  // Determine fee display
+  const renderFeeValue = () => {
+    if (!isWithdrawal) {
+      return <FreeLabel>{t('free')}</FreeLabel>;
+    }
+    if (isFeeLoading) {
+      return <Spinner />;
+    }
+    if (feeError && !feeQuote) {
+      return <Value>{t('bridgeFeeUnavailable')}</Value>;
+    }
+    if (feeQuote && feeQuote.feeBps > 0) {
+      const percent = (feeQuote.feeBps / 100).toFixed(feeQuote.feeBps % 100 === 0 ? 0 : 2);
+      return (
+        <Value>
+          {feeQuote.feeFormatted} {token} ({percent}%)
+        </Value>
+      );
+    }
+    return <FreeLabel>{t('free')}</FreeLabel>;
+  };
+
+  // Determine "You receive" display
+  const renderReceiveValue = () => {
+    if (!isWithdrawal) {
+      return (
+        <Value>
+          {inputAmount || '0'} {token}
+        </Value>
+      );
+    }
+    if (isFeeLoading && !feeQuote) {
+      return <Spinner />;
+    }
+    if (feeQuote) {
+      return (
+        <Value>
+          {feeQuote.outputFormatted} {token}
+        </Value>
+      );
+    }
+    return (
+      <Value>
+        {inputAmount || '0'} {token}
+      </Value>
+    );
+  };
+
   return (
     <SummaryContainer>
       <SummaryRow>
         <Label>{t('bridgeFee')}</Label>
-        <FreeLabel>{t('free')}</FreeLabel>
+        {renderFeeValue()}
+      </SummaryRow>
+      <SummaryRow>
+        <Label>{t('bridgeYouReceive')}</Label>
+        {renderReceiveValue()}
       </SummaryRow>
       <SummaryRow>
         <Label>{t('estimatedTime')}</Label>

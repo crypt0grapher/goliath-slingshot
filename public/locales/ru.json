@@ -453,5 +453,10 @@
   "migration.summary.allowanceSufficient": "Достаточно",
   "migration.summary.allowanceInsufficient": "Недостаточно",
   "errorBridgeApiUnavailable": "Сервис моста временно недоступен. Пожалуйста, попробуйте позже.",
-  "errorSignatureFailed": "Не удалось подписать намерение моста. Пожалуйста, попробуйте снова."
+  "errorSignatureFailed": "Не удалось подписать намерение моста. Пожалуйста, попробуйте снова.",
+  "bridgeFeeUnavailable": "Fee unavailable",
+  "bridgeYouReceive": "You receive",
+  "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
+  "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
+  "bridgeConfirmOnNetwork": "on {{ network }}"
 }

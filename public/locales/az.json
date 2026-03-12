@@ -453,5 +453,10 @@
   "migration.summary.allowanceSufficient": "Kifayətdir",
   "migration.summary.allowanceInsufficient": "Kifayət deyil",
   "errorBridgeApiUnavailable": "Körpü xidməti müvəqqəti əlçatmazdır. Zəhmət olmasa sonra yenidən cəhd edin.",
-  "errorSignatureFailed": "Körpü niyyətini imzalamaq uğursuz oldu. Zəhmət olmasa yenidən cəhd edin."
+  "errorSignatureFailed": "Körpü niyyətini imzalamaq uğursuz oldu. Zəhmət olmasa yenidən cəhd edin.",
+  "bridgeFeeUnavailable": "Fee unavailable",
+  "bridgeYouReceive": "You receive",
+  "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
+  "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
+  "bridgeConfirmOnNetwork": "on {{ network }}"
 }

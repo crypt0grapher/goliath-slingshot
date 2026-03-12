@@ -453,5 +453,10 @@
   "migration.summary.allowanceSufficient": "충분",
   "migration.summary.allowanceInsufficient": "부족",
   "errorBridgeApiUnavailable": "브릿지 서비스를 일시적으로 사용할 수 없습니다. 나중에 다시 시도해 주세요.",
-  "errorSignatureFailed": "브릿지 인텐트 서명에 실패했습니다. 다시 시도해 주세요."
+  "errorSignatureFailed": "브릿지 인텐트 서명에 실패했습니다. 다시 시도해 주세요.",
+  "bridgeFeeUnavailable": "Fee unavailable",
+  "bridgeYouReceive": "You receive",
+  "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
+  "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
+  "bridgeConfirmOnNetwork": "on {{ network }}"
 }

@@ -453,5 +453,10 @@
   "migration.summary.allowanceSufficient": "מספיק",
   "migration.summary.allowanceInsufficient": "לא מספיק",
   "errorBridgeApiUnavailable": "שירות הגשר אינו זמין זמנית. אנא נסה שוב מאוחר יותר.",
-  "errorSignatureFailed": "חתימת כוונת הגשר נכשלה. אנא נסה שוב."
+  "errorSignatureFailed": "חתימת כוונת הגשר נכשלה. אנא נסה שוב.",
+  "bridgeFeeUnavailable": "Fee unavailable",
+  "bridgeYouReceive": "You receive",
+  "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
+  "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
+  "bridgeConfirmOnNetwork": "on {{ network }}"
 }

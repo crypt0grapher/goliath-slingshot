@@ -453,5 +453,10 @@
   "migration.summary.allowanceSufficient": "كافٍ",
   "migration.summary.allowanceInsufficient": "غير كافٍ",
   "errorBridgeApiUnavailable": "خدمة الجسر غير متاحة مؤقتاً. يرجى المحاولة لاحقاً.",
-  "errorSignatureFailed": "فشل توقيع نية الجسر. يرجى المحاولة مرة أخرى."
+  "errorSignatureFailed": "فشل توقيع نية الجسر. يرجى المحاولة مرة أخرى.",
+  "bridgeFeeUnavailable": "Fee unavailable",
+  "bridgeYouReceive": "You receive",
+  "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
+  "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
+  "bridgeConfirmOnNetwork": "on {{ network }}"
 }

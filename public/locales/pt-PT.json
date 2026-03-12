@@ -453,5 +453,10 @@
   "migration.summary.allowanceSufficient": "Suficiente",
   "migration.summary.allowanceInsufficient": "Insuficiente",
   "errorBridgeApiUnavailable": "O serviço de bridge está temporariamente indisponível. Tente novamente mais tarde.",
-  "errorSignatureFailed": "Falha ao assinar a intenção do bridge. Tente novamente."
+  "errorSignatureFailed": "Falha ao assinar a intenção do bridge. Tente novamente.",
+  "bridgeFeeUnavailable": "Fee unavailable",
+  "bridgeYouReceive": "You receive",
+  "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
+  "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
+  "bridgeConfirmOnNetwork": "on {{ network }}"
 }

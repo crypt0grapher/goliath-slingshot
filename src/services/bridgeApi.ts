@@ -5,6 +5,34 @@ import { BridgeDirection, BridgeStatus, BridgeTokenSymbol } from '../state/bridg
 // API Response Types
 // ============================================
 
+export interface FeeQuoteResponse {
+  inputAmount: string;
+  inputFormatted: string;
+  feeAmount: string;
+  feeFormatted: string;
+  feeBps: number;
+  outputAmount: string;
+  outputFormatted: string;
+  token: string;
+}
+
+export interface TokenLimits {
+  minAmount: string;
+  minAmountFormatted: string;
+  minFee: string;
+  minFeeFormatted: string;
+}
+
+export interface DirectionLimits {
+  feeBps: number;
+  tokens: Record<string, TokenLimits>;
+}
+
+export interface LimitsResponse {
+  goliathToSepolia: DirectionLimits;
+  sepoliaToGoliath: DirectionLimits;
+}
+
 export interface BridgeStatusResponse {
   operationId: string;
   direction: BridgeDirection;
@@ -230,6 +258,29 @@ export class BridgeApiClient {
       method: 'POST',
       body: JSON.stringify(params),
     });
+  }
+
+  /**
+   * Get fee quote for a bridge operation
+   */
+  async getFeeQuote(params: {
+    token: string;
+    amount: string;
+    direction: string;
+  }): Promise<FeeQuoteResponse> {
+    const queryParams = new URLSearchParams({
+      token: params.token,
+      amount: params.amount,
+      direction: params.direction,
+    });
+    return this.fetch<FeeQuoteResponse>(`/bridge/fee-quote?${queryParams.toString()}`);
+  }
+
+  /**
+   * Get bridge limits (min amounts, fee rates)
+   */
+  async getLimits(): Promise<LimitsResponse> {
+    return this.fetch<LimitsResponse>('/bridge/limits');
   }
 
   /**

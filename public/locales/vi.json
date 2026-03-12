@@ -453,5 +453,10 @@
   "migration.summary.allowanceSufficient": "Đủ",
   "migration.summary.allowanceInsufficient": "Không đủ",
   "errorBridgeApiUnavailable": "Dịch vụ cầu nối tạm thời không khả dụng. Vui lòng thử lại sau.",
-  "errorSignatureFailed": "Không thể ký ý định cầu nối. Vui lòng thử lại."
+  "errorSignatureFailed": "Không thể ký ý định cầu nối. Vui lòng thử lại.",
+  "bridgeFeeUnavailable": "Fee unavailable",
+  "bridgeYouReceive": "You receive",
+  "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
+  "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
+  "bridgeConfirmOnNetwork": "on {{ network }}"
 }

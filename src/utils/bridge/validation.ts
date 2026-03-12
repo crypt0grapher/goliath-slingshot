@@ -134,7 +134,7 @@ export function validateBridgeInput(input: ValidationInput): ValidationResult {
     return {
       state: 'AMOUNT_TOO_SMALL',
       isValid: false,
-      buttonText: { key: 'amountTooSmall' },
+      buttonText: { key: 'bridgeBelowMinimum', params: { amount: minAmount, token: selectedToken } },
       errorMessage: { key: 'minimumAmountIs', params: { amount: minAmount, token: selectedToken } },
       disableButton: true,
     };

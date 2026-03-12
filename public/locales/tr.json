@@ -453,5 +453,10 @@
   "migration.summary.allowanceSufficient": "Yeterli",
   "migration.summary.allowanceInsufficient": "Yetersiz",
   "errorBridgeApiUnavailable": "Köprü hizmeti geçici olarak kullanılamıyor. Lütfen daha sonra tekrar deneyin.",
-  "errorSignatureFailed": "Köprü niyeti imzalanamadı. Lütfen tekrar deneyin."
+  "errorSignatureFailed": "Köprü niyeti imzalanamadı. Lütfen tekrar deneyin.",
+  "bridgeFeeUnavailable": "Fee unavailable",
+  "bridgeYouReceive": "You receive",
+  "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
+  "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
+  "bridgeConfirmOnNetwork": "on {{ network }}"
 }

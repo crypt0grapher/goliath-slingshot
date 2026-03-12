@@ -1,5 +1,6 @@
 import React, { useCallback } from 'react';
 import styled from 'styled-components';
+import { useTranslation } from 'react-i18next';
 import { BridgeTokenSymbol } from '../../constants/bridge/tokens';
 import BridgeTokenSelector from './BridgeTokenSelector';
 import { sanitizeAmountInput } from '../../utils/bridge/amounts';
@@ -86,6 +87,15 @@ const MaxButton = styled.button`
   }
 `;
 
+const HintText = styled.span`
+  font-size: 13px;
+  color: ${({ theme }) => theme.text3};
+
+  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
+    font-size: 12px;
+  `}
+`;
+
 interface BridgeAmountInputProps {
   value: string;
   onUserInput: (value: string) => void;
@@ -95,6 +105,7 @@ interface BridgeAmountInputProps {
   onMax: () => void;
   showMaxButton?: boolean;
   disabled?: boolean;
+  minAmountFormatted?: string | null;
 }
 
 export default function BridgeAmountInput({
@@ -106,6 +117,7 @@ export default function BridgeAmountInput({
   onMax,
   showMaxButton = true,
   disabled = false,
+  minAmountFormatted = null,
 }: BridgeAmountInputProps) {
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -114,6 +126,8 @@ export default function BridgeAmountInput({
     },
     [onUserInput]
   );
+
+  const { t } = useTranslation();
 
   return (
     <InputContainer>
@@ -131,6 +145,14 @@ export default function BridgeAmountInput({
       <BalanceRow>
         <BalanceText>
           Balance: {balance} {selectedToken}
+          {minAmountFormatted && (
+            <>
+              {' | '}
+              <HintText>
+                {t('bridgeMinimumHint', { amount: minAmountFormatted, token: selectedToken })}
+              </HintText>
+            </>
+          )}
         </BalanceText>
         {showMaxButton && parseFloat(balance) > 0 && (
           <MaxButton onClick={onMax} type="button">

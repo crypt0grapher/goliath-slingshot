@@ -453,5 +453,10 @@
   "migration.summary.allowanceSufficient": "Voldoende",
   "migration.summary.allowanceInsufficient": "Onvoldoende",
   "errorBridgeApiUnavailable": "Bridgedienst is tijdelijk niet beschikbaar. Probeer het later opnieuw.",
-  "errorSignatureFailed": "Ondertekening van de bridge-intentie mislukt. Probeer het opnieuw."
+  "errorSignatureFailed": "Ondertekening van de bridge-intentie mislukt. Probeer het opnieuw.",
+  "bridgeFeeUnavailable": "Fee unavailable",
+  "bridgeYouReceive": "You receive",
+  "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
+  "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
+  "bridgeConfirmOnNetwork": "on {{ network }}"
 }

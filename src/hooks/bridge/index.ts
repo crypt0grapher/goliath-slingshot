@@ -7,3 +7,5 @@ export { useBridgeBurn } from './useBridgeBurn';
 export { useBridgeXcnWithdraw } from './useBridgeXcnWithdraw';
 export { useBridgeStatusPolling } from './useBridgeStatusPolling';
 export { useBridgeNetworkSwitch } from './useBridgeNetworkSwitch';
+export { useBridgeFee } from './useBridgeFee';
+export { useBridgeLimits } from './useBridgeLimits';

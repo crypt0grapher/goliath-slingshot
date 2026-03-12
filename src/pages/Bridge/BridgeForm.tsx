@@ -74,6 +74,10 @@ export default function BridgeForm() {
     setSelectedToken,
     setInputAmount,
     setMaxAmount,
+    feeQuote,
+    isFeeLoading,
+    feeError,
+    minAmountFormatted,
   } = bridgeForm;
 
   const buttonState = getButtonState(
@@ -137,6 +141,7 @@ export default function BridgeForm() {
             balance={originBalance}
             onMax={setMaxAmount}
             showMaxButton={true}
+            minAmountFormatted={minAmountFormatted}
           />
 
           <DirectionSwapButton onClick={swapDirection} />
@@ -161,7 +166,16 @@ export default function BridgeForm() {
           </OutputContainer>
         </FormContainer>
 
-        <BridgeSummary direction={direction} recipient={null} account={account} />
+        <BridgeSummary
+          direction={direction}
+          recipient={null}
+          account={account}
+          token={selectedToken}
+          inputAmount={inputAmount}
+          feeQuote={feeQuote}
+          isFeeLoading={isFeeLoading}
+          feeError={feeError}
+        />
 
         {originNetwork === BridgeNetwork.GOLIATH && selectedToken === 'ETH' && (
           <InfoMessage>
