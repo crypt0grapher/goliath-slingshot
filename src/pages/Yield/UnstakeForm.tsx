@@ -5,9 +5,9 @@ import { BigNumber } from '@ethersproject/bignumber';
 import { parseUnits, formatUnits } from '@ethersproject/units';
 import { Input } from '../../components/NumericalInput';
 import { ButtonPrimary } from '../../components/Button';
-import { selectUnstakeInput } from '../../state/yield/selectors';
+import { selectUnstakeInput, selectContractBalance } from '../../state/yield/selectors';
 import { yieldActions } from '../../state/yield/slice';
-import { formatTokenAmount, InputContainer, InputRow, MaxButton, PreviewRow } from './styleds';
+import { formatTokenAmount, InputContainer, InputRow, MaxButton, PreviewRow, WarningBanner } from './styleds';
 
 interface UnstakeFormProps {
   stXCNBalance: string | null;
@@ -18,6 +18,7 @@ interface UnstakeFormProps {
 export default function UnstakeForm({ stXCNBalance, isPaused, onUnstake }: UnstakeFormProps) {
   const dispatch = useDispatch();
   const unstakeInput = useSelector(selectUnstakeInput);
+  const contractBalance = useSelector(selectContractBalance);
   const { t } = useTranslation();
 
   const handleInput = (value: string) => {
@@ -59,6 +60,15 @@ export default function UnstakeForm({ stXCNBalance, isPaused, onUnstake }: Unsta
     return t('yield.unstakeStXCN');
   }, [isPaused, stXCNBalance, parsedAmount, inputError]);
 
+  const showSolvencyWarning = useMemo(() => {
+    if (!parsedAmount || !contractBalance) return false;
+    try {
+      return parsedAmount.gt(BigNumber.from(contractBalance));
+    } catch {
+      return false;
+    }
+  }, [parsedAmount, contractBalance]);
+
   const isDisabled = isPaused || !parsedAmount || !!inputError;
 
   const handleSubmit = () => {
@@ -82,6 +92,9 @@ export default function UnstakeForm({ stXCNBalance, isPaused, onUnstake }: Unsta
         <PreviewRow>
           <span>{t('yield.receiveXCN', { amount: formatTokenAmount(parsedAmount.toString()) })}</span>
         </PreviewRow>
+      )}
+      {showSolvencyWarning && (
+        <WarningBanner>{t('yield.solvencyWarning')}</WarningBanner>
       )}
       <ButtonPrimary onClick={handleSubmit} disabled={isDisabled} style={{ marginTop: '8px' }}>
         {buttonText}

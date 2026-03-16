@@ -450,6 +450,11 @@
   "yield.eventStaked": "הומר",
   "yield.eventUnstaked": "נמשך",
   "yield.yourStXCNBalance": "יתרת stXCN שלך",
+  "yield.errorZeroAmount": "הסכום חייב להיות גדול מאפס",
+  "yield.errorInsufficientBalance": "יתרת stXCN אינה מספיקה לפעולה זו",
+  "yield.errorInsufficientContractBalance": "יתרת החוזה אינה מספיקה — נסו סכום קטן יותר",
+  "yield.errorTransferFailed": "ההעברה נכשלה",
+  "yield.errorGasEstimationFailed": "לא ניתן לאמוד גז — העסקה נשלחה עם מגבלת גז ברירת מחדל",
   "migration.summary.allowanceSufficient": "מספיק",
   "migration.summary.allowanceInsufficient": "לא מספיק",
   "errorBridgeApiUnavailable": "שירות הגשר אינו זמין זמנית. אנא נסה שוב מאוחר יותר.",
@@ -458,5 +463,8 @@
   "bridgeYouReceive": "You receive",
   "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
   "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
-  "bridgeConfirmOnNetwork": "on {{ network }}"
+  "bridgeConfirmOnNetwork": "on {{ network }}",
+  "yield.contractHealthOk": "Contract Health: OK",
+  "yield.contractHealthLow": "Contract Health: Low Reserves",
+  "yield.solvencyWarning": "Contract balance is low. Your withdrawal may fail. Try a smaller amount or wait for the contract to be refunded."
 }

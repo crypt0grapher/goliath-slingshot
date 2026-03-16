@@ -6,13 +6,42 @@ import { useActiveWeb3React } from '../index';
 import { useStakedXCNContract } from './useStakedXCNContract';
 import { useTransactionAdder } from '../../state/transactions/hooks';
 import { yieldActions } from '../../state/yield/slice';
-import { STAKED_XCN_ADDRESS } from '../../constants/staking';
+import { STAKED_XCN_ADDRESS, STAKE_GAS_LIMIT, STAKING_ERROR_SELECTORS } from '../../constants/staking';
+
+export async function estimateGasWithFallback(
+  estimateFn: () => Promise<BigNumber>,
+  fallbackGasLimit: number
+): Promise<number> {
+  try {
+    const estimated = await estimateFn();
+    return estimated.mul(120).div(100).toNumber(); // 20% buffer
+  } catch {
+    return fallbackGasLimit;
+  }
+}
 
 export function parseTransactionError(err: any): string {
   if (err?.code === 4001 || err?.code === 'ACTION_REJECTED') return 'Transaction rejected by user';
-  if (err?.reason) return err.reason;
-  if (err?.data?.message) return err.data.message;
-  if (err?.message) return err.message.slice(0, 200);
+
+  // Check for custom Solidity error selectors in error data
+  const errorData = err?.data || err?.error?.data;
+  if (typeof errorData === 'string') {
+    const selector = errorData.slice(0, 10).toLowerCase();
+    const mapped = STAKING_ERROR_SELECTORS[selector];
+    if (mapped) return mapped;
+  }
+
+  // Strip relay Request ID prefix from messages
+  const stripRequestId = (msg: string): string =>
+    msg.replace(/\[Request ID: [a-f0-9-]+\]\s*/i, '');
+
+  // Use reason if it's meaningful (not the generic CONTRACT_REVERT_EXECUTED)
+  if (err?.reason && !err.reason.includes('CONTRACT_REVERT_EXECUTED')) {
+    return stripRequestId(err.reason);
+  }
+
+  if (err?.data?.message) return stripRequestId(err.data.message);
+  if (err?.message) return stripRequestId(err.message).slice(0, 200);
   return 'Transaction failed';
 }
 
@@ -52,7 +81,11 @@ export function useStake(
         if (amount.isZero()) throw new Error('Amount too small');
 
         const formattedAmount = formatUnits(amountWad, 18);
-        const tx = await contract.stake({ value: amount });
+        const gasLimit = await estimateGasWithFallback(
+          () => contract.estimateGas.stake({ value: amount }),
+          STAKE_GAS_LIMIT
+        );
+        const tx = await contract.stake({ value: amount, gasLimit });
         addTransaction(tx, { summary: `Stake ${parseFloat(formattedAmount).toFixed(4)} XCN` });
         dispatch(yieldActions.setPendingTxHash(tx.hash));
         await tx.wait();

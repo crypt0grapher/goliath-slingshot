@@ -21,6 +21,9 @@ export const selectFeePercentBps = (state: AppState) => state.yield.feePercentBp
 export const selectCumulativeIndex = (state: AppState) => state.yield.cumulativeIndex;
 export const selectLastUpdateTimestamp = (state: AppState) => state.yield.lastUpdateTimestamp;
 
+// Contract solvency
+export const selectContractBalance = (state: AppState) => state.yield.contractBalance;
+
 // User data
 export const selectUserBalance = (state: AppState) => state.yield.userBalance;
 export const selectUserScaledBalance = (state: AppState) => state.yield.userScaledBalance;

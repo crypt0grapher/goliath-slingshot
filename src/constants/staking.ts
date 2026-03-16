@@ -25,6 +25,18 @@ export const STXCN_NAME = 'Staked XCN';
 export const BALANCE_POLL_INTERVAL_MS = stakingConfig.balancePollMs;
 export const PROTOCOL_DATA_POLL_INTERVAL_MS = stakingConfig.protocolPollMs;
 
+// Gas limit fallbacks — used when eth_estimateGas reverts (e.g. payable relay issues)
+export const STAKE_GAS_LIMIT = 150_000;
+export const UNSTAKE_GAS_LIMIT = 200_000;
+
+// Custom Solidity error selectors from StakedXCN contract
+export const STAKING_ERROR_SELECTORS: Record<string, string> = {
+  '0x1f2a2005': 'Amount must be greater than zero',
+  '0xcf479181': 'Insufficient stXCN balance',
+  '0xf51b158c': 'Insufficient contract balance — please try a smaller amount',
+  '0x3204506f': 'Transfer failed',
+};
+
 // UI constants
 export const ANIMATION_DECIMAL_PLACES = 1;
 export const BLOCKSCOUT_BASE_URL = 'https://testnet.explorer.goliath.net';

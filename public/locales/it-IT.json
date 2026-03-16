@@ -456,6 +456,11 @@
   "yield.eventStaked": "In staking",
   "yield.eventUnstaked": "Ritirato",
   "yield.yourStXCNBalance": "Il tuo saldo stXCN",
+  "yield.errorZeroAmount": "L'importo deve essere maggiore di zero",
+  "yield.errorInsufficientBalance": "Saldo stXCN insufficiente per questa operazione",
+  "yield.errorInsufficientContractBalance": "Saldo del contratto insufficiente — prova con un importo inferiore",
+  "yield.errorTransferFailed": "Trasferimento fallito",
+  "yield.errorGasEstimationFailed": "Impossibile stimare il gas — transazione inviata con limite gas predefinito",
   "migration.summary.allowanceSufficient": "Sufficiente",
   "migration.summary.allowanceInsufficient": "Insufficiente",
   "errorBridgeApiUnavailable": "Il servizio bridge è temporaneamente non disponibile. Riprova più tardi.",
@@ -464,5 +469,8 @@
   "bridgeYouReceive": "You receive",
   "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
   "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
-  "bridgeConfirmOnNetwork": "on {{ network }}"
+  "bridgeConfirmOnNetwork": "on {{ network }}",
+  "yield.contractHealthOk": "Contract Health: OK",
+  "yield.contractHealthLow": "Contract Health: Low Reserves",
+  "yield.solvencyWarning": "Contract balance is low. Your withdrawal may fail. Try a smaller amount or wait for the contract to be refunded."
 }

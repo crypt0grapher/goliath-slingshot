@@ -14,6 +14,9 @@ const initialState: YieldState = {
   userBalance: null,
   userScaledBalance: null,
 
+  // Contract solvency
+  contractBalance: null,
+
   // UI state
   activeTab: 'stake',
   stakeInput: '',
@@ -74,6 +77,13 @@ const yieldSlice = createSlice({
     clearUserData(state) {
       state.userBalance = null;
       state.userScaledBalance = null;
+    },
+
+    // ========================================
+    // Contract Solvency
+    // ========================================
+    setContractBalance(state, action: PayloadAction<string>) {
+      state.contractBalance = action.payload;
     },
 
     // ========================================

@@ -331,16 +331,13 @@
   "errorInvalidTokenConfig": "Invalid token configuration",
   "addLiquidityEarningsInfo": "By adding liquidity you'll earn 0.3% of all trades on this pair proportional to your share of the pool. Fees are added to the pool, accrue in real time and can be claimed by withdrawing your liquidity.",
   "removeLiquidityTip": "Removing pool tokens converts your position back into underlying tokens at the current rate, proportional to your share of the pool. Accrued fees are included in the amounts you receive.",
-
   "migration.nav.title": "Migrate",
   "migration.nav.pageTitle": "Migrate Staked XCN",
   "migration.nav.deadlineIndicator": "Deadline: {{date}}",
-
   "migration.summary.stakedXCN": "Staked XCN",
   "migration.summary.pendingRewards": "Pending Rewards",
   "migration.summary.walletXCN": "Wallet XCN",
   "migration.summary.bridgeAllowance": "Bridge Allowance",
-
   "migration.step.claimRewards.title": "Claim Rewards",
   "migration.step.claimRewards.description": "Claim your pending XCN staking rewards before unstaking.",
   "migration.step.approve.title": "Approve XCN",
@@ -349,36 +346,28 @@
   "migration.step.unstake.description": "Withdraw your staked XCN from the staking contract.",
   "migration.step.bridge.title": "Bridge to Goliath",
   "migration.step.bridge.description": "Bridge your XCN tokens to the Goliath network.",
-
   "migration.toggle.stakeOnGoliath": "Stake on Goliath",
   "migration.toggle.autoStakeDescription": "Auto-stake XCN tokens after migration",
   "migration.toggle.lockedHint": "Preference locked after bridge submission",
-
   "migration.status.depositConfirmed": "Deposit Confirmed",
   "migration.status.waitingForConfirmations": "Waiting for Confirmations",
   "migration.status.deliveringOnGoliath": "Delivering on Goliath",
   "migration.status.stakingOnGoliath": "Staking on Goliath",
   "migration.status.migrationComplete": "Migration Complete",
   "migration.status.migrationFailed": "Migration Failed",
-
   "migration.error.transactionRejected": "Transaction rejected",
-  "migration.error.transactionFailedRetry": "Transaction failed \u2014 retry",
-  "migration.error.stakeIntentFailed": "Stake intent failed \u2014 please retry",
-  "migration.error.bindFailed": "Bind failed \u2014 retrying in background",
+  "migration.error.transactionFailedRetry": "Transaction failed — retry",
+  "migration.error.stakeIntentFailed": "Stake intent failed — please retry",
+  "migration.error.bindFailed": "Bind failed — retrying in background",
   "migration.error.switchNetworkPrompt": "Please switch to {{network}} to continue the migration.",
-
   "migration.empty.noXCNToMigrate": "No Staked XCN on Ethereum to migrate",
   "migration.empty.bridgeLinkText": "Bridge tokens instead",
-
   "migration.resumeHint": "It looks like you previously unstaked. Continue with bridging.",
-
   "migration.process.title": "Automated migration to Goliath",
   "migration.process.description": "This process moves your staked XCN from Ethereum (Sepolia) to Goliath Testnet with one start action and tracked progress.",
   "migration.process.signatureNotice": "You will usually sign 3 times in your wallet: (1) Unstake transaction, (2) migration authorization signature (gasless), and (3) Bridge transaction. If \"Approve XCN\" appears, there is one extra signature to grant bridge allowance.",
-
   "migration.deadline.banner": "Migration deadline: {{date}}",
   "migration.deadline.ended": "Migration window has ended",
-
   "migration.action.execute": "Execute",
   "migration.action.retry": "Retry",
   "migration.action.waitingForWallet": "Waiting for wallet...",
@@ -388,7 +377,6 @@
   "migration.action.ready": "Ready to execute",
   "migration.action.waitingForPrevious": "Waiting for previous steps",
   "migration.action.viewTransaction": "View transaction",
-
   "migration.panel.title": "Migration Status",
   "migration.panel.originTx": "Origin Transaction",
   "migration.panel.destinationTx": "Destination Transaction",
@@ -410,7 +398,6 @@
   "migration.panel.errorDetails": "Error: {{message}}",
   "migration.panel.pollingError": "Unable to fetch status. Retrying...",
   "migration.panel.viewExplorer": "View on Explorer",
-
   "migration.stepper.title": "Migration Steps",
   "migration.stepper.automationDescription": "Start once and follow the wallet prompts. Standard flow requires 3 signatures (unstake, authorization signature, bridge tx). If approval is required, you will see 4 signatures.",
   "migration.stepper.automationStart": "Start Migration",
@@ -420,14 +407,12 @@
   "migration.stepper.automationStepFailed": "Step failed: {{step}}",
   "migration.stepper.completionMessage": "All steps completed! Your migration is being processed.",
   "migration.stepper.resumeHint": "It looks like you previously unstaked. Continue with bridging.",
-
   "migration.stats.title": "Migration Overview",
   "migration.stats.totalMigrated": "Total Migrated",
   "migration.stats.totalCount": "Migrations",
   "migration.stats.totalStaked": "Staked",
   "migration.stats.activeMigrations": "Active",
   "migration.stats.unavailable": "Stats are temporarily unavailable.",
-
   "migration.history.title": "Migration History",
   "migration.history.empty": "No migration history yet.",
   "migration.history.errorLoading": "Unable to load migration history.",
@@ -439,10 +424,8 @@
   "migration.history.unstakeTx": "Unstake",
   "migration.history.bridgeTx": "Bridge",
   "migration.history.stakeTx": "Stake",
-
   "migration.goliathBalance.title": "Staked on Goliath",
   "migration.goliathBalance.stxcn": "stXCN Balance",
-
   "yield.pageTitle": "Yield",
   "yield.connectWalletPrompt": "Connect your wallet to start earning yield",
   "yield.connectWallet": "Connect Wallet",
@@ -474,6 +457,14 @@
   "yield.eventStaked": "Staked",
   "yield.eventUnstaked": "Unstaked",
   "yield.yourStXCNBalance": "Your stXCN Balance",
+  "yield.errorZeroAmount": "Amount must be greater than zero",
+  "yield.errorInsufficientBalance": "Insufficient stXCN balance for this operation",
+  "yield.errorInsufficientContractBalance": "Insufficient contract balance — please try a smaller amount",
+  "yield.errorTransferFailed": "Transfer failed",
+  "yield.errorGasEstimationFailed": "Could not estimate gas — transaction submitted with default gas limit",
   "migration.summary.allowanceSufficient": "Sufficient",
-  "migration.summary.allowanceInsufficient": "Insufficient"
+  "migration.summary.allowanceInsufficient": "Insufficient",
+  "yield.contractHealthOk": "Contract Health: OK",
+  "yield.contractHealthLow": "Contract Health: Low Reserves",
+  "yield.solvencyWarning": "Contract balance is low. Your withdrawal may fail. Try a smaller amount or wait for the contract to be refunded."
 }

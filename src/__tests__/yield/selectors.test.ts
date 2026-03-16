@@ -21,6 +21,7 @@ function createMockState(yieldOverrides: Partial<YieldState> = {}): any {
       unstakeInput: '',
       isConfirmModalOpen: false,
       pendingTxHash: null,
+      contractBalance: null,
       isLoading: false,
       isProtocolLoading: true,
       error: null,

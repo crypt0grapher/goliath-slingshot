@@ -450,6 +450,11 @@
   "yield.eventStaked": "已质押",
   "yield.eventUnstaked": "已赎回",
   "yield.yourStXCNBalance": "您的 stXCN 余额",
+  "yield.errorZeroAmount": "金额必须大于零",
+  "yield.errorInsufficientBalance": "此操作的 stXCN 余额不足",
+  "yield.errorInsufficientContractBalance": "合约余额不足 — 请尝试更小的金额",
+  "yield.errorTransferFailed": "转账失败",
+  "yield.errorGasEstimationFailed": "无法估算 Gas — 交易已使用默认 Gas 限制发送",
   "migration.summary.allowanceSufficient": "充足",
   "migration.summary.allowanceInsufficient": "不足",
   "errorBridgeApiUnavailable": "桥接服务暂时不可用。请稍后重试。",
@@ -458,5 +463,8 @@
   "bridgeYouReceive": "You receive",
   "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
   "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
-  "bridgeConfirmOnNetwork": "on {{ network }}"
+  "bridgeConfirmOnNetwork": "on {{ network }}",
+  "yield.contractHealthOk": "Contract Health: OK",
+  "yield.contractHealthLow": "Contract Health: Low Reserves",
+  "yield.solvencyWarning": "Contract balance is low. Your withdrawal may fail. Try a smaller amount or wait for the contract to be refunded."
 }

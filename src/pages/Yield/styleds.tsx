@@ -187,6 +187,12 @@ export const StatValue = styled.span`
   color: ${({ theme }) => theme.text1};
 `;
 
+export const StatValueWarning = styled.span`
+  font-size: 14px;
+  font-weight: 500;
+  color: ${({ theme }) => theme.yellow1};
+`;
+
 // ── History ──────────────────────────────────────────────────────────────────
 
 export const HistoryContainer = styled.div`
@@ -258,6 +264,15 @@ export const PausedBanner = styled.div`
   color: ${({ theme }) => theme.yellow1};
   font-size: 14px;
   text-align: center;
+`;
+
+export const WarningBanner = styled.div`
+  padding: 12px;
+  background-color: ${({ theme }) => theme.yellow1 + '20'};
+  border-radius: 12px;
+  color: ${({ theme }) => theme.yellow1};
+  font-size: 14px;
+  margin-top: 8px;
 `;
 
 // ── Utilities ────────────────────────────────────────────────────────────────

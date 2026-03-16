@@ -11,6 +11,9 @@ export interface YieldState {
   userBalance: string | null;
   userScaledBalance: string | null;
 
+  // Contract solvency
+  contractBalance: string | null;
+
   // UI state
   activeTab: 'stake' | 'unstake';
   stakeInput: string;

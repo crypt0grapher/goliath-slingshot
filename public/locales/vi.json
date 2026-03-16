@@ -450,6 +450,11 @@
   "yield.eventStaked": "Đã stake",
   "yield.eventUnstaked": "Đã rút",
   "yield.yourStXCNBalance": "Số dư stXCN của bạn",
+  "yield.errorZeroAmount": "Số lượng phải lớn hơn 0",
+  "yield.errorInsufficientBalance": "Số dư stXCN không đủ cho thao tác này",
+  "yield.errorInsufficientContractBalance": "Số dư hợp đồng không đủ — vui lòng thử số lượng nhỏ hơn",
+  "yield.errorTransferFailed": "Chuyển khoản thất bại",
+  "yield.errorGasEstimationFailed": "Không thể ước tính gas — giao dịch đã được gửi với giới hạn gas mặc định",
   "migration.summary.allowanceSufficient": "Đủ",
   "migration.summary.allowanceInsufficient": "Không đủ",
   "errorBridgeApiUnavailable": "Dịch vụ cầu nối tạm thời không khả dụng. Vui lòng thử lại sau.",
@@ -458,5 +463,8 @@
   "bridgeYouReceive": "You receive",
   "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
   "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
-  "bridgeConfirmOnNetwork": "on {{ network }}"
+  "bridgeConfirmOnNetwork": "on {{ network }}",
+  "yield.contractHealthOk": "Contract Health: OK",
+  "yield.contractHealthLow": "Contract Health: Low Reserves",
+  "yield.solvencyWarning": "Contract balance is low. Your withdrawal may fail. Try a smaller amount or wait for the contract to be refunded."
 }

@@ -450,6 +450,11 @@
   "yield.eventStaked": "În staking",
   "yield.eventUnstaked": "Retras",
   "yield.yourStXCNBalance": "Soldul tău stXCN",
+  "yield.errorZeroAmount": "Suma trebuie să fie mai mare decât zero",
+  "yield.errorInsufficientBalance": "Sold stXCN insuficient pentru această operațiune",
+  "yield.errorInsufficientContractBalance": "Soldul contractului este insuficient — încercați o sumă mai mică",
+  "yield.errorTransferFailed": "Transfer eșuat",
+  "yield.errorGasEstimationFailed": "Nu s-a putut estima gazul — tranzacția a fost trimisă cu limita de gaz implicită",
   "migration.summary.allowanceSufficient": "Suficient",
   "migration.summary.allowanceInsufficient": "Insuficient",
   "errorBridgeApiUnavailable": "Serviciul bridge este temporar indisponibil. Te rugăm să încerci din nou mai târziu.",
@@ -458,5 +463,8 @@
   "bridgeYouReceive": "You receive",
   "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
   "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
-  "bridgeConfirmOnNetwork": "on {{ network }}"
+  "bridgeConfirmOnNetwork": "on {{ network }}",
+  "yield.contractHealthOk": "Contract Health: OK",
+  "yield.contractHealthLow": "Contract Health: Low Reserves",
+  "yield.solvencyWarning": "Contract balance is low. Your withdrawal may fail. Try a smaller amount or wait for the contract to be refunded."
 }

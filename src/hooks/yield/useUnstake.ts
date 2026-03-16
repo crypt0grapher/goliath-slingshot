@@ -6,7 +6,8 @@ import { useActiveWeb3React } from '../index';
 import { useStakedXCNContract } from './useStakedXCNContract';
 import { useTransactionAdder } from '../../state/transactions/hooks';
 import { yieldActions } from '../../state/yield/slice';
-import { parseTransactionError } from './useStake';
+import { parseTransactionError, estimateGasWithFallback } from './useStake';
+import { UNSTAKE_GAS_LIMIT } from '../../constants/staking';
 
 export function useUnstake(
   refetch?: () => void
@@ -27,7 +28,11 @@ export function useUnstake(
         if (amountBN.isZero()) throw new Error('Amount must be greater than zero');
 
         const formattedAmount = formatUnits(amountWad, 18);
-        const tx = await contract.unstake(amountBN);
+        const gasLimit = await estimateGasWithFallback(
+          () => contract.estimateGas.unstake(amountBN),
+          UNSTAKE_GAS_LIMIT
+        );
+        const tx = await contract.unstake(amountBN, { gasLimit });
         addTransaction(tx, { summary: `Unstake ${parseFloat(formattedAmount).toFixed(4)} stXCN` });
         dispatch(yieldActions.setPendingTxHash(tx.hash));
         await tx.wait();

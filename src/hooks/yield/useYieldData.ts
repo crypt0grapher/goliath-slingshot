@@ -4,6 +4,9 @@ import { useActiveWeb3React } from '../index';
 import { useStakedXCNContract } from './useStakedXCNContract';
 import { yieldActions } from '../../state/yield/slice';
 import { stakingConfig } from '../../config/stakingConfig';
+import { STAKED_XCN_ADDRESS } from '../../constants/staking';
+import { getReadonlyProvider } from '../../services/bridgeProviders';
+import { BridgeNetwork } from '../../constants/bridge/networks';
 
 export function useYieldData(): { refetch: () => void; isLoading: boolean } {
   const contract = useStakedXCNContract(false);
@@ -33,6 +36,18 @@ export function useYieldData(): { refetch: () => void; isLoading: boolean } {
         })
       );
       dispatch(yieldActions.clearError());
+
+      // Fetch native XCN balance held by the StakedXCN contract
+      const contractAddress = STAKED_XCN_ADDRESS[8901];
+      if (contractAddress) {
+        try {
+          const provider = getReadonlyProvider(BridgeNetwork.GOLIATH);
+          const balance = await provider.getBalance(contractAddress);
+          dispatch(yieldActions.setContractBalance(balance.toString()));
+        } catch (balanceErr) {
+          console.error('Failed to fetch contract balance:', balanceErr);
+        }
+      }
     } catch (err) {
       console.error('Failed to fetch protocol data:', err);
       if (attempt < 2) {

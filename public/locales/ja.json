@@ -450,6 +450,11 @@
   "yield.eventStaked": "ステーク済み",
   "yield.eventUnstaked": "アンステーク済み",
   "yield.yourStXCNBalance": "stXCN残高",
+  "yield.errorZeroAmount": "金額はゼロより大きくなければなりません",
+  "yield.errorInsufficientBalance": "この操作に必要なstXCN残高が不足しています",
+  "yield.errorInsufficientContractBalance": "コントラクト残高が不足しています — より少ない金額をお試しください",
+  "yield.errorTransferFailed": "送金に失敗しました",
+  "yield.errorGasEstimationFailed": "ガスの見積もりができませんでした — デフォルトのガスリミットで送信されました",
   "migration.summary.allowanceSufficient": "十分",
   "migration.summary.allowanceInsufficient": "不十分",
   "errorBridgeApiUnavailable": "ブリッジサービスは一時的に利用できません。後でもう一度お試しください。",
@@ -458,5 +463,8 @@
   "bridgeYouReceive": "You receive",
   "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
   "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
-  "bridgeConfirmOnNetwork": "on {{ network }}"
+  "bridgeConfirmOnNetwork": "on {{ network }}",
+  "yield.contractHealthOk": "Contract Health: OK",
+  "yield.contractHealthLow": "Contract Health: Low Reserves",
+  "yield.solvencyWarning": "Contract balance is low. Your withdrawal may fail. Try a smaller amount or wait for the contract to be refunded."
 }

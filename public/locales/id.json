@@ -450,6 +450,11 @@
   "yield.eventStaked": "Di-stake",
   "yield.eventUnstaked": "Ditarik",
   "yield.yourStXCNBalance": "Saldo stXCN Anda",
+  "yield.errorZeroAmount": "Jumlah harus lebih besar dari nol",
+  "yield.errorInsufficientBalance": "Saldo stXCN tidak cukup untuk operasi ini",
+  "yield.errorInsufficientContractBalance": "Saldo kontrak tidak cukup — coba jumlah yang lebih kecil",
+  "yield.errorTransferFailed": "Transfer gagal",
+  "yield.errorGasEstimationFailed": "Tidak dapat memperkirakan gas — transaksi dikirim dengan batas gas default",
   "migration.summary.allowanceSufficient": "Cukup",
   "migration.summary.allowanceInsufficient": "Tidak Cukup",
   "errorBridgeApiUnavailable": "Layanan bridge sementara tidak tersedia. Silakan coba lagi nanti.",
@@ -458,5 +463,8 @@
   "bridgeYouReceive": "You receive",
   "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
   "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
-  "bridgeConfirmOnNetwork": "on {{ network }}"
+  "bridgeConfirmOnNetwork": "on {{ network }}",
+  "yield.contractHealthOk": "Contract Health: OK",
+  "yield.contractHealthLow": "Contract Health: Low Reserves",
+  "yield.solvencyWarning": "Contract balance is low. Your withdrawal may fail. Try a smaller amount or wait for the contract to be refunded."
 }

@@ -21,6 +21,7 @@ import {
   selectIsConfirmModalOpen,
   selectPendingTxHash,
   selectError,
+  selectContractBalance,
 } from '../../state/yield/selectors';
 import AnimatedBalance from './AnimatedBalance';
 import StakeForm from './StakeForm';
@@ -73,6 +74,7 @@ export default function Yield() {
   const isConfirmModalOpen = useSelector(selectIsConfirmModalOpen);
   const pendingTxHash = useSelector(selectPendingTxHash);
   const error = useSelector(selectError);
+  const contractBalance = useSelector(selectContractBalance);
 
   const isConnected = !!account;
   const isCorrectChain = chainId === GOLIATH_TESTNET_CHAIN_ID;
@@ -158,6 +160,7 @@ export default function Yield() {
             userBalance={userBalance}
             totalPrincipal={totalPrincipal}
             isConnected={isConnected}
+            contractBalance={contractBalance}
           />
         </YieldBody>
       </AppBody>

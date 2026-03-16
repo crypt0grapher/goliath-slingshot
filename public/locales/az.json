@@ -450,6 +450,11 @@
   "yield.eventStaked": "Steyk edildi",
   "yield.eventUnstaked": "Çıxarıldı",
   "yield.yourStXCNBalance": "stXCN Balansınız",
+  "yield.errorZeroAmount": "Məbləğ sıfırdan böyük olmalıdır",
+  "yield.errorInsufficientBalance": "Bu əməliyyat üçün stXCN balansı kifayət deyil",
+  "yield.errorInsufficientContractBalance": "Müqavilə balansı kifayət deyil — daha kiçik məbləğ yoxlayın",
+  "yield.errorTransferFailed": "Transfer uğursuz oldu",
+  "yield.errorGasEstimationFailed": "Qaz qiymətləndirməsi alınmadı — tranzaksiya standart qaz limiti ilə göndərildi",
   "migration.summary.allowanceSufficient": "Kifayətdir",
   "migration.summary.allowanceInsufficient": "Kifayət deyil",
   "errorBridgeApiUnavailable": "Körpü xidməti müvəqqəti əlçatmazdır. Zəhmət olmasa sonra yenidən cəhd edin.",
@@ -458,5 +463,8 @@
   "bridgeYouReceive": "You receive",
   "bridgeMinimumHint": "Min: {{ amount }} {{ token }}",
   "bridgeBelowMinimum": "Below minimum ({{ amount }} {{ token }})",
-  "bridgeConfirmOnNetwork": "on {{ network }}"
+  "bridgeConfirmOnNetwork": "on {{ network }}",
+  "yield.contractHealthOk": "Contract Health: OK",
+  "yield.contractHealthLow": "Contract Health: Low Reserves",
+  "yield.solvencyWarning": "Contract balance is low. Your withdrawal may fail. Try a smaller amount or wait for the contract to be refunded."
 }
