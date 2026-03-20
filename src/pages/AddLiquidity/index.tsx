@@ -1,7 +1,7 @@
 import { BigNumber } from '@ethersproject/bignumber';
 import { TransactionResponse } from '@ethersproject/providers';
 import { ChainId, Currency, ETHER, TokenAmount } from '@uniswap/sdk';
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Plus } from 'react-feather';
 import { RouteComponentProps } from 'react-router-dom';
 import { Text } from 'rebass';
@@ -26,6 +26,9 @@ import useTransactionDeadline from '../../hooks/useTransactionDeadline';
 import { useWalletModalToggle } from '../../state/application/hooks';
 import { Field } from '../../state/mint/actions';
 import { useDerivedMintInfo, useMintActionHandlers, useMintState } from '../../state/mint/hooks';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../state';
+import { resetMintState } from '../../state/mint/actions';
 
 import { useTransactionAdder } from '../../state/transactions/hooks';
 import { useIsExpertMode, useUserSlippageTolerance } from '../../state/user/hooks';
@@ -102,6 +105,8 @@ export default function AddLiquidity({
 
   const expertMode = useIsExpertMode();
 
+  const dispatch = useDispatch<AppDispatch>();
+
   // mint state
   const { independentField, typedValue, otherTypedValue } = useMintState();
   const {
@@ -134,6 +139,19 @@ export default function AddLiquidity({
   const deadline = useTransactionDeadline(); // custom from users settings
   const [allowedSlippage] = useUserSlippageTolerance(); // custom from users
   const [txHash, setTxHash] = useState<string>('');
+
+  // Track txHash in a ref so the cleanup closure reads the latest value
+  const txHashRef = useRef(txHash);
+  txHashRef.current = txHash;
+
+  // Reset mint state on unmount if a tx was submitted (covers browser back, tab switch, expert mode)
+  useEffect(() => {
+    return () => {
+      if (txHashRef.current) {
+        dispatch(resetMintState());
+      }
+    };
+  }, [dispatch]);
 
   // get formatted amounts
   const formattedAmounts = {
@@ -407,13 +425,12 @@ export default function AddLiquidity({
 
   const handleDismissConfirmation = useCallback(() => {
     setShowConfirm(false);
-    setTxError(null); // Clear any error when dismissing
-    // if there was a tx hash, we want to clear the input
+    setTxError(null);
     if (txHash) {
-      onFieldAInput('');
+      dispatch(resetMintState());
     }
     setTxHash('');
-  }, [onFieldAInput, txHash]);
+  }, [dispatch, txHash]);
 
   const isCreate = history.location.pathname.includes('/create');
 

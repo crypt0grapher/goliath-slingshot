@@ -11,6 +11,7 @@ import Settings from '../Settings';
 import { useDispatch } from 'react-redux';
 import { AppDispatch } from 'state';
 import { resetMintState } from 'state/mint/actions';
+import { resetBurnState } from 'state/burn/actions';
 import { useDirection } from '../../hooks/useDirection';
 
 const Tabs = styled.div`
@@ -123,7 +124,11 @@ export function AddRemoveTabs({ adding, creating }: { adding: boolean; creating:
         <HistoryLink
           to="/pool"
           onClick={() => {
-            adding && dispatch(resetMintState());
+            if (adding) {
+              dispatch(resetMintState());
+            } else {
+              dispatch(resetBurnState());
+            }
           }}
         >
           <BackArrow />

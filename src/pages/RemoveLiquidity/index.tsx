@@ -3,7 +3,7 @@ import { Contract } from '@ethersproject/contracts';
 import { TransactionResponse } from '@ethersproject/providers';
 import { ChainId, Currency, currencyEquals, ETHER, Percent, WETH } from '@uniswap/sdk';
 import { WXCN } from '../../constants';
-import React, { useCallback, useContext, useMemo, useState } from 'react';
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowDown, Plus } from 'react-feather';
 import { RouteComponentProps } from 'react-router';
 import { Text } from 'rebass';
@@ -41,7 +41,9 @@ import { useApproveCallback, ApprovalState } from '../../hooks/useApproveCallbac
 import { Dots } from '../../components/swap/styleds';
 import { useBurnActionHandlers } from '../../state/burn/hooks';
 import { useDerivedBurnInfo, useBurnState } from '../../state/burn/hooks';
-import { Field } from '../../state/burn/actions';
+import { Field, resetBurnState } from '../../state/burn/actions';
+import { useDispatch } from 'react-redux';
+import { AppDispatch } from '../../state';
 import { useWalletModalToggle } from '../../state/application/hooks';
 import { useUserSlippageTolerance } from '../../state/user/hooks';
 import { BigNumber } from '@ethersproject/bignumber';
@@ -85,6 +87,21 @@ export default function RemoveLiquidity({
 
   // txn values
   const [txHash, setTxHash] = useState<string>('');
+  const dispatch = useDispatch<AppDispatch>();
+
+  // Track txHash in a ref so the cleanup closure reads the latest value
+  const txHashRef = useRef(txHash);
+  txHashRef.current = txHash;
+
+  // Reset burn state on unmount if a tx was submitted (covers browser back, tab switch)
+  useEffect(() => {
+    return () => {
+      if (txHashRef.current) {
+        dispatch(resetBurnState());
+      }
+    };
+  }, [dispatch]);
+
   const deadline = useTransactionDeadline();
   const [allowedSlippage] = useUserSlippageTolerance();
 
@@ -471,13 +488,12 @@ export default function RemoveLiquidity({
 
   const handleDismissConfirmation = useCallback(() => {
     setShowConfirm(false);
-    setSignatureData(null); // important that we clear signature data to avoid bad sigs
-    // if there was a tx hash, we want to clear the input
+    setSignatureData(null);
     if (txHash) {
-      onUserInput(Field.LIQUIDITY_PERCENT, '0');
+      dispatch(resetBurnState());
     }
     setTxHash('');
-  }, [onUserInput, txHash]);
+  }, [dispatch, txHash]);
 
   const [innerLiquidityPercentage, setInnerLiquidityPercentage] = useDebouncedChangeHandler(
     Number.parseInt(parsedAmounts[Field.LIQUIDITY_PERCENT].toFixed(0)),
