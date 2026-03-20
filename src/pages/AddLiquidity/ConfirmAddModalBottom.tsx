@@ -1,5 +1,6 @@
 import { ChainId, Currency, CurrencyAmount, ETHER, Fraction, Percent } from '@uniswap/sdk';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Text } from 'rebass';
 import { ButtonPrimary } from '../../components/Button';
 import { RowBetween, RowFixed } from '../../components/Row';
@@ -35,6 +36,7 @@ export function ConfirmAddModalBottom({
   onAdd: () => void;
 }) {
   const { chainId } = useActiveWeb3React();
+  const { t } = useTranslation();
 
   // Get display symbols (XCN for native on Goliath)
   const symbolA = getCurrencySymbol(currencies[Field.CURRENCY_A], chainId);
@@ -43,21 +45,21 @@ export function ConfirmAddModalBottom({
   return (
     <>
       <RowBetween>
-        <TYPE.body>{symbolA} Deposited</TYPE.body>
+        <TYPE.body>{t('pool.deposited', { symbol: symbolA })}</TYPE.body>
         <RowFixed>
           <CurrencyLogo currency={currencies[Field.CURRENCY_A]} style={{ marginRight: '8px' }} />
           <TYPE.body>{parsedAmounts[Field.CURRENCY_A]?.toSignificant(10)}</TYPE.body>
         </RowFixed>
       </RowBetween>
       <RowBetween>
-        <TYPE.body>{symbolB} Deposited</TYPE.body>
+        <TYPE.body>{t('pool.deposited', { symbol: symbolB })}</TYPE.body>
         <RowFixed>
           <CurrencyLogo currency={currencies[Field.CURRENCY_B]} style={{ marginRight: '8px' }} />
           <TYPE.body>{parsedAmounts[Field.CURRENCY_B]?.toSignificant(10)}</TYPE.body>
         </RowFixed>
       </RowBetween>
       <RowBetween>
-        <TYPE.body>Rates</TYPE.body>
+        <TYPE.body>{t('pool.rates')}</TYPE.body>
         <TYPE.body>
           {`1 ${symbolA} = ${price?.toSignificant(4)} ${symbolB}`}
         </TYPE.body>
@@ -68,12 +70,12 @@ export function ConfirmAddModalBottom({
         </TYPE.body>
       </RowBetween>
       <RowBetween>
-        <TYPE.body>Share of Pool:</TYPE.body>
+        <TYPE.body>{t('pool.shareOfPool')}:</TYPE.body>
         <TYPE.body>{noLiquidity ? '100' : poolTokenPercentage?.toSignificant(4)}%</TYPE.body>
       </RowBetween>
       <ButtonPrimary style={{ margin: '20px 0 0 0' }} onClick={onAdd}>
         <Text fontWeight={500} fontSize={20}>
-          {noLiquidity ? 'Create Pool & Supply' : 'Confirm Supply'}
+          {noLiquidity ? t('pool.createPoolAndSupply') : t('pool.confirmSupply')}
         </Text>
       </ButtonPrimary>
     </>

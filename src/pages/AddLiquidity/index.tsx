@@ -220,7 +220,7 @@ export default function AddLiquidity({
       // Get the ERC20 token (the one that's not native)
       const token = wrappedCurrency(tokenBIsNative ? currencyA : currencyB, chainId);
       if (!token) {
-        setTxError('Invalid token configuration');
+        setTxError(t('errorInvalidTokenConfig'));
         return;
       }
 
@@ -242,7 +242,7 @@ export default function AddLiquidity({
       const tokenA = wrappedCurrency(currencyA, chainId);
       const tokenB = wrappedCurrency(currencyB, chainId);
       if (!tokenA || !tokenB) {
-        setTxError('Invalid token configuration');
+        setTxError(t('errorInvalidTokenConfig'));
         return;
       }
 
@@ -294,7 +294,7 @@ export default function AddLiquidity({
       setAttemptingTxn(false);
 
       addTransaction(response, {
-        summary: `Add ${parsedAmountA.toSignificant(6)} ${symbolA} and ${parsedAmountB.toSignificant(6)} ${symbolB}`,
+        summary: t('pool.adding', { amountA: parsedAmountA.toSignificant(6), symbolA, amountB: parsedAmountB.toSignificant(6), symbolB }),
       });
 
       setTxHash(response.hash);
@@ -304,28 +304,26 @@ export default function AddLiquidity({
       // Handle user rejection
       if (error?.code === 4001 || error?.code === 'ACTION_REJECTED') {
         console.debug('User rejected transaction');
-        setTxError('Transaction rejected');
+        setTxError(t('errorTransactionRejected'));
         return;
       }
 
       console.error('Add liquidity error:', error);
 
       // Set user-friendly error message
-      let errorMessage = 'Failed to add liquidity. ';
+      let errorMessage = t('errorAddLiquidityFailed');
       if (error?.message) {
         if (error.message.includes('insufficient funds')) {
-          errorMessage = `Insufficient ${symbolA === 'XCN' || symbolB === 'XCN' ? 'XCN' : 'token'} balance for this transaction.`;
+          errorMessage = t('errorInsufficientBalanceTransaction');
         } else if (error.message.includes('INSUFFICIENT_')) {
-          errorMessage = 'Insufficient liquidity or amounts too low.';
+          errorMessage = t('errorInsufficientLiquidityAmounts');
         } else if (error.message.includes('EXPIRED')) {
-          errorMessage = 'Transaction deadline expired. Please try again.';
+          errorMessage = t('errorDeadlineExpired');
         } else if (error.message.includes('user rejected')) {
-          errorMessage = 'Transaction rejected.';
+          errorMessage = t('errorTransactionRejected');
         } else {
-          errorMessage += error.message.substring(0, 100);
+          errorMessage = t('errorAddLiquidityFailed') + ' ' + error.message.substring(0, 100);
         }
-      } else {
-        errorMessage += 'Please try again.';
       }
 
       setTxError(errorMessage);
@@ -366,13 +364,11 @@ export default function AddLiquidity({
         </RowFlat>
         <Row>
           <Text fontSize="24px">
-            {displaySymbolA + '/' + displaySymbolB + ' Pool Tokens'}
+            {displaySymbolA + '/' + displaySymbolB + ' ' + t('poolTokens')}
           </Text>
         </Row>
         <TYPE.italic fontSize={12} textAlign="left" padding={'8px 0 0 0 '}>
-          {`Output is estimated. If the price changes by more than ${
-            allowedSlippage / 100
-          }% your transaction will revert.`}
+          {t('outputEstimatedRevert', { slippage: allowedSlippage / 100 })}
         </TYPE.italic>
       </AutoColumn>
     );
@@ -391,7 +387,7 @@ export default function AddLiquidity({
     );
   };
 
-  const pendingText = `Supplying ${parsedAmounts[Field.CURRENCY_A]?.toSignificant(6)} ${displaySymbolA} and ${parsedAmounts[Field.CURRENCY_B]?.toSignificant(6)} ${displaySymbolB}`;
+  const pendingText = t('supplying', { amountA: parsedAmounts[Field.CURRENCY_A]?.toSignificant(6), symbolA: displaySymbolA, amountB: parsedAmounts[Field.CURRENCY_B]?.toSignificant(6), symbolB: displaySymbolB });
 
   // Default native currency for URLs (XCN on Goliath, ETH elsewhere)
   const defaultNativeCurrency = chainId === ChainId.GOLIATH_TESTNET ? 'XCN' : 'ETH';
@@ -574,9 +570,9 @@ export default function AddLiquidity({
                           width={approvalB !== ApprovalState.APPROVED ? '48%' : '100%'}
                         >
                           {approvalA === ApprovalState.PENDING ? (
-                            <Dots>Approving {displaySymbolA}</Dots>
+                            <Dots>{t('approving')} {displaySymbolA}</Dots>
                           ) : (
-                            'Approve ' + displaySymbolA
+                            t('approve') + ' ' + displaySymbolA
                           )}
                         </ButtonPrimary>
                       )}
@@ -587,9 +583,9 @@ export default function AddLiquidity({
                           width={approvalA !== ApprovalState.APPROVED ? '48%' : '100%'}
                         >
                           {approvalB === ApprovalState.PENDING ? (
-                            <Dots>Approving {displaySymbolB}</Dots>
+                            <Dots>{t('approving')} {displaySymbolB}</Dots>
                           ) : (
-                            'Approve ' + displaySymbolB
+                            t('approve') + ' ' + displaySymbolB
                           )}
                         </ButtonPrimary>
                       )}

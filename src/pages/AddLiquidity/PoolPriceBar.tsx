@@ -1,5 +1,6 @@
 import { ChainId, Currency, ETHER, Percent, Price } from '@uniswap/sdk';
 import React, { useContext } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Text } from 'rebass';
 import { ThemeContext } from 'styled-components';
 import { AutoColumn } from '../../components/Column';
@@ -33,6 +34,7 @@ export function PoolPriceBar({
 }) {
   const theme = useContext(ThemeContext);
   const { chainId } = useActiveWeb3React();
+  const { t } = useTranslation();
 
   // Get display symbols (XCN for native on Goliath)
   const symbolA = getCurrencySymbol(currencies[Field.CURRENCY_A], chainId);
@@ -44,13 +46,13 @@ export function PoolPriceBar({
         <AutoColumn justify="center">
           <TYPE.black>{price?.toSignificant(10) ?? '-'}</TYPE.black>
           <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
-            {symbolB} per {symbolA}
+            {t('pool.perToken', { symbolA, symbolB })}
           </Text>
         </AutoColumn>
         <AutoColumn justify="center">
           <TYPE.black>{price?.invert()?.toSignificant(10) ?? '-'}</TYPE.black>
           <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
-            {symbolA} per {symbolB}
+            {t('pool.perToken', { symbolA: symbolB, symbolB: symbolA })}
           </Text>
         </AutoColumn>
         <AutoColumn justify="center">
@@ -61,7 +63,7 @@ export function PoolPriceBar({
             %
           </TYPE.black>
           <Text fontWeight={500} fontSize={14} color={theme.text2} pt={1}>
-            Share of Pool
+            {t('pool.shareOfPool')}
           </Text>
         </AutoColumn>
       </AutoRow>
