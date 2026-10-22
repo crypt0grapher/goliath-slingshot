@@ -390,7 +390,7 @@ export default function Header() {
       <HeaderRow>
         <Title href=".">
           <Icon>
-            <LogoImg width={'100px'} src="https://testnet.explorer.goliath.net/assets/configs/network_logo.svg" alt="logo" invert={darkMode} />
+            <LogoImg width={'100px'} src="/images/onyx-logo.png" alt="Onyx" invert={darkMode} />
           </Icon>
         </Title>
       </HeaderRow>

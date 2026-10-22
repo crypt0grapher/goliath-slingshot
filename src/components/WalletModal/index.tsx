@@ -228,7 +228,7 @@ export default function WalletModal({
                   symbol: 'XCN',
                   decimals: 18,
                 },
-                rpcUrls: ['https://testnet.rpc.goliath.net'],
+                rpcUrls: ['https://rpc.testnet.onyx.org'],
                 blockExplorerUrls: ['https://testnet.explorer.goliath.net'],
               },
             ],

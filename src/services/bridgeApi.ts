@@ -29,8 +29,11 @@ export interface DirectionLimits {
 }
 
 export interface LimitsResponse {
-  goliathToSepolia: DirectionLimits;
-  sepoliaToGoliath: DirectionLimits;
+  goliathToSepolia?: DirectionLimits;
+  sepoliaToGoliath?: DirectionLimits;
+  // Backend may use "Ethereum" instead of "Sepolia" in key names
+  goliathToEthereum?: DirectionLimits;
+  ethereumToGoliath?: DirectionLimits;
 }
 
 export interface BridgeStatusResponse {

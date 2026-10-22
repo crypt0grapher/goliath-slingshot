@@ -55,7 +55,7 @@ export const BRIDGE_TOKENS: Record<BridgeTokenSymbol, BridgeTokenConfig> = {
   XCN: {
     symbol: 'XCN',
     name: 'Onyxcoin',
-    logoUrl: 'https://bridge.onyx.org/img/networks/80888.svg',
+    logoUrl: '/images/tokens/xcn.png',
     sepolia: {
       // XCN is ERC-20 on Sepolia
       address: bridgeConfig.tokens.sepolia.xcn,

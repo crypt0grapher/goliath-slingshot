@@ -2,11 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { BridgeApiClient, LimitsResponse } from '../../services/bridgeApi';
 import { bridgeConfig } from '../../config/bridgeConfig';
 import { BridgeDirection } from '../../state/bridge/types';
-
-interface MinAmountResult {
-  amount: string;
-  formatted: string;
-}
+import { getMinAmountFromLimits, MinAmountResult } from '../../utils/bridge/limitsLookup';
 
 interface UseBridgeLimitsReturn {
   limits: LimitsResponse | null;
@@ -47,18 +43,7 @@ export function useBridgeLimits(): UseBridgeLimitsReturn {
 
   const getMinAmount = useCallback(
     (token: string, direction: BridgeDirection): MinAmountResult | null => {
-      if (!limits) return null;
-
-      const dirLimits =
-        direction === 'GOLIATH_TO_SEPOLIA' ? limits.goliathToSepolia : limits.sepoliaToGoliath;
-
-      const tokenLimits = dirLimits.tokens[token];
-      if (!tokenLimits) return null;
-
-      return {
-        amount: tokenLimits.minAmount,
-        formatted: tokenLimits.minAmountFormatted,
-      };
+      return getMinAmountFromLimits(limits, token, direction);
     },
     [limits]
   );

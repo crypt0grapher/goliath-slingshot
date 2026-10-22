@@ -52,7 +52,7 @@ const GOLIATH_TOKEN_LIST: TokenList = {
       decimals: WXCN.decimals,
       symbol: WXCN.symbol!,
       name: WXCN.name!,
-      logoURI: 'https://bridge.onyx.org/img/networks/80888.svg',
+      logoURI: '/images/tokens/xcn.png',
     },
     {
       chainId: 8901,
