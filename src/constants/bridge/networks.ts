@@ -64,7 +64,16 @@ export function getOppositeNetwork(network: BridgeNetwork): BridgeNetwork {
   return network === BridgeNetwork.SEPOLIA ? BridgeNetwork.GOLIATH : BridgeNetwork.SEPOLIA;
 }
 
+// Hedera-SDK deliveries (bridge GOLIATH_TX_MODE=hedera) record a consensus timestamp
+// ("<sec>.<nanos>") or a Hedera tx id ("<shard>.<realm>.<num>@<sec>.<nanos>"), not a 0x hash.
+// Blockscout cannot resolve those; the Hiero validators explorer can.
+const GOLIATH_NATIVE_TX_EXPLORER_URL = 'https://validators.testnet.onyx.org/testnet/transaction';
+const GOLIATH_NATIVE_TX_ID = /^(\d+\.\d+\.\d+@)?\d+\.\d+$/;
+
 export function getExplorerTxUrl(network: BridgeNetwork, txHash: string): string {
+  if (network === BridgeNetwork.GOLIATH && GOLIATH_NATIVE_TX_ID.test(txHash)) {
+    return `${GOLIATH_NATIVE_TX_EXPLORER_URL}/${txHash}`;
+  }
   const metadata = NETWORK_METADATA[network];
   return `${metadata.explorerUrl}/tx/${txHash}`;
 }
