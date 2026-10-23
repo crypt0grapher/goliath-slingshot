@@ -1,7 +1,7 @@
 import { ChainId } from '@uniswap/sdk';
 import React from 'react';
 import { Text } from 'rebass';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { darken } from 'polished';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,8 @@ import { useDarkModeManager } from '../../state/user/hooks';
 import { useETHBalances } from '../../state/wallet/hooks';
 import { migrationConfig } from '../../config/migrationConfig';
 import { stakingConfig } from '../../config/stakingConfig';
+import { RH_ROUTE, RH_TESTNET_BRIDGE_ENABLED } from '../../config/rhBridge';
+import { RH_TESTNET_CHAIN_ID } from '../../constants/rhBridge';
 
 import { LightCard } from '../Card';
 import { Moon, Sun, HelpCircle } from 'react-feather';
@@ -381,9 +383,14 @@ export default function Header() {
   const userEthBalance = useETHBalances(account ? [account] : [])?.[account ?? ''];
   const [darkMode, toggleDarkMode] = useDarkModeManager();
   const { switchToGoliath, isLoading: isSwitchingNetwork } = useNetworkSwitch();
+  const { pathname } = useLocation();
 
-  const isWrongNetwork = account && chainId && chainId !== GOLIATH_TESTNET_CHAIN_ID;
-  const networkName = chainId && NETWORK_LABELS[chainId] ? NETWORK_LABELS[chainId] : `Chain ${chainId}`;
+  const isRobinhoodNetwork = RH_TESTNET_BRIDGE_ENABLED && Number(chainId) === RH_TESTNET_CHAIN_ID;
+  const isRhLaneNetwork = isRobinhoodNetwork && pathname === RH_ROUTE;
+  const isWrongNetwork = account && chainId && chainId !== GOLIATH_TESTNET_CHAIN_ID && !isRhLaneNetwork;
+  const networkName = isRobinhoodNetwork ? 'Robinhood Chain Testnet'
+    : chainId && NETWORK_LABELS[chainId] ? NETWORK_LABELS[chainId] : `Chain ${chainId}`;
+  const nativeSymbol = isRobinhoodNetwork ? 'ETH' : 'XCN';
 
   return (
     <HeaderFrame>
@@ -445,15 +452,15 @@ export default function Header() {
                 {isSwitchingNetwork ? 'Switching...' : networkName}
               </WrongNetworkButton>
             ) : (
-              chainId === GOLIATH_TESTNET_CHAIN_ID && (
-                <NetworkCard title="Onyx Testnet">Onyx Testnet</NetworkCard>
+              (chainId === GOLIATH_TESTNET_CHAIN_ID || isRhLaneNetwork) && (
+                <NetworkCard title={networkName}>{networkName}</NetworkCard>
               )
             )}
           </HideSmall>
           <AccountElement active={!!account} style={{ pointerEvents: 'auto' }}>
             {account && userEthBalance ? (
               <BalanceText style={{ flexShrink: 0 }} pl="0.75rem" pr="0.5rem" fontWeight={500}>
-                {userEthBalance?.toSignificant(7)} XCN
+                {userEthBalance?.toSignificant(7)} {nativeSymbol}
               </BalanceText>
             ) : null}
             <Web3Status />

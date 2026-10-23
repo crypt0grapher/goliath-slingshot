@@ -16,6 +16,7 @@ import { useWalletModalToggle } from '../../state/application/hooks';
 import { bridgeActions } from '../../state/bridge/reducer';
 import { getButtonState, GOLIATH_TO_SEPOLIA_MAX_ETH, TranslatableText } from '../../utils/bridge/validation';
 import { BridgeNetwork } from '../../constants/bridge/networks';
+import { RH_ROUTE, RH_TESTNET_BRIDGE_ENABLED } from '../../config/rhBridge';
 import { Wrapper, FormContainer, NetworkRow, OutputContainer, OutputLabel, OutputAmount, OutputBalance, ErrorMessage } from './styleds';
 
 const ActionButton = styled(ButtonPrimary)`
@@ -130,6 +131,9 @@ export default function BridgeForm() {
               selectedNetwork={originNetwork}
               onSelect={setOriginNetwork}
               label={t('from')}
+              navigationOptions={RH_TESTNET_BRIDGE_ENABLED ? [{
+                label: 'Robinhood Chain Testnet', to: RH_ROUTE, description: 'TSLA → Onyx Testnet',
+              }] : undefined}
             />
           </NetworkRow>
 
