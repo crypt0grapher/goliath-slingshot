@@ -1,0 +1,22 @@
+{
+  "fixture": "getFeeQuote.422.below-min-exit",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/fee-quote",
+    "query": {
+      "gross": "999"
+    }
+  },
+  "response": {
+    "status": 422,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "code": "AMOUNT_BELOW_MIN_EXIT",
+        "message": "gross is below the minimum exit"
+      }
+    }
+  }
+}

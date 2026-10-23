@@ -1,0 +1,22 @@
+{
+  "fixture": "getHistory.400.invalid-address",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/history",
+    "query": {
+      "address": "0x12"
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_ADDRESS",
+        "message": "address must be a 20-byte hex address"
+      }
+    }
+  }
+}

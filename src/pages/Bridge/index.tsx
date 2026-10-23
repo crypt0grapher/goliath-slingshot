@@ -13,6 +13,7 @@ import { bridgeActions } from '../../state/bridge/reducer';
 import { selectOperations, selectOperationIds } from '../../state/bridge/selectors';
 import { BridgeHeader, BridgeTitle } from './styleds';
 import Settings from '../../components/Settings';
+import { RhBridgeEntryLink } from '../RhBridge/EntryLink';
 
 const PageWrapper = styled.div`
   display: flex;
@@ -57,6 +58,7 @@ export default function Bridge() {
           <BridgeTitle>{t('bridge')}</BridgeTitle>
           <Settings />
         </BridgeHeader>
+        <RhBridgeEntryLink />
         <BridgeForm />
       </AppBody>
       <BridgeHistoryPanel />

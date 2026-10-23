@@ -1,0 +1,51 @@
+{
+  "fixture": "getEffectiveState.200.exits-held",
+  "note": "Fee collector blocked by the issuer: all exits hold (issuer policy ALL_EXITS_HOLD_CRITICAL).",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/effective-state",
+    "query": {}
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "assetId": "TSLA",
+      "observedAt": "2026-10-23T00:00:00.000Z",
+      "depositsOpen": true,
+      "exitsOpen": false,
+      "admission": "OPEN",
+      "paused": {
+        "escrow": false,
+        "minter": false,
+        "token": false,
+        "wrapper": false
+      },
+      "issuer": "OPEN",
+      "collector": "FROZEN",
+      "held": {
+        "lane": false,
+        "deposits": false,
+        "exits": true,
+        "recipientHolds": 1
+      },
+      "upgradePending": false,
+      "lagSeconds": {
+        "robinhood": 1012,
+        "onyx": 6
+      },
+      "finality": {
+        "robinhood": {
+          "finalizedBlock": "123456",
+          "etaSeconds": 1020
+        },
+        "onyx": {
+          "finalizedBlock": "6300000",
+          "etaSeconds": 12
+        }
+      }
+    }
+  }
+}

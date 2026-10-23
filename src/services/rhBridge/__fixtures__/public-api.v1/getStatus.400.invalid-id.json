@@ -1,0 +1,21 @@
+{
+  "fixture": "getStatus.400.invalid-id",
+  "note": "The old client used its local \"<chainId>:<txHash>\" history id here; v1 resolves transactions through /status/by-tx.",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/status/46630:0x4e7faab3c2bd0f1954c6aaef63333db0dd1894b244a038bd295c634085dc60ce",
+    "query": {}
+  },
+  "response": {
+    "status": 400,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "operationId must be RH_TO_ONYX:<depositId> or ONYX_TO_RH:<withdrawId>"
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "fixture": "getStatus.404",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/status/RH_TO_ONYX:0xc9efcfb67f54d0a81b4079da97bda35bd539e45e601f0b11c503f651a39a83a2",
+    "query": {}
+  },
+  "response": {
+    "status": 404,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "code": "NOT_FOUND",
+        "message": "Not found"
+      }
+    }
+  }
+}

@@ -23,6 +23,10 @@ import { OpenClaimAddressModalAndRedirectToSwap, RedirectPathToSwapOnly } from '
 import Bridge from './Bridge';
 import { migrationConfig } from '../config/migrationConfig';
 import { stakingConfig } from '../config/stakingConfig';
+import { RH_ROUTE, RH_TESTNET_BRIDGE_ENABLED } from '../config/rhBridge';
+
+// Robinhood testnet TSLA lane: lazy chunk, routed only when REACT_APP_RH_TESTNET_BRIDGE_ENABLED=true
+const RhBridge = React.lazy(() => import('./RhBridge'));
 
 // Lazy-load Migrate so its bundle is only fetched when the feature is enabled
 const Migrate = React.lazy(() => import('./Migrate'));
@@ -79,6 +83,7 @@ export default function App() {
           <Web3ReactManager>
             <Switch>
               <Route exact strict path="/swap" component={Swap} />
+              {RH_TESTNET_BRIDGE_ENABLED && <Route exact strict path={RH_ROUTE} component={RhBridge} />}
               <Route exact strict path="/bridge" component={Bridge} />
               {migrationConfig.migrationEnabled ? (
                 <Route exact strict path="/migrate" component={Migrate} />

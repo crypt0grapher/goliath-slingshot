@@ -1,0 +1,22 @@
+{
+  "fixture": "getFeeQuote.503",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/fee-quote",
+    "query": {
+      "gross": "1000000000000000001"
+    }
+  },
+  "response": {
+    "status": 503,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "code": "SERVICE_UNAVAILABLE",
+        "message": "Service temporarily unavailable"
+      }
+    }
+  }
+}

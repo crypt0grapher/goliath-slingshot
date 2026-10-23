@@ -1,0 +1,44 @@
+{
+  "fixture": "getAssets.200",
+  "note": "Synthetic addresses from test/golden-vectors.json; real values come from the task 008 manifest.",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/assets",
+    "query": {}
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "contractVersion": "1.0.0",
+      "lane": "RH_TESTNET",
+      "abiVersion": "rh-stock-bridge-abi-12fc53612bcf",
+      "assets": [
+        {
+          "assetId": "TSLA",
+          "symbol": "TSLA",
+          "name": "Tesla stock token (Robinhood testnet)",
+          "decimals": 18,
+          "robinhood": {
+            "chainId": 46630,
+            "chainName": "Robinhood Chain Testnet",
+            "explorerBaseUrl": "https://explorer.testnet.chain.robinhood.com",
+            "token": "0x2222222222222222222222222222222222222222",
+            "escrow": "0x1111111111111111111111111111111111111111",
+            "deploymentBlock": "1000"
+          },
+          "onyx": {
+            "chainId": 8901,
+            "chainName": "Onyx Testnet",
+            "explorerBaseUrl": "https://testnet.explorer.goliath.net",
+            "wrapper": "0x4444444444444444444444444444444444444444",
+            "minter": "0x3333333333333333333333333333333333333333",
+            "deploymentBlock": "2000"
+          }
+        }
+      ]
+    }
+  }
+}

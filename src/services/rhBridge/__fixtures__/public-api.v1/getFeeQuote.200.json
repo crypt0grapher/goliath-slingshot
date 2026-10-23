@@ -1,0 +1,29 @@
+{
+  "fixture": "getFeeQuote.200",
+  "note": "fee = max(0, ceil(gross*25/10000)).",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/fee-quote",
+    "query": {
+      "gross": "1000000000000000001"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "assetId": "TSLA",
+      "direction": "ONYX_TO_RH",
+      "gross": "1000000000000000001",
+      "fee": "2500000000000001",
+      "net": "997500000000000000",
+      "suggestedMaxFee": "2500000000000001",
+      "feeBps": 25,
+      "minFee": "0",
+      "quotedAt": "2026-10-23T00:00:00.000Z",
+      "expiresAt": "2026-10-23T00:01:00.000Z"
+    }
+  }
+}

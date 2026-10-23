@@ -5,6 +5,7 @@ import { WalletLinkConnector } from '@web3-react/walletlink-connector';
 // import { PortisConnector } from '@web3-react/portis-connector';
 // import { FortmaticConnector } from './Fortmatic';
 import { NetworkConnector } from './NetworkConnector';
+import { RH_TESTNET_BRIDGE_ENABLED } from '../config/rhBridge';
 
 const REACT_APP_NETWORK_URL = process.env.REACT_APP_NETWORK_URL;
 // const FORMATIC_KEY = process.env.REACT_APP_FORTMATIC_KEY
@@ -26,7 +27,9 @@ export function getNetworkLibrary(): Web3Provider {
 }
 
 export const injected = new InjectedConnector({
-  supportedChainIds: [8901, 11155111], // Goliath Testnet + Sepolia (for Bridge)
+  // Onyx Testnet + Sepolia (Bridge); Robinhood Chain Testnet only with the RH lane flag
+  // (REACT_APP_RH_TESTNET_BRIDGE_ENABLED=true, #/bridge/robinhood-testnet).
+  supportedChainIds: [8901, 11155111, ...(RH_TESTNET_BRIDGE_ENABLED ? [46630] : [])],
 });
 
 export const walletconnect = new WalletConnectConnector({

@@ -1,0 +1,23 @@
+{
+  "fixture": "getFeeQuote.400.invalid-amount",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/fee-quote",
+    "query": {
+      "gross": "1.5"
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_AMOUNT",
+        "message": "gross must be a raw integer amount",
+        "requestId": "req_0000000001"
+      }
+    }
+  }
+}

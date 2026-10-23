@@ -1,0 +1,53 @@
+{
+  "schema": "rh-testnet-deployment/1",
+  "testnetOnly": true,
+  "provenance": "Public subset of Solo deploy/bridge-testnet/rh-deployment.json (task 008, recordedAt 2026-10-23 03:15 CEST). Check with scripts/rh-bridge/check-deployment.cjs <rh-deployment.json>.",
+  "chains": {
+    "robinhood": {
+      "chainId": 46630,
+      "rpc": "https://rpc.testnet.chain.robinhood.com",
+      "explorer": "https://explorer.testnet.chain.robinhood.com"
+    },
+    "onyx": {
+      "chainId": 8901,
+      "rpc": "https://rpc.testnet.onyx.org",
+      "explorer": "https://testnet.explorer.goliath.net"
+    }
+  },
+  "token": {
+    "chainId": 46630,
+    "address": "0xC9f9c86933092BbbfFF3CCb4b105A4A94bf3Bd4E",
+    "symbol": "TSLA",
+    "decimals": 18
+  },
+  "escrow": {
+    "chainId": 46630,
+    "address": "0x4de29616f7be2bc44D9dfF23abc5Fcb5804DF8B9"
+  },
+  "minter": {
+    "chainId": 8901,
+    "address": "0x3ABf85db57b9052E20204543777c5165a2a47559"
+  },
+  "wrapper": {
+    "chainId": 8901,
+    "address": "0x9Ff95cC4E7189cBA6D398fBDbf9Aee1D84CB233d",
+    "symbol": "TSLA",
+    "decimals": 18
+  },
+  "restricted": true,
+  "holders": [
+    "0x7dBe71B743e3e9f542324Dd032D080e9fA1A243A",
+    "0xaa91057C8F98Af30C44BB8708399bF4daA188A81"
+  ],
+  "minterEntry": {
+    "perTxMax": "700000000000000000",
+    "feeBps": "25",
+    "minFee": "2800000000000000",
+    "minExit": "12000000000000000",
+    "maxMinFee": "28000000000000000"
+  },
+  "escrowMapping": {
+    "perTxMax": "700000000000000000"
+  },
+  "maxFeeBps": "100"
+}

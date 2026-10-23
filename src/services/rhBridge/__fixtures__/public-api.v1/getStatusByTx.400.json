@@ -1,0 +1,20 @@
+{
+  "fixture": "getStatusByTx.400",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/status/by-tx/0x1234",
+    "query": {}
+  },
+  "response": {
+    "status": 400,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "txHash must be 32 bytes of hex"
+      }
+    }
+  }
+}

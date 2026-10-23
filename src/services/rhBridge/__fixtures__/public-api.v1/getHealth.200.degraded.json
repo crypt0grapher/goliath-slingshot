@@ -1,0 +1,29 @@
+{
+  "fixture": "getHealth.200.degraded",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/health",
+    "query": {}
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "status": "degraded",
+      "checkedAt": "2026-10-23T00:00:00.000Z",
+      "components": {
+        "database": "ok",
+        "robinhoodWatcher": "ok",
+        "onyxWatcher": "degraded",
+        "submitter": "ok",
+        "signer": "ok"
+      },
+      "lagSeconds": {
+        "robinhood": 1012,
+        "onyx": 340
+      }
+    }
+  }
+}

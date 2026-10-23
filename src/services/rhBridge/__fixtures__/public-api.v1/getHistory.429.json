@@ -1,0 +1,22 @@
+{
+  "fixture": "getHistory.429",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/history",
+    "query": {
+      "address": "0x5555555555555555555555555555555555555555"
+    }
+  },
+  "response": {
+    "status": 429,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "code": "RATE_LIMITED",
+        "message": "Too many requests"
+      }
+    }
+  }
+}

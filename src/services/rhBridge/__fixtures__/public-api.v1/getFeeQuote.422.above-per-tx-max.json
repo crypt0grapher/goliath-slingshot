@@ -1,0 +1,22 @@
+{
+  "fixture": "getFeeQuote.422.above-per-tx-max",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/fee-quote",
+    "query": {
+      "gross": "2000000000000000001"
+    }
+  },
+  "response": {
+    "status": 422,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "code": "AMOUNT_ABOVE_PER_TX_MAX",
+        "message": "gross is above the per-transaction maximum"
+      }
+    }
+  }
+}
