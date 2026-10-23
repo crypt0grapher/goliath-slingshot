@@ -103,7 +103,7 @@ export default function AddressInputPanel({
               </TYPE.black>
               {address && chainId && (
                 <ExternalLink href={getEtherscanLink(chainId, name ?? address, 'address')} style={{ fontSize: '14px' }}>
-                  (Goliath Explorer)
+                  (Onyx Explorer)
                 </ExternalLink>
               )}
             </RowBetween>

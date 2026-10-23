@@ -366,7 +366,7 @@ describe('Hedera-mode destination ids — status modal via real polling', () => 
     const isE2G = local.direction === 'SEPOLIA_TO_GOLIATH';
     const originNet = isE2G ? BridgeNetwork.SEPOLIA : BridgeNetwork.GOLIATH;
     const destNet = isE2G ? BridgeNetwork.GOLIATH : BridgeNetwork.SEPOLIA;
-    const label = (n: BridgeNetwork) => `viewOnExplorer:${n === BridgeNetwork.SEPOLIA ? 'Sepolia' : 'Goliath'}`;
+    const label = (n: BridgeNetwork) => `viewOnExplorer:${n === BridgeNetwork.SEPOLIA ? 'Sepolia' : 'Onyx'}`;
     // BridgeStatusModal renders the origin link first, then the destination link (if any).
     const [originLink, destLink, ...extra] = Array.from(container.querySelectorAll('a'));
     expect(extra).toHaveLength(0);

@@ -176,7 +176,7 @@ function getSepoliaProvider(): ethers.providers.JsonRpcProvider {
 }
 
 function createGoliathProvider(rpcUrl: string): ethers.providers.JsonRpcProvider {
-  console.log('[BridgeProviders] Creating Goliath provider:', rpcUrl);
+  console.log('[BridgeProviders] Creating Onyx provider:', rpcUrl);
   return new ethers.providers.JsonRpcProvider(
     rpcUrl,
     { chainId: bridgeConfig.goliath.chainId, name: 'goliath' }
@@ -195,7 +195,7 @@ async function validateGoliathProvider(): Promise<void> {
   }
 
   try {
-    await runGoliathRpcCall('Goliath primary RPC validation', () => _goliathProvider!.getBlockNumber());
+    await runGoliathRpcCall('Onyx primary RPC validation', () => _goliathProvider!.getBlockNumber());
     _goliathValidated = true;
     return;
   } catch (err) {
@@ -204,11 +204,11 @@ async function validateGoliathProvider(): Promise<void> {
     const fallbackUrl = process.env.REACT_APP_GOLIATH_RPC_URL_FALLBACK;
     if (!fallbackUrl || fallbackUrl === bridgeConfig.goliath.rpcUrl) throw err;
 
-    console.warn('[BridgeProviders] Primary Goliath RPC failed, switching to fallback:', fallbackUrl);
+    console.warn('[BridgeProviders] Primary Onyx RPC failed, switching to fallback:', fallbackUrl);
     const fallbackProvider = createGoliathProvider(fallbackUrl);
     _goliathProvider = fallbackProvider;
     try {
-      await runGoliathRpcCall('Goliath fallback RPC validation', () => fallbackProvider.getBlockNumber());
+      await runGoliathRpcCall('Onyx fallback RPC validation', () => fallbackProvider.getBlockNumber());
       _goliathValidated = true;
     } catch (fallbackErr) {
       throw isRpcFailure(fallbackErr) ? fallbackErr : fallbackErr;
@@ -226,7 +226,7 @@ export async function ensureGoliathProviderReady(): Promise<void> {
   if (!_goliathValidationPromise) {
     _goliathValidationPromise = validateGoliathProvider()
       .catch((err) => {
-        console.error('[BridgeProviders] Goliath provider validation failed:', err);
+        console.error('[BridgeProviders] Onyx provider validation failed:', err);
         _goliathValidated = false;
         throw err;
       })
@@ -314,7 +314,7 @@ export async function getNativeBalance(address: string, network: BridgeNetwork):
     const provider = readonlyProviders[network];
     const balance = network === BridgeNetwork.SEPOLIA
       ? await runSepoliaRpcCall('Sepolia getBalance', () => provider.getBalance(address))
-      : await runGoliathRpcCall('Goliath getBalance', () => provider.getBalance(address));
+      : await runGoliathRpcCall('Onyx getBalance', () => provider.getBalance(address));
     return balance.toBigInt();
   } catch (err) {
     if (isRpcFailure(err)) {
@@ -322,7 +322,7 @@ export async function getNativeBalance(address: string, network: BridgeNetwork):
       const provider = readonlyProviders[network];
       const balance = network === BridgeNetwork.SEPOLIA
         ? await runSepoliaRpcCall('Sepolia getBalance retry', () => provider.getBalance(address))
-        : await runGoliathRpcCall('Goliath getBalance retry', () => provider.getBalance(address));
+        : await runGoliathRpcCall('Onyx getBalance retry', () => provider.getBalance(address));
       return balance.toBigInt();
     }
     throw err;
@@ -347,7 +347,7 @@ export async function getTokenBalance(
     const contract = new ethers.Contract(tokenAddress, erc20Abi, provider);
     const balance: ethers.BigNumber = network === BridgeNetwork.SEPOLIA
       ? await runSepoliaRpcCall('Sepolia balanceOf', () => contract.balanceOf(ownerAddress))
-      : await runGoliathRpcCall('Goliath balanceOf', () => contract.balanceOf(ownerAddress));
+      : await runGoliathRpcCall('Onyx balanceOf', () => contract.balanceOf(ownerAddress));
     return balance.toBigInt();
   } catch (err) {
     if (isRpcFailure(err)) {
@@ -357,7 +357,7 @@ export async function getTokenBalance(
       const contract = new ethers.Contract(tokenAddress, erc20Abi, provider);
       const balance: ethers.BigNumber = network === BridgeNetwork.SEPOLIA
         ? await runSepoliaRpcCall('Sepolia balanceOf retry', () => contract.balanceOf(ownerAddress))
-        : await runGoliathRpcCall('Goliath balanceOf retry', () => contract.balanceOf(ownerAddress));
+        : await runGoliathRpcCall('Onyx balanceOf retry', () => contract.balanceOf(ownerAddress));
       return balance.toBigInt();
     }
     throw err;
@@ -373,7 +373,7 @@ export async function getBlockNumber(network: BridgeNetwork): Promise<number> {
   const provider = readonlyProviders[network];
   return network === BridgeNetwork.SEPOLIA
     ? runSepoliaRpcCall('Sepolia getBlockNumber', () => provider.getBlockNumber())
-    : runGoliathRpcCall('Goliath getBlockNumber', () => provider.getBlockNumber());
+    : runGoliathRpcCall('Onyx getBlockNumber', () => provider.getBlockNumber());
 }
 
 /**
@@ -411,7 +411,7 @@ export async function getTokenAllowance(
         () => contract.allowance(ownerAddress, spenderAddress)
       )
       : await runGoliathRpcCall(
-        'Goliath allowance',
+        'Onyx allowance',
         () => contract.allowance(ownerAddress, spenderAddress)
       );
     return allowance.toBigInt();
@@ -427,7 +427,7 @@ export async function getTokenAllowance(
           () => contract.allowance(ownerAddress, spenderAddress)
         )
         : await runGoliathRpcCall(
-          'Goliath allowance retry',
+          'Onyx allowance retry',
           () => contract.allowance(ownerAddress, spenderAddress)
         );
       return allowance.toBigInt();

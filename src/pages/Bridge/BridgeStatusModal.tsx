@@ -166,7 +166,7 @@ export default function BridgeStatusModal() {
   const isFailed = operation.status === 'FAILED' || operation.status === 'EXPIRED';
 
   const directionLabel =
-    operation.direction === 'SEPOLIA_TO_GOLIATH' ? 'Sepolia → Goliath' : 'Goliath → Sepolia';
+    operation.direction === 'SEPOLIA_TO_GOLIATH' ? 'Sepolia → Onyx' : 'Onyx → Sepolia';
 
   return (
     <Modal isOpen={isOpen} onDismiss={handleClose}>
@@ -208,13 +208,13 @@ export default function BridgeStatusModal() {
         <LinksSection>
           {originExplorerUrl && (
             <ExplorerLinkStyled href={originExplorerUrl} target="_blank" rel="noopener noreferrer">
-              {t('viewOnExplorer', { network: originNetwork === BridgeNetwork.SEPOLIA ? 'Sepolia' : 'Goliath' })}
+              {t('viewOnExplorer', { network: originNetwork === BridgeNetwork.SEPOLIA ? 'Sepolia' : 'Onyx' })}
               <ExternalLink size={14} />
             </ExplorerLinkStyled>
           )}
           {destExplorerUrl && (
             <ExplorerLinkStyled href={destExplorerUrl} target="_blank" rel="noopener noreferrer">
-              {t('viewOnExplorer', { network: destNetwork === BridgeNetwork.SEPOLIA ? 'Sepolia' : 'Goliath' })}
+              {t('viewOnExplorer', { network: destNetwork === BridgeNetwork.SEPOLIA ? 'Sepolia' : 'Onyx' })}
               <ExternalLink size={14} />
             </ExplorerLinkStyled>
           )}

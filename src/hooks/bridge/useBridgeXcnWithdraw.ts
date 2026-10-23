@@ -88,7 +88,7 @@ export function useBridgeXcnWithdraw(): UseXcnWithdrawReturn {
         if (!xcnCapable) {
           throw new Error(
             t('errorXcnWithdrawUnavailable') ||
-              'XCN bridge (Goliath → Sepolia) is temporarily unavailable. The backend does not currently support this route. Please try again later or contact support.'
+              'XCN bridge (Onyx → Sepolia) is temporarily unavailable. The backend does not currently support this route. Please try again later or contact support.'
           );
         }
 

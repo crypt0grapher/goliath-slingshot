@@ -150,7 +150,7 @@ interface BridgeHistoryItemProps {
 export default function BridgeHistoryItem({ operation, onClick }: BridgeHistoryItemProps) {
   const { t } = useTranslation();
   const directionText =
-    operation.direction === 'SEPOLIA_TO_GOLIATH' ? 'Sepolia → Goliath' : 'Goliath → Sepolia';
+    operation.direction === 'SEPOLIA_TO_GOLIATH' ? 'Sepolia → Onyx' : 'Onyx → Sepolia';
 
   const originNetwork =
     operation.direction === 'SEPOLIA_TO_GOLIATH' ? BridgeNetwork.SEPOLIA : BridgeNetwork.GOLIATH;

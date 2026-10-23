@@ -50,6 +50,6 @@ export const walletconnect = new WalletConnectConnector({
 
 export const walletlink = new WalletLinkConnector({
   url: REACT_APP_NETWORK_URL,
-  appName: 'Goliath Slingshot',
+  appName: 'Onyx Slingshot',
   // appLogoUrl: '',
 });

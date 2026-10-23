@@ -371,7 +371,7 @@ const NETWORK_LABELS: { [chainId: number]: string } = {
   [ChainId.ROPSTEN]: 'Ropsten',
   [ChainId.GÖRLI]: 'Goerli',
   [ChainId.KOVAN]: 'Kovan',
-  8901: 'Goliath Testnet',
+  8901: 'Onyx Testnet',
   11155111: 'Sepolia',
 };
 
@@ -440,13 +440,13 @@ export default function Header() {
               <WrongNetworkButton
                 onClick={switchToGoliath}
                 disabled={isSwitchingNetwork}
-                title={`Connected to ${networkName}. Click to switch to Goliath Testnet.`}
+                title={`Connected to ${networkName}. Click to switch to Onyx Testnet.`}
               >
                 {isSwitchingNetwork ? 'Switching...' : networkName}
               </WrongNetworkButton>
             ) : (
               chainId === GOLIATH_TESTNET_CHAIN_ID && (
-                <NetworkCard title="Goliath Testnet">Goliath Testnet</NetworkCard>
+                <NetworkCard title="Onyx Testnet">Onyx Testnet</NetworkCard>
               )
             )}
           </HideSmall>

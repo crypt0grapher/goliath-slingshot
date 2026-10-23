@@ -39,8 +39,8 @@ export const NETWORK_METADATA: Record<BridgeNetwork, NetworkMetadata> = {
   },
   [BridgeNetwork.GOLIATH]: {
     chainId: 8901,
-    displayName: 'Goliath Testnet',
-    shortName: 'Goliath',
+    displayName: 'Onyx Testnet',
+    shortName: 'Onyx',
     rpcUrl: bridgeConfig.goliath.rpcUrl,
     explorerUrl: bridgeConfig.goliath.explorerUrl,
     blockTime: 2,
