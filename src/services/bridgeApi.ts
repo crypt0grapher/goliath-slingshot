@@ -269,12 +269,19 @@ export class BridgeApiClient {
   async getFeeQuote(params: {
     token: string;
     amount: string;
-    direction: string;
+    direction: BridgeDirection;
   }): Promise<FeeQuoteResponse> {
+    // The UI names its Ethereum testnet Sepolia; the public API uses Ethereum direction names.
+    const direction = params.direction === 'GOLIATH_TO_SEPOLIA'
+      ? 'GOLIATH_TO_ETHEREUM'
+      : params.direction === 'SEPOLIA_TO_GOLIATH'
+      ? 'ETHEREUM_TO_GOLIATH'
+      : null;
+    if (!direction) throw new BridgeApiError(400, 'Unsupported bridge direction', 'INVALID_DIRECTION');
     const queryParams = new URLSearchParams({
       token: params.token,
       amount: params.amount,
-      direction: params.direction,
+      direction,
     });
     return this.fetch<FeeQuoteResponse>(`/bridge/fee-quote?${queryParams.toString()}`);
   }
