@@ -39,7 +39,10 @@ jest.mock('ethers', () => {
   };
 });
 
-let mockWallet: { account: string | null; chainId: number | null; library?: any } = { account: null, chainId: null };
+let mockWallet: { account: string | null; chainId: number | null; library?: any; active?: boolean; connector?: any } = {
+  account: null,
+  chainId: null,
+};
 let mockProviderReady = true;
 let mockSession: any;
 jest.mock('../../../hooks', () => ({ useActiveWeb3React: () => mockWallet }));
@@ -100,7 +103,9 @@ function Location() {
   pathname = useLocation().pathname;
   return null;
 }
-async function mount(options: { selection?: BridgeSelection; adapter?: BridgeAdapter; rhEnabled?: boolean } = {}) {
+async function mount(
+  options: { selection?: BridgeSelection; adapter?: BridgeAdapter; rhEnabled?: boolean; rhDeps?: any } = {}
+) {
   const initial = bridgeReducer(undefined, { type: '@@init' });
   const store = configureStore({
     reducer: { bridge: bridgeReducer },
@@ -111,7 +116,7 @@ async function mount(options: { selection?: BridgeSelection; adapter?: BridgeAda
       <Provider store={store}>
         <ThemeProvider theme={theme}>
           <MemoryRouter initialEntries={['/bridge']}>
-            <Bridge rhEnabled={options.rhEnabled ?? true} rhAdapter={options.adapter} />
+            <Bridge rhEnabled={options.rhEnabled ?? true} rhAdapter={options.adapter} rhDeps={options.rhDeps} />
             <Location />
           </MemoryRouter>
         </ThemeProvider>
@@ -326,6 +331,100 @@ test('T1: selecting Robinhood keeps the actual standard form and path with pair 
   expect(choices.some((e) => e?.includes('ETH'))).toBe(true);
   expect(container.textContent).not.toContain('Minimum deposit');
 });
+
+test.each([false, true])(
+  'real Session and RH controller preserve captured observation expiry during a refresh (expired=%s)',
+  async (expired) => {
+    const fixture = require('../../../services/rhBridge/__fixtures__/v2').v2Fixture();
+    const { RhLaneController } = require('../../../hooks/rhBridge/controller');
+    const originalBridge = RhLaneController.prototype.bridge;
+    let clock = fixture.state.now;
+    jest.spyOn(Date, 'now').mockImplementation(() => clock);
+    fixture.deps.now = () => clock;
+    mockWallet = {
+      active: true,
+      account: fixture.state.account,
+      chainId: 46630,
+      connector: require('../../../connectors').injected,
+      library: { provider: fixture.provider },
+    };
+    const capturedExpiry = clock + 15000;
+    const checks: { now: number; refused: boolean; sameContextBeforeExpiry?: boolean }[] = [];
+    jest.spyOn(RhLaneController.prototype, 'bridge').mockImplementation(function (this: any, guard: any) {
+      return originalBridge.call(this, {
+        ...guard,
+        assertCurrent() {
+          try {
+            guard.assertCurrent();
+            checks.push({ now: clock, refused: false });
+          } catch (error) {
+            const actualNow = clock;
+            let sameContextBeforeExpiry = false;
+            try {
+              // Diagnostic only: change the clock for one extra assertion, never for the action itself.
+              // If this passes, the refusal is expiry rather than selection/readiness/owner invalidation.
+              clock = capturedExpiry - 1;
+              guard.assertCurrent();
+              sameContextBeforeExpiry = true;
+            } finally {
+              clock = actualNow;
+            }
+            checks.push({ now: clock, refused: true, sameContextBeforeExpiry });
+            throw error;
+          }
+        },
+      });
+    });
+    await mount({
+      selection: {
+        originNetwork: BridgeNetwork.ROBINHOOD,
+        destinationNetwork: BridgeNetwork.GOLIATH,
+        selectedAssetKey: 'RH_ETH',
+        inputAmount: '0.0001',
+        recipient: null,
+      },
+      rhDeps: fixture.deps,
+    });
+    await act(async () => {
+      await new Promise((r) => setTimeout(r, 350));
+    });
+    expect(mockSession.canConfirm).toBe(true);
+    clock += 14000;
+    fixture.state.now = clock; // The refresh really observes new data; no observation is restamped.
+    await act(async () => mockSession.openConfirm());
+    expect(mockSession.confirmationValid).toBe(true);
+    const codeRead = deferred<void>();
+    const originalCode = fixture.chains.getCode;
+    let reading = false;
+    fixture.chains.getCode = async (...args: any[]) => {
+      reading = true;
+      await codeRead.promise;
+      return originalCode(...args);
+    };
+    let action!: Promise<void>;
+    await act(async () => {
+      action = mockSession.confirm();
+      for (let i = 0; i < 100; i++) await Promise.resolve();
+    });
+    expect(reading).toBe(true);
+    await act(async () => {
+      clock += expired ? 2000 : 500;
+      codeRead.resolve();
+      await action;
+    });
+    // New snapshot is still fresh and semantically identical in both cases.
+    expect(mockSession.canConfirm).toBe(true);
+    expect(mockSession.fee.status).toBe('ready');
+    expect(fixture.state.sends).toHaveLength(expired ? 0 : 1);
+    if (expired) {
+      expect(checks.filter((c) => c.refused)).toEqual([
+        { now: capturedExpiry + 1000, refused: true, sameContextBeforeExpiry: true },
+      ]);
+      expect(mockSession.notice).toBe('Bridge details changed. Review them before continuing.');
+      expect(fixture.storageData.size).toBe(0);
+    } else expect(checks.every((c) => !c.refused)).toBe(true);
+  }
+);
 
 test('T2: from Onyx offers Sepolia and Robinhood destinations inside the standard card', async () => {
   await mount();
