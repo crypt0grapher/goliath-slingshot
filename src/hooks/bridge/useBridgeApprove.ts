@@ -1,3 +1,5 @@
+import type { WalletIntentGuard } from './walletIntent';
+import { beforeWalletPrompt, walletLibraryForIntent, isStaleBridgeIntent } from './walletIntent';
 import { useCallback, useState } from 'react';
 import { ethers } from 'ethers';
 import { useActiveWeb3React } from '../index';
@@ -17,7 +19,7 @@ const APPROVE_RETRY_CONFIG = {
   retryDelay: 500, // ms
   shouldRetry: (error: any): boolean => {
     // Don't retry user rejections
-    if (error?.code === 4001 || error?.code === 'ACTION_REJECTED') {
+    if (isStaleBridgeIntent(error) || error?.code === 4001 || error?.code === 'ACTION_REJECTED') {
       return false;
     }
     // Retry on common transient errors
@@ -34,10 +36,10 @@ const APPROVE_RETRY_CONFIG = {
 };
 
 // Helper function to wait for a specified time
-const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 interface UseBridgeApproveReturn {
-  approve: () => Promise<boolean>;
+  approve: (guard?: WalletIntentGuard) => Promise<boolean>;
   isLoading: boolean;
   error: string | null;
 }
@@ -56,120 +58,136 @@ export function useBridgeApprove(
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const approve = useCallback(async (): Promise<boolean> => {
-    if (!account || !library) {
-      setError('Wallet not connected');
-      return false;
-    }
-
-    const tokenConfig = getTokenConfigForChain(token, network);
-    if (tokenConfig.isNative || !tokenConfig.address) {
-      // Native assets don't need approval
-      return true;
-    }
-
-    setIsLoading(true);
-    setError(null);
-    dispatch(bridgeActions.setApproving(true));
-
-    // Core approval execution logic (with explicit gas estimation matching swap pattern)
-    const executeApproval = async (): Promise<boolean> => {
-      const signer = library.getSigner(account);
-      const tokenContract = new ethers.Contract(tokenConfig.address!, ERC20_ABI, signer as any);
-      const bridgeAddress = getBridgeContractAddress(network);
-
-      // Estimate gas explicitly with fallback to exact amount
-      let useExact = false;
-      const estimatedGas = await tokenContract.estimateGas
-        .approve(bridgeAddress, ethers.constants.MaxUint256)
-        .catch(() => {
-          // Fallback for tokens that restrict MaxUint256 or when estimation fails
-          useExact = true;
-          const exactAmount = amount ? parseAmount(amount, token, network).toString() : '0';
-          return tokenContract.estimateGas.approve(bridgeAddress, exactAmount);
-        });
-
-      const tx = await tokenContract.approve(
-        bridgeAddress,
-        useExact && amount ? parseAmount(amount, token, network).toString() : ethers.constants.MaxUint256,
-        { gasLimit: calculateGasMargin(estimatedGas) }
-      );
-
-      // Wait for transaction with timeout to prevent indefinite hanging
-      const receipt = await Promise.race([
-        tx.wait(),
-        new Promise<never>((_, reject) =>
-          setTimeout(
-            () => reject(new Error('Approval confirmation timed out. Your transaction may still be pending — check your wallet.')),
-            TX_WAIT_TIMEOUT_MS
-          )
-        ),
-      ]);
-
-      if (receipt.status === 0) {
-        throw new Error('Approval transaction failed');
+  const approve = useCallback(
+    async (guard?: WalletIntentGuard): Promise<boolean> => {
+      if (!account || !library) {
+        setError('Wallet not connected');
+        return false;
       }
 
-      return true;
-    };
-
-    try {
-      // If provider is not ready, wait a moment and recheck
-      if (!providerReady) {
-        console.debug('Bridge: Provider not ready, waiting before approval...');
-        recheckProvider();
-        await wait(300);
+      guard?.assertCurrent();
+      const tokenConfig = getTokenConfigForChain(token, network);
+      if (tokenConfig.isNative || !tokenConfig.address) {
+        // Native assets don't need approval
+        return true;
       }
 
-      let lastError: Error | null = null;
+      setIsLoading(true);
+      setError(null);
+      dispatch(bridgeActions.setApproving(true));
 
-      for (let attempt = 0; attempt <= APPROVE_RETRY_CONFIG.maxRetries; attempt++) {
-        try {
-          if (attempt > 0) {
-            console.debug(`Bridge: Approval retry attempt ${attempt}/${APPROVE_RETRY_CONFIG.maxRetries}`);
-            // Wait before retry and recheck provider
-            recheckProvider();
-            await wait(APPROVE_RETRY_CONFIG.retryDelay);
-          }
+      // Core approval execution logic (with explicit gas estimation matching swap pattern)
+      const executeApproval = async (): Promise<boolean> => {
+        guard?.assertCurrent();
+        const signer = walletLibraryForIntent(library, guard).getSigner(account);
+        const tokenContract = new ethers.Contract(tokenConfig.address!, ERC20_ABI, signer as any);
+        const bridgeAddress = getBridgeContractAddress(network);
 
-          const success = await executeApproval();
-          return success;
-        } catch (err: any) {
-          lastError = err;
+        // Estimate gas explicitly with fallback to exact amount
+        let useExact = false;
+        const estimatedGas = await tokenContract.estimateGas
+          .approve(bridgeAddress, ethers.constants.MaxUint256)
+          .catch(() => {
+            guard?.assertCurrent();
+            // Fallback for tokens that restrict MaxUint256 or when estimation fails
+            useExact = true;
+            const exactAmount = amount ? parseAmount(amount, token, network).toString() : '0';
+            return tokenContract.estimateGas.approve(bridgeAddress, exactAmount);
+          });
 
-          // User rejected the transaction - don't retry
-          if (err?.code === 4001 || err?.code === 'ACTION_REJECTED') {
-            console.debug('Bridge: User rejected token approval');
-            setError('User rejected approval');
-            return false;
-          }
+        await beforeWalletPrompt(guard, library);
+        guard?.assertCurrent();
+        const tx = await tokenContract.approve(
+          bridgeAddress,
+          useExact && amount ? parseAmount(amount, token, network).toString() : ethers.constants.MaxUint256,
+          { gasLimit: calculateGasMargin(estimatedGas), chainId: network === BridgeNetwork.SEPOLIA ? 11155111 : 8901 }
+        );
 
-          // Don't retry if it's not a transient error
-          if (!APPROVE_RETRY_CONFIG.shouldRetry(err)) {
-            throw err;
-          }
+        // Wait for transaction with timeout to prevent indefinite hanging
+        const receipt = await Promise.race([
+          tx.wait(),
+          new Promise<never>((_, reject) =>
+            setTimeout(
+              () =>
+                reject(
+                  new Error(
+                    'Approval confirmation timed out. Your transaction may still be pending — check your wallet.'
+                  )
+                ),
+              TX_WAIT_TIMEOUT_MS
+            )
+          ),
+        ]);
 
-          // Don't retry on last attempt
-          if (attempt === APPROVE_RETRY_CONFIG.maxRetries) {
-            break;
-          }
-
-          console.debug(`Bridge: Approval attempt ${attempt + 1} failed, will retry:`, err.message);
+        if (receipt.status === 0) {
+          throw new Error('Approval transaction failed');
         }
-      }
 
-      // If we get here, all retries failed
-      throw lastError || new Error('Approval failed after multiple attempts');
-    } catch (err: any) {
-      const message = err?.message || 'Approval failed';
-      setError(message);
-      console.error('Bridge approval error:', err);
-      return false;
-    } finally {
-      setIsLoading(false);
-      dispatch(bridgeActions.setApproving(false));
-    }
-  }, [account, library, token, network, amount, dispatch, providerReady, recheckProvider]);
+        return true;
+      };
+
+      try {
+        // If provider is not ready, wait a moment and recheck
+        if (!providerReady) {
+          console.debug('Bridge: Provider not ready, waiting before approval...');
+          recheckProvider();
+          await wait(300);
+          guard?.assertCurrent();
+        }
+
+        let lastError: Error | null = null;
+
+        for (let attempt = 0; attempt <= APPROVE_RETRY_CONFIG.maxRetries; attempt++) {
+          try {
+            if (attempt > 0) {
+              console.debug(`Bridge: Approval retry attempt ${attempt}/${APPROVE_RETRY_CONFIG.maxRetries}`);
+              // Wait before retry and recheck provider
+              recheckProvider();
+              await wait(APPROVE_RETRY_CONFIG.retryDelay);
+              guard?.assertCurrent();
+            }
+
+            guard?.assertCurrent();
+            const success = await executeApproval();
+            return success;
+          } catch (err: any) {
+            lastError = err;
+
+            // User rejected the transaction - don't retry
+            if (err?.code === 4001 || err?.code === 'ACTION_REJECTED') {
+              console.debug('Bridge: User rejected token approval');
+              setError('User rejected approval');
+              return false;
+            }
+
+            // Don't retry if it's not a transient error
+            if (!APPROVE_RETRY_CONFIG.shouldRetry(err)) {
+              throw err;
+            }
+
+            // Don't retry on last attempt
+            if (attempt === APPROVE_RETRY_CONFIG.maxRetries) {
+              break;
+            }
+
+            console.debug(`Bridge: Approval attempt ${attempt + 1} failed, will retry:`, err.message);
+          }
+        }
+
+        // If we get here, all retries failed
+        throw lastError || new Error('Approval failed after multiple attempts');
+      } catch (err: any) {
+        const message = err?.message || 'Approval failed';
+        setError(message);
+        console.error('Bridge approval error:', err);
+        return false;
+      } finally {
+        setIsLoading(false);
+        dispatch(bridgeActions.setApproving(false));
+      }
+    },
+    [account, library, token, network, amount, dispatch, providerReady, recheckProvider]
+  );
 
   return {
     approve,

@@ -488,5 +488,8 @@
   "pool.simple": "Simple",
   "pool.yourPoolShare": "Your pool share:",
   "pool.yourPosition": "Your position",
-  "pool.yourTotalPoolTokens": "Your total pool tokens:"
+  "pool.yourTotalPoolTokens": "Your total pool tokens:",
+  "bridgePerTransactionMax": "每筆交易上限",
+  "bridgeRemainingCapacity": "剩餘容量",
+  "bridgeBalances": "餘額"
 }

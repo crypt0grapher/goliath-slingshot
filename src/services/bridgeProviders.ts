@@ -74,10 +74,7 @@ async function runGoliathRpcCall<T>(operation: string, call: () => Promise<T>): 
 
 function createSepoliaProvider(rpcUrl: string): ethers.providers.JsonRpcProvider {
   console.log('[BridgeProviders] Creating Sepolia provider:', rpcUrl);
-  return new ethers.providers.JsonRpcProvider(
-    rpcUrl,
-    { chainId: bridgeConfig.sepolia.chainId, name: 'sepolia' }
-  );
+  return new ethers.providers.JsonRpcProvider(rpcUrl, { chainId: bridgeConfig.sepolia.chainId, name: 'sepolia' });
 }
 
 function getSepoliaFallbackRpcUrls(): string[] {
@@ -110,10 +107,7 @@ async function validateSepoliaProvider(): Promise<void> {
 
     let lastRpcFailure = err;
     for (const fallbackRpcUrl of fallbackRpcUrls) {
-      console.warn(
-        '[BridgeProviders] Primary Sepolia RPC failed, switching to fallback:',
-        fallbackRpcUrl
-      );
+      console.warn('[BridgeProviders] Primary Sepolia RPC failed, switching to fallback:', fallbackRpcUrl);
       const fallbackProvider = createSepoliaProvider(fallbackRpcUrl);
       _sepoliaProvider = fallbackProvider;
       try {
@@ -177,10 +171,7 @@ function getSepoliaProvider(): ethers.providers.JsonRpcProvider {
 
 function createGoliathProvider(rpcUrl: string): ethers.providers.JsonRpcProvider {
   console.log('[BridgeProviders] Creating Onyx provider:', rpcUrl);
-  return new ethers.providers.JsonRpcProvider(
-    rpcUrl,
-    { chainId: bridgeConfig.goliath.chainId, name: 'goliath' }
-  );
+  return new ethers.providers.JsonRpcProvider(rpcUrl, { chainId: bridgeConfig.goliath.chainId, name: 'goliath' });
 }
 
 /**
@@ -254,13 +245,25 @@ function getGoliathProvider(): ethers.providers.JsonRpcProvider {
  * Get provider for a specific network
  */
 export function getReadonlyProvider(network: BridgeNetwork): ethers.providers.JsonRpcProvider {
+  requireLegacyNetwork(network);
   return network === BridgeNetwork.SEPOLIA ? getSepoliaProvider() : getGoliathProvider();
+}
+
+function requireLegacyNetwork(
+  network: BridgeNetwork
+): asserts network is BridgeNetwork.SEPOLIA | BridgeNetwork.GOLIATH {
+  if (network !== BridgeNetwork.SEPOLIA && network !== BridgeNetwork.GOLIATH)
+    throw new Error('LEGACY_BRIDGE_NETWORK_REQUIRED');
 }
 
 // For backwards compatibility
 export const readonlyProviders = {
-  get [BridgeNetwork.SEPOLIA]() { return getSepoliaProvider(); },
-  get [BridgeNetwork.GOLIATH]() { return getGoliathProvider(); },
+  get [BridgeNetwork.SEPOLIA]() {
+    return getSepoliaProvider();
+  },
+  get [BridgeNetwork.GOLIATH]() {
+    return getGoliathProvider();
+  },
 };
 
 /**
@@ -307,22 +310,25 @@ async function revalidateIfNeeded(network: BridgeNetwork): Promise<void> {
  * Retries once with fallback provider if the primary RPC fails.
  */
 export async function getNativeBalance(address: string, network: BridgeNetwork): Promise<bigint> {
+  requireLegacyNetwork(network);
   if (network === BridgeNetwork.SEPOLIA) await ensureSepoliaProviderReady();
   else await ensureGoliathProviderReady();
 
   try {
     const provider = readonlyProviders[network];
-    const balance = network === BridgeNetwork.SEPOLIA
-      ? await runSepoliaRpcCall('Sepolia getBalance', () => provider.getBalance(address))
-      : await runGoliathRpcCall('Onyx getBalance', () => provider.getBalance(address));
+    const balance =
+      network === BridgeNetwork.SEPOLIA
+        ? await runSepoliaRpcCall('Sepolia getBalance', () => provider.getBalance(address))
+        : await runGoliathRpcCall('Onyx getBalance', () => provider.getBalance(address));
     return balance.toBigInt();
   } catch (err) {
     if (isRpcFailure(err)) {
       await revalidateIfNeeded(network);
       const provider = readonlyProviders[network];
-      const balance = network === BridgeNetwork.SEPOLIA
-        ? await runSepoliaRpcCall('Sepolia getBalance retry', () => provider.getBalance(address))
-        : await runGoliathRpcCall('Onyx getBalance retry', () => provider.getBalance(address));
+      const balance =
+        network === BridgeNetwork.SEPOLIA
+          ? await runSepoliaRpcCall('Sepolia getBalance retry', () => provider.getBalance(address))
+          : await runGoliathRpcCall('Onyx getBalance retry', () => provider.getBalance(address));
       return balance.toBigInt();
     }
     throw err;
@@ -338,6 +344,7 @@ export async function getTokenBalance(
   ownerAddress: string,
   network: BridgeNetwork
 ): Promise<bigint> {
+  requireLegacyNetwork(network);
   if (network === BridgeNetwork.SEPOLIA) await ensureSepoliaProviderReady();
   else await ensureGoliathProviderReady();
 
@@ -345,9 +352,10 @@ export async function getTokenBalance(
     const provider = readonlyProviders[network];
     const erc20Abi = ['function balanceOf(address) view returns (uint256)'];
     const contract = new ethers.Contract(tokenAddress, erc20Abi, provider);
-    const balance: ethers.BigNumber = network === BridgeNetwork.SEPOLIA
-      ? await runSepoliaRpcCall('Sepolia balanceOf', () => contract.balanceOf(ownerAddress))
-      : await runGoliathRpcCall('Onyx balanceOf', () => contract.balanceOf(ownerAddress));
+    const balance: ethers.BigNumber =
+      network === BridgeNetwork.SEPOLIA
+        ? await runSepoliaRpcCall('Sepolia balanceOf', () => contract.balanceOf(ownerAddress))
+        : await runGoliathRpcCall('Onyx balanceOf', () => contract.balanceOf(ownerAddress));
     return balance.toBigInt();
   } catch (err) {
     if (isRpcFailure(err)) {
@@ -355,9 +363,10 @@ export async function getTokenBalance(
       const provider = readonlyProviders[network];
       const erc20Abi = ['function balanceOf(address) view returns (uint256)'];
       const contract = new ethers.Contract(tokenAddress, erc20Abi, provider);
-      const balance: ethers.BigNumber = network === BridgeNetwork.SEPOLIA
-        ? await runSepoliaRpcCall('Sepolia balanceOf retry', () => contract.balanceOf(ownerAddress))
-        : await runGoliathRpcCall('Onyx balanceOf retry', () => contract.balanceOf(ownerAddress));
+      const balance: ethers.BigNumber =
+        network === BridgeNetwork.SEPOLIA
+          ? await runSepoliaRpcCall('Sepolia balanceOf retry', () => contract.balanceOf(ownerAddress))
+          : await runGoliathRpcCall('Onyx balanceOf retry', () => contract.balanceOf(ownerAddress));
       return balance.toBigInt();
     }
     throw err;
@@ -368,6 +377,7 @@ export async function getTokenBalance(
  * Get current block number for a network
  */
 export async function getBlockNumber(network: BridgeNetwork): Promise<number> {
+  requireLegacyNetwork(network);
   if (network === BridgeNetwork.SEPOLIA) await ensureSepoliaProviderReady();
   else await ensureGoliathProviderReady();
   const provider = readonlyProviders[network];
@@ -384,6 +394,7 @@ export async function waitForTransaction(
   network: BridgeNetwork,
   confirmations: number = 1
 ): Promise<ethers.providers.TransactionReceipt> {
+  requireLegacyNetwork(network);
   const provider = readonlyProviders[network];
   return provider.waitForTransaction(txHash, confirmations);
 }
@@ -398,6 +409,7 @@ export async function getTokenAllowance(
   spenderAddress: string,
   network: BridgeNetwork
 ): Promise<bigint> {
+  requireLegacyNetwork(network);
   if (network === BridgeNetwork.SEPOLIA) await ensureSepoliaProviderReady();
   else await ensureGoliathProviderReady();
 
@@ -405,15 +417,10 @@ export async function getTokenAllowance(
     const provider = readonlyProviders[network];
     const erc20Abi = ['function allowance(address owner, address spender) view returns (uint256)'];
     const contract = new ethers.Contract(tokenAddress, erc20Abi, provider);
-    const allowance: ethers.BigNumber = network === BridgeNetwork.SEPOLIA
-      ? await runSepoliaRpcCall(
-        'Sepolia allowance',
-        () => contract.allowance(ownerAddress, spenderAddress)
-      )
-      : await runGoliathRpcCall(
-        'Onyx allowance',
-        () => contract.allowance(ownerAddress, spenderAddress)
-      );
+    const allowance: ethers.BigNumber =
+      network === BridgeNetwork.SEPOLIA
+        ? await runSepoliaRpcCall('Sepolia allowance', () => contract.allowance(ownerAddress, spenderAddress))
+        : await runGoliathRpcCall('Onyx allowance', () => contract.allowance(ownerAddress, spenderAddress));
     return allowance.toBigInt();
   } catch (err) {
     if (isRpcFailure(err)) {
@@ -421,15 +428,10 @@ export async function getTokenAllowance(
       const provider = readonlyProviders[network];
       const erc20Abi = ['function allowance(address owner, address spender) view returns (uint256)'];
       const contract = new ethers.Contract(tokenAddress, erc20Abi, provider);
-      const allowance: ethers.BigNumber = network === BridgeNetwork.SEPOLIA
-        ? await runSepoliaRpcCall(
-          'Sepolia allowance retry',
-          () => contract.allowance(ownerAddress, spenderAddress)
-        )
-        : await runGoliathRpcCall(
-          'Onyx allowance retry',
-          () => contract.allowance(ownerAddress, spenderAddress)
-        );
+      const allowance: ethers.BigNumber =
+        network === BridgeNetwork.SEPOLIA
+          ? await runSepoliaRpcCall('Sepolia allowance retry', () => contract.allowance(ownerAddress, spenderAddress))
+          : await runGoliathRpcCall('Onyx allowance retry', () => contract.allowance(ownerAddress, spenderAddress));
       return allowance.toBigInt();
     }
     throw err;

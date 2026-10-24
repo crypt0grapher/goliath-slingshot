@@ -13,7 +13,14 @@ import { bridgeActions } from '../../state/bridge/reducer';
 import { selectOperations, selectOperationIds } from '../../state/bridge/selectors';
 import { BridgeHeader, BridgeTitle } from './styleds';
 import Settings from '../../components/Settings';
-import { RhBridgeEntryLink } from '../RhBridge/EntryLink';
+import type { BridgeAdapter } from '../../hooks/bridge/BridgeSession';
+import { BridgeSessionProvider } from '../../hooks/bridge/BridgeSession';
+import { useUnifiedRhBridge } from '../../hooks/rhBridge/useUnifiedRhBridge';
+import type { ControllerDeps } from '../../hooks/rhBridge/controller';
+import { selectBridgeForm } from '../../state/bridge/selectors';
+import { normalizeBridgeSelection } from '../../constants/bridge/registry';
+import { RH_TESTNET_BRIDGE_ENABLED } from '../../config/rhBridge';
+import UnifiedRhHistory from '../RhBridge/UnifiedHistory';
 
 const PageWrapper = styled.div`
   display: flex;
@@ -22,7 +29,7 @@ const PageWrapper = styled.div`
   width: 100%;
 `;
 
-export default function Bridge() {
+function BridgeContent() {
   const { t } = useTranslation();
   const dispatch = useDispatch();
   const operations = useSelector(selectOperations);
@@ -58,12 +65,34 @@ export default function Bridge() {
           <BridgeTitle>{t('bridge')}</BridgeTitle>
           <Settings />
         </BridgeHeader>
-        <RhBridgeEntryLink />
         <BridgeForm />
       </AppBody>
       <BridgeHistoryPanel />
       <BridgeConfirmModal />
       <BridgeStatusModal />
     </PageWrapper>
+  );
+}
+
+export default function Bridge({
+  rhEnabled = RH_TESTNET_BRIDGE_ENABLED,
+  rhAdapter,
+  rhDeps,
+}: {
+  rhEnabled?: boolean;
+  rhAdapter?: BridgeAdapter;
+  rhDeps?: ControllerDeps;
+}) {
+  const form = useSelector(selectBridgeForm);
+  const runtime = useUnifiedRhBridge(normalizeBridgeSelection(form, rhEnabled), rhEnabled && !rhAdapter, rhDeps);
+  return (
+    <BridgeSessionProvider rhEnabled={rhEnabled} rhAdapter={rhAdapter ?? runtime.adapter}>
+      <BridgeContent />
+      <UnifiedRhHistory
+        controller={runtime.controller}
+        history={runtime.snapshot.history}
+        catalog={rhDeps?.v2?.catalog}
+      />
+    </BridgeSessionProvider>
   );
 }

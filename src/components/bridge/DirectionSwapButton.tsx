@@ -32,7 +32,7 @@ interface DirectionSwapButtonProps {
 
 export default function DirectionSwapButton({ onClick }: DirectionSwapButtonProps) {
   return (
-    <SwapButton onClick={onClick} type="button">
+    <SwapButton onClick={onClick} type="button" aria-label="Reverse bridge direction">
       <ArrowDown size={18} />
     </SwapButton>
   );

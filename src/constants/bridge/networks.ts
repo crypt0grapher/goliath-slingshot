@@ -3,6 +3,7 @@ import { bridgeConfig } from '../../config/bridgeConfig';
 export enum BridgeNetwork {
   SEPOLIA = 'SEPOLIA',
   GOLIATH = 'GOLIATH',
+  ROBINHOOD = 'ROBINHOOD',
 }
 
 export interface NetworkMetadata {
@@ -22,6 +23,17 @@ export interface NetworkMetadata {
 }
 
 export const NETWORK_METADATA: Record<BridgeNetwork, NetworkMetadata> = {
+  [BridgeNetwork.ROBINHOOD]: {
+    chainId: 46630,
+    displayName: 'Robinhood Chain Testnet',
+    shortName: 'Robinhood',
+    rpcUrl: 'https://rpc.testnet.chain.robinhood.com',
+    explorerUrl: 'https://explorer.testnet.chain.robinhood.com',
+    blockTime: 1,
+    finalityBlocks: 0,
+    iconUrl: '/images/chains/ethereum.svg',
+    nativeCurrency: { name: 'Ether', symbol: 'ETH', decimals: 18 },
+  },
   [BridgeNetwork.SEPOLIA]: {
     chainId: 11155111,
     displayName: 'Ethereum Sepolia',
@@ -57,6 +69,7 @@ export const NETWORK_METADATA: Record<BridgeNetwork, NetworkMetadata> = {
 export function getNetworkByChainId(chainId: number): BridgeNetwork | null {
   if (chainId === 11155111) return BridgeNetwork.SEPOLIA;
   if (chainId === 8901) return BridgeNetwork.GOLIATH;
+  if (chainId === 46630) return BridgeNetwork.ROBINHOOD;
   return null;
 }
 

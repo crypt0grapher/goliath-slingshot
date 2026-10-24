@@ -120,13 +120,19 @@ export interface RhApiClient {
   read(request: RhApiRequest, signal?: AbortSignal): Promise<RhApiResponse>;
 }
 
-export function createRhApiClient(inputOrigin: string, transport: FetchTransport, timeoutMs = TIMEOUT_MS): RhApiClient {
+export function createJsonApiClient<R>(
+  inputOrigin: string,
+  transport: FetchTransport,
+  pathFor: (request: R) => string,
+  statuses: readonly number[],
+  timeoutMs = TIMEOUT_MS
+): { readonly origin: string; read(request: R, signal?: AbortSignal): Promise<RhApiResponse> } {
   const origin = publicOrigin(inputOrigin);
   if (typeof transport !== 'function') throw httpFailure('INVALID_CONFIG');
   return Object.freeze({
     origin,
-    async read(request: RhApiRequest, signal?: AbortSignal): Promise<RhApiResponse> {
-      const url = origin + requestPath(request);
+    async read(request: R, signal?: AbortSignal): Promise<RhApiResponse> {
+      const url = origin + pathFor(request);
       if (signal?.aborted) throw httpFailure('ABORTED');
       const controller = typeof AbortController === 'function' ? new AbortController() : undefined;
       let timedOut = false;
@@ -155,7 +161,7 @@ export function createRhApiClient(inputOrigin: string, transport: FetchTransport
         if (!response || response.redirected || ['opaque', 'opaqueredirect', 'error'].includes(response.type)) {
           throw httpFailure('INVALID_RESPONSE');
         }
-        if (!DEFINED_STATUSES.includes(response.status)) throw httpFailure('INVALID_RESPONSE');
+        if (!statuses.includes(response.status)) throw httpFailure('INVALID_RESPONSE');
         const contentType = response.headers.get('content-type') || '';
         if (!/^application\/json(?:\s*;\s*charset\s*=\s*utf-8)?$/i.test(contentType))
           throw httpFailure('INVALID_RESPONSE');
@@ -181,6 +187,10 @@ export function createRhApiClient(inputOrigin: string, transport: FetchTransport
       }
     },
   });
+}
+
+export function createRhApiClient(inputOrigin: string, transport: FetchTransport, timeoutMs = TIMEOUT_MS): RhApiClient {
+  return createJsonApiClient(inputOrigin, transport, requestPath, DEFINED_STATUSES, timeoutMs);
 }
 
 export function createBrowserRhApiClient(origin: string): RhApiClient {

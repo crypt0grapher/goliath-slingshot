@@ -137,8 +137,14 @@ interface Mounted {
   cleanup: () => void;
 }
 
-async function mount(flag: boolean, chainId: number, page: 'Header' | 'Swap', activate: boolean,
-  pathname = '/swap', nativeBalance?: string): Promise<Mounted> {
+async function mount(
+  flag: boolean,
+  chainId: number,
+  page: 'Header' | 'Swap',
+  activate: boolean,
+  pathname = '/swap',
+  nativeBalance?: string
+): Promise<Mounted> {
   window.localStorage.clear();
   const m = load(flag);
   if (nativeBalance !== undefined) {
@@ -262,8 +268,8 @@ test('the test-only byte conversion preserves real checksum hashing', () => {
 test('Swap on 46630 with the flag on offers the same switch-to-Onyx action as Sepolia', async () => {
   const view = await mount(true, 46630, 'Swap', true);
   try {
-    const switchButton = Array.from(view.container.querySelectorAll('button')).find((b) =>
-      b.textContent === 'switchToGoliath'
+    const switchButton = Array.from(view.container.querySelectorAll('button')).find(
+      (b) => b.textContent === 'switchToGoliath'
     ) as HTMLButtonElement | undefined;
     expect(switchButton).toBeDefined();
     await view.m.act(async () => switchButton!.click());
@@ -286,33 +292,49 @@ test('Header shows the switch-to-Onyx prompt on 46630 with the flag on, like on 
 test('Header names Robinhood on DEX but still offers switching to Onyx', async () => {
   const view = await mount(true, 46630, 'Header', true, '/swap', '1');
   try {
-    const switcher = view.container.querySelector('button[title="Connected to Robinhood Chain Testnet. Click to switch to Onyx Testnet."]') as HTMLButtonElement;
+    const switcher = view.container.querySelector(
+      'button[title="Connected to Robinhood Chain Testnet. Click to switch to Onyx Testnet."]'
+    ) as HTMLButtonElement;
     expect(switcher).not.toBeNull();
     expect(switcher.textContent).toBe('Robinhood Chain Testnet');
     expect(view.container.textContent).toContain('1 ETH');
-    await view.m.act(async () => { switcher.click(); });
+    await view.m.act(async () => {
+      switcher.click();
+    });
     expect(view.wallet.chainId).toBe(8901);
-  } finally { view.cleanup(); }
+  } finally {
+    view.cleanup();
+  }
 });
 
-test('Header on the RH page shows the valid RH chain neutrally and labels native balance ETH', async () => {
-  const view = await mount(true, 46630, 'Header', true, '/bridge/robinhood-testnet', '1');
+test('Header on unified bridge accepts the selected RH source and labels native balance ETH', async () => {
+  const view = await mount(true, 46630, 'Header', true, '/bridge', '1');
   try {
-    expect(view.container.querySelector('[title="Robinhood Chain Testnet"]')?.textContent).toBe('Robinhood Chain Testnet');
+    await view.m.act(async () => {
+      view.m.store.dispatch(require('../../state/bridge/reducer').bridgeActions.setOriginNetwork('ROBINHOOD'));
+    });
+    expect(view.container.querySelector('[title="Robinhood Chain Testnet"]')?.textContent).toBe(
+      'Robinhood Chain Testnet'
+    );
     expect(view.container.querySelector('button[title*="Click to switch to Onyx"]')).toBeNull();
     expect(view.container.textContent).toContain('1 ETH');
     expect(view.container.textContent).not.toContain('1 XCN');
     expect(view.wallet.requests).not.toContain('wallet_switchEthereumChain');
     expect(view.wallet.requests).not.toContain('eth_sendTransaction');
-  } finally { view.cleanup(); }
+  } finally {
+    view.cleanup();
+  }
 });
 
 test('Header flag off does not advertise RH and Onyx keeps its XCN balance label', async () => {
   const robinhood = await render(false, 46630, 'Header');
   expect(robinhood.text).not.toContain('Robinhood');
   const onyx = await mount(true, 8901, 'Header', true, '/swap', '1');
-  try { expect(onyx.container.textContent).toContain('1 XCN'); }
-  finally { onyx.cleanup(); }
+  try {
+    expect(onyx.container.textContent).toContain('1 XCN');
+  } finally {
+    onyx.cleanup();
+  }
 });
 
 async function connectViaWalletModal(flag: boolean, chainId: number) {

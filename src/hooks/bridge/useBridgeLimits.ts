@@ -15,14 +15,14 @@ interface UseBridgeLimitsReturn {
  * Hook that fetches bridge limits once on mount and caches them.
  * Provides a helper to look up minimum amounts per token/direction.
  */
-export function useBridgeLimits(): UseBridgeLimitsReturn {
+export function useBridgeLimits(enabled = true): UseBridgeLimitsReturn {
   const [limits, setLimits] = useState<LimitsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const fetchedRef = useRef(false);
 
   useEffect(() => {
-    if (fetchedRef.current) return;
+    if (!enabled || fetchedRef.current) return;
     fetchedRef.current = true;
 
     const apiClient = new BridgeApiClient(bridgeConfig.statusApiBaseUrl);
@@ -39,7 +39,7 @@ export function useBridgeLimits(): UseBridgeLimitsReturn {
       .finally(() => {
         setIsLoading(false);
       });
-  }, []);
+  }, [enabled]);
 
   const getMinAmount = useCallback(
     (token: string, direction: BridgeDirection): MinAmountResult | null => {

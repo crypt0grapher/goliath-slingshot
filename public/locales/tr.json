@@ -488,5 +488,8 @@
   "pool.simple": "Basit",
   "pool.yourPoolShare": "Havuz payınız:",
   "pool.yourPosition": "Pozisyonunuz",
-  "pool.yourTotalPoolTokens": "Toplam havuz tokenleriniz:"
+  "pool.yourTotalPoolTokens": "Toplam havuz tokenleriniz:",
+  "bridgePerTransactionMax": "İşlem başına üst sınır",
+  "bridgeRemainingCapacity": "Kalan kapasite",
+  "bridgeBalances": "Bakiyeler"
 }

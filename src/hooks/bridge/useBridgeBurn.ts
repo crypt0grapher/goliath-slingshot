@@ -1,3 +1,5 @@
+import type { WalletIntentGuard } from './walletIntent';
+import { beforeWalletPrompt, walletLibraryForIntent, isStaleBridgeIntent } from './walletIntent';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
@@ -18,7 +20,7 @@ const BURN_RETRY_CONFIG = {
   maxRetries: 2,
   retryDelay: 500, // ms
   shouldRetry: (error: any): boolean => {
-    if (error?.code === 4001 || error?.code === 'ACTION_REJECTED') {
+    if (isStaleBridgeIntent(error) || error?.code === 4001 || error?.code === 'ACTION_REJECTED') {
       return false;
     }
     const errorMessage = error?.message?.toLowerCase() || '';
@@ -36,7 +38,7 @@ const BURN_RETRY_CONFIG = {
 // Timeout for tx.wait() to prevent indefinite hanging
 const TX_WAIT_TIMEOUT_MS = 5 * 60 * 1000; // 5 minutes
 
-const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Wait for transaction with timeout to prevent indefinite hanging
 const waitForTxWithTimeout = async (
@@ -46,10 +48,7 @@ const waitForTxWithTimeout = async (
   return Promise.race([
     tx.wait(),
     new Promise<never>((_, reject) =>
-      setTimeout(
-        () => reject(new Error(i18n.t('errorTransactionTakingLong'))),
-        timeoutMs
-      )
+      setTimeout(() => reject(new Error(i18n.t('errorTransactionTakingLong'))), timeoutMs)
     ),
   ]);
 };
@@ -84,7 +83,12 @@ const checkPendingTransactions = async (
 };
 
 interface UseBurnReturn {
-  burn: (token: BridgeTokenSymbol, amountHuman: string, recipient: string) => Promise<string>;
+  burn: (
+    token: BridgeTokenSymbol,
+    amountHuman: string,
+    recipient: string,
+    guard?: WalletIntentGuard
+  ) => Promise<string>;
   isLoading: boolean;
   error: string | null;
 }
@@ -98,11 +102,17 @@ export function useBridgeBurn(): UseBurnReturn {
   const [error, setError] = useState<string | null>(null);
 
   const burn = useCallback(
-    async (token: BridgeTokenSymbol, amountHuman: string, recipient: string): Promise<string> => {
+    async (
+      token: BridgeTokenSymbol,
+      amountHuman: string,
+      recipient: string,
+      guard?: WalletIntentGuard
+    ): Promise<string> => {
       if (!account || !library) {
         throw new Error(t('errorWalletNotConnected'));
       }
 
+      guard?.assertCurrent();
       setIsLoading(true);
       setError(null);
       dispatch(bridgeActions.setSubmitting(true));
@@ -113,10 +123,12 @@ export function useBridgeBurn(): UseBurnReturn {
           console.debug('Bridge: Provider not ready, waiting before burn...');
           recheckProvider();
           await wait(300);
+          guard?.assertCurrent();
         }
 
         // Check for pending transactions that could block this one
         await checkPendingTransactions(library, account);
+        guard?.assertCurrent();
 
         const tokenConfig = getTokenConfigForChain(token, BridgeNetwork.GOLIATH);
         const amountAtomic = parseAmount(amountHuman, token, BridgeNetwork.GOLIATH);
@@ -136,9 +148,12 @@ export function useBridgeBurn(): UseBurnReturn {
 
         // Core burn execution logic
         const executeBurn = async (): Promise<ethers.ContractTransaction> => {
-          const signer = library.getSigner(account);
+          guard?.assertCurrent();
+          const signer = walletLibraryForIntent(library, guard).getSigner(account);
           const bridgeContract = new ethers.Contract(bridgeAddress, BRIDGE_GOLIATH_ABI, signer as any);
-          return bridgeContract.burn(tokenConfig.address, amountAtomic.toString(), recipient);
+          await beforeWalletPrompt(guard, library);
+          guard?.assertCurrent();
+          return bridgeContract.burn(tokenConfig.address, amountAtomic.toString(), recipient, { chainId: 8901 });
         };
 
         let tx: ethers.ContractTransaction;
@@ -149,6 +164,7 @@ export function useBridgeBurn(): UseBurnReturn {
               console.debug(`Bridge: Burn retry attempt ${attempt}/${BURN_RETRY_CONFIG.maxRetries}`);
               recheckProvider();
               await wait(BURN_RETRY_CONFIG.retryDelay);
+              guard?.assertCurrent();
             }
 
             tx = await executeBurn();

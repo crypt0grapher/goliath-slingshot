@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useActiveWeb3React } from '../index';
 import { BridgeNetwork, NETWORK_METADATA } from '../../constants/bridge/networks';
 import { BridgeTokenSymbol, getTokenConfigForChain } from '../../constants/bridge/tokens';
@@ -32,6 +32,10 @@ export function useBridgeAllowance(
   const tokenConfig = getTokenConfigForChain(token, network);
   const expectedChainId = NETWORK_METADATA[network].chainId;
   const shouldSkip = options.skip || tokenConfig.isNative || !tokenConfig.address;
+  const key = `${account || ''}|${chainId || ''}|${network}|${token}|${!!shouldSkip}`;
+  const currentKey = useRef(key);
+  currentKey.current = key;
+  const [observedKey, setObservedKey] = useState('');
 
   const fetchAllowance = useCallback(async () => {
     if (!account || shouldSkip || chainId !== expectedChainId) {
@@ -44,21 +48,19 @@ export function useBridgeAllowance(
 
     try {
       const bridgeAddress = getBridgeContractAddress(network);
-      const allowance = await getTokenAllowance(
-        tokenConfig.address!,
-        account,
-        bridgeAddress,
-        network
-      );
+      const allowance = await getTokenAllowance(tokenConfig.address!, account, bridgeAddress, network);
+      if (currentKey.current !== key) return;
       setAllowanceAtomic(allowance);
+      setObservedKey(key);
     } catch (err) {
+      if (currentKey.current !== key) return;
       console.error('Error fetching allowance:', err);
       setError('Failed to fetch allowance');
       setAllowanceAtomic(BigInt(0));
     } finally {
-      setIsLoading(false);
+      if (currentKey.current === key) setIsLoading(false);
     }
-  }, [account, chainId, expectedChainId, network, shouldSkip, tokenConfig.address]);
+  }, [account, chainId, expectedChainId, key, network, shouldSkip, tokenConfig.address]);
 
   useEffect(() => {
     fetchAllowance();
@@ -72,7 +74,7 @@ export function useBridgeAllowance(
   } else if (amount && parseFloat(amount) > 0) {
     try {
       const amountAtomic = parseAmount(amount, token, network);
-      hasAllowance = allowanceAtomic >= amountAtomic;
+      hasAllowance = observedKey === key && allowanceAtomic >= amountAtomic;
     } catch {
       hasAllowance = false;
     }

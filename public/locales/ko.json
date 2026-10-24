@@ -488,5 +488,8 @@
   "pool.simple": "Simple",
   "pool.yourPoolShare": "Your pool share:",
   "pool.yourPosition": "Your position",
-  "pool.yourTotalPoolTokens": "Your total pool tokens:"
+  "pool.yourTotalPoolTokens": "Your total pool tokens:",
+  "bridgePerTransactionMax": "거래당 최대 금액",
+  "bridgeRemainingCapacity": "남은 용량",
+  "bridgeBalances": "잔액"
 }

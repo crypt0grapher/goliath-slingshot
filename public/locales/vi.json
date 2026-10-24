@@ -488,5 +488,8 @@
   "pool.simple": "Simple",
   "pool.yourPoolShare": "Your pool share:",
   "pool.yourPosition": "Your position",
-  "pool.yourTotalPoolTokens": "Your total pool tokens:"
+  "pool.yourTotalPoolTokens": "Your total pool tokens:",
+  "bridgePerTransactionMax": "Tối đa mỗi giao dịch",
+  "bridgeRemainingCapacity": "Dung lượng còn lại",
+  "bridgeBalances": "Số dư"
 }

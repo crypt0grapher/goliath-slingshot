@@ -1,214 +1,52 @@
+// SPDX-License-Identifier: Apache-2.0
 import React from 'react';
 import styled from 'styled-components';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useTranslation } from 'react-i18next';
 import Modal from '../../components/Modal';
 import { ButtonPrimary } from '../../components/Button';
-import { selectBridgeForm, selectIsConfirmModalOpen } from '../../state/bridge/selectors';
-import { bridgeActions } from '../../state/bridge/reducer';
-import { BridgeNetwork, NETWORK_METADATA } from '../../constants/bridge/networks';
-import { useActiveWeb3React } from '../../hooks';
-import { useBridgeDeposit, useBridgeBurn, useBridgeXcnWithdraw, useBridgeForm } from '../../hooks/bridge';
-import { getStaticEtaEstimate } from '../../utils/bridge/eta';
+import { selectIsConfirmModalOpen } from '../../state/bridge/selectors';
+import { useBridgeSession } from '../../hooks/bridge/BridgeSession';
+import { NETWORK_METADATA } from '../../constants/bridge/networks';
+import BridgeSummary from '../../components/bridge/BridgeSummary';
 
-const ContentWrapper = styled.div`
+const Content = styled.div`
   padding: 1rem;
   width: 100%;
   box-sizing: border-box;
-`;
-
-const Title = styled.h3`
-  font-size: 18px;
-  font-weight: 500;
-  color: ${({ theme }) => theme.text1};
-  margin: 0 0 16px 0;
-  text-align: center;
-`;
-
-const DetailRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px 0;
-  border-bottom: 1px solid ${({ theme }) => theme.bg3};
-
-  &:last-of-type {
-    border-bottom: none;
+  h3 {
+    text-align: center;
   }
 `;
-
-const DetailLabel = styled.span`
-  font-size: 14px;
-  color: ${({ theme }) => theme.text2};
-`;
-
-const DetailValue = styled.span`
-  font-size: 14px;
-  font-weight: 500;
-  color: ${({ theme }) => theme.text1};
-`;
-
-const FreeValue = styled.span`
-  font-size: 14px;
-  font-weight: 500;
-  color: #27ae60;
-`;
-
-const AmountHighlight = styled.div`
-  text-align: center;
-  padding: 20px;
-  background-color: ${({ theme }) => theme.bg2};
-  border-radius: 12px;
-  margin-bottom: 16px;
-`;
-
-const AmountText = styled.div`
-  font-size: 32px;
-  font-weight: 600;
-  color: ${({ theme }) => theme.text1};
-`;
-
-const TokenSymbol = styled.span`
-  font-size: 20px;
-  color: ${({ theme }) => theme.text2};
-  margin-left: 8px;
-`;
-
-const DirectionText = styled.div`
-  font-size: 14px;
-  color: ${({ theme }) => theme.text2};
-  margin-top: 8px;
-`;
-
-const ButtonContainer = styled.div`
-  margin-top: 16px;
-`;
-
-const WarningText = styled.div`
-  font-size: 12px;
-  color: ${({ theme }) => theme.text3};
-  text-align: center;
-  margin-top: 12px;
-`;
-
 export default function BridgeConfirmModal() {
   const { t } = useTranslation();
-  const dispatch = useDispatch();
-  const { account } = useActiveWeb3React();
-  const isOpen = useSelector(selectIsConfirmModalOpen);
-  const form = useSelector(selectBridgeForm);
-  const { deposit, isLoading: isDepositing } = useBridgeDeposit();
-  const { burn, isLoading: isBurning } = useBridgeBurn();
-  const { withdraw: xcnWithdraw, isLoading: isXcnWithdrawing } = useBridgeXcnWithdraw();
-  const { triggerBalanceRefresh, feeQuote } = useBridgeForm();
-
-  const isLoading = isDepositing || isBurning || isXcnWithdrawing;
-
-  const originMetadata = NETWORK_METADATA[form.originNetwork];
-  const destMetadata = NETWORK_METADATA[form.destinationNetwork];
-  const direction =
-    form.originNetwork === BridgeNetwork.SEPOLIA ? 'SEPOLIA_TO_GOLIATH' : 'GOLIATH_TO_SEPOLIA';
-  const isWithdrawal = direction === 'GOLIATH_TO_SEPOLIA';
-  const eta = getStaticEtaEstimate(direction);
-
-  const handleClose = () => {
-    if (!isLoading) {
-      dispatch(bridgeActions.closeConfirmModal());
-    }
-  };
-
-  const handleConfirm = async () => {
-    if (!account) return;
-
-    try {
-      if (form.originNetwork === BridgeNetwork.SEPOLIA) {
-        await deposit(form.selectedToken, form.inputAmount, account);
-      } else if (form.selectedToken === 'XCN') {
-        await xcnWithdraw(form.selectedToken, form.inputAmount, account);
-      } else {
-        await burn(form.selectedToken, form.inputAmount, account);
-      }
-      triggerBalanceRefresh();
-    } catch (error) {
-      console.error('Bridge transaction failed:', error);
-    }
-  };
-
-  const truncateAddress = (address: string) => {
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
-
-  // Fee display logic
-  const hasFee = isWithdrawal && feeQuote && feeQuote.feeBps > 0;
-  const feePercent = feeQuote ? (feeQuote.feeBps / 100).toFixed(feeQuote.feeBps % 100 === 0 ? 0 : 2) : '0';
-  const outputAmount = isWithdrawal && feeQuote
-    ? feeQuote.outputFormatted
-    : form.inputAmount;
-
+  const open = useSelector(selectIsConfirmModalOpen);
+  const s = useBridgeSession();
   return (
-    <Modal isOpen={isOpen} onDismiss={handleClose}>
-      <ContentWrapper>
-        <Title>{t('confirmBridge')}</Title>
-
-        <AmountHighlight>
-          <AmountText>
-            {form.inputAmount}
-            <TokenSymbol>{form.selectedToken}</TokenSymbol>
-          </AmountText>
-          <DirectionText>
-            {originMetadata.shortName} &rarr; {destMetadata.shortName}
-          </DirectionText>
-        </AmountHighlight>
-
-        <DetailRow>
-          <DetailLabel>{t('fromNetwork')}</DetailLabel>
-          <DetailValue>{originMetadata.displayName}</DetailValue>
-        </DetailRow>
-
-        <DetailRow>
-          <DetailLabel>{t('toNetwork')}</DetailLabel>
-          <DetailValue>{destMetadata.displayName}</DetailValue>
-        </DetailRow>
-
-        <DetailRow>
-          <DetailLabel>{t('recipient')}</DetailLabel>
-          <DetailValue>{account ? truncateAddress(account) : '-'}</DetailValue>
-        </DetailRow>
-
-        <DetailRow>
-          <DetailLabel>{t('bridgeFee')}</DetailLabel>
-          {hasFee ? (
-            <DetailValue>
-              {feeQuote!.feeFormatted} {form.selectedToken} ({feePercent}%)
-            </DetailValue>
-          ) : (
-            <FreeValue>{t('free')}</FreeValue>
-          )}
-        </DetailRow>
-
-        <DetailRow>
-          <DetailLabel>{t('bridgeYouReceive')}</DetailLabel>
-          <DetailValue>
-            {outputAmount} {form.selectedToken}{' '}
-            {t('bridgeConfirmOnNetwork', { network: destMetadata.shortName })}
-          </DetailValue>
-        </DetailRow>
-
-        <DetailRow>
-          <DetailLabel>{t('estimatedTime')}</DetailLabel>
-          <DetailValue>{eta}</DetailValue>
-        </DetailRow>
-
-        <ButtonContainer>
-          <ButtonPrimary onClick={handleConfirm} disabled={isLoading}>
-            {isLoading ? t('confirming') : t('confirmBridge')}
-          </ButtonPrimary>
-        </ButtonContainer>
-
-        <WarningText>
-          {t('bridgeConfirmWarning')}
-        </WarningText>
-      </ContentWrapper>
+    <Modal isOpen={open && s.confirmationValid} onDismiss={s.closeConfirm}>
+      <Content>
+        <h3>{t('confirmBridge')}</h3>
+        <p>
+          {s.confirmation?.amount} {s.asset.symbol} · {s.asset.name}
+        </p>
+        <p>
+          {NETWORK_METADATA[s.selection.originNetwork].displayName} →{' '}
+          {NETWORK_METADATA[s.selection.destinationNetwork].displayName}
+        </p>
+        <BridgeSummary
+          symbol={s.asset.symbol}
+          fee={s.fee}
+          net={s.net}
+          eta={s.eta}
+          recipient={s.confirmation?.recipient || ''}
+          perTxMax={s.perTxMax}
+          remainingCapacity={s.remainingCapacity}
+        />
+        <ButtonPrimary onClick={s.confirm} disabled={s.busy || !s.confirmationValid}>
+          {s.busy ? t('confirming') : t('confirmBridge')}
+        </ButtonPrimary>
+        <p>{t('bridgeConfirmWarning')}</p>
+      </Content>
     </Modal>
   );
 }

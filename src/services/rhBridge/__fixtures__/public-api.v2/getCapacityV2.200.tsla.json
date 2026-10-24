@@ -1,0 +1,66 @@
+{
+  "fixture": "getCapacityV2.200.tsla",
+  "operationId": "getCapacityV2",
+  "classification": "SYNTHETIC_OFFLINE_NOT_DEPLOYMENT_AUTHORITY",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/v2/capacity",
+    "query": {
+      "assetId": "TSLA",
+      "profileSha256": "38a14bcb94536c4efb8d62d9d0a42ae702117db3e495f6884cf25839da47ee8e",
+      "direction": "RH_TO_ONYX"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "no-referrer",
+      "vary": "Origin",
+      "x-request-id": "synthetic_request"
+    },
+    "body": {
+      "binding": {
+        "assetId": "TSLA",
+        "profileSha256": "38a14bcb94536c4efb8d62d9d0a42ae702117db3e495f6884cf25839da47ee8e",
+        "profileVersion": 1,
+        "abiVersion": "rh-stock-bridge-abi-12fc53612bcf"
+      },
+      "direction": "RH_TO_ONYX",
+      "observation": {
+        "observedAt": "2026-10-23T19:00:00Z",
+        "expiresAt": "2026-10-23T19:00:15Z",
+        "freshness": "FRESH",
+        "robinhood": {
+          "chainId": 46630,
+          "number": "1000",
+          "hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "timestamp": "2026-10-23T18:59:00Z"
+        },
+        "onyx": {
+          "chainId": 8901,
+          "number": "2000",
+          "hash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "timestamp": "2026-10-23T18:59:55Z"
+        },
+        "ledgerObservedAt": "2026-10-23T19:00:00Z"
+      },
+      "perTxMax": "700000000000000000",
+      "remainingCapacity": "2750000000000000000",
+      "components": {
+        "custodyRoom": "5500000000000000000",
+        "rollingMintRoom": "2750000000000000000",
+        "outstandingRoom": "5500000000000000000",
+        "supplyRoom": "5500000000000000000",
+        "rollingReleaseRoom": null,
+        "availableCustody": null,
+        "availableOutstanding": null,
+        "pendingUnminted": "0",
+        "pendingUnreleased": "0"
+      },
+      "admissionAllowsNewSource": true
+    }
+  }
+}

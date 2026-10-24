@@ -2,7 +2,7 @@
 // (exact approval, then deposit/burn) and read-only status recovery. Each wallet prompt
 // is preceded by a persisted intent and a fresh account/chain confirmation; nothing is
 // ever retried or re-sent automatically.
-import { LaneBinding, RH_MANIFEST_FEE_CEILING } from '../../config/rhBridge';
+import { LaneBinding, RH_MANIFEST_FEE_CEILING, RH_LANE } from '../../config/rhBridge';
 import { chainPair, RhDirection } from '../../constants/rhBridge';
 import {
   createIntent,
@@ -39,9 +39,15 @@ import {
   validateOnchainFee,
 } from '../../services/rhBridge/lane';
 import { FeeQuote } from '../../services/rhBridge/schema';
-import { trackRecord } from '../../services/rhBridge/tracker';
+import { trackRecord, operationClaim } from '../../services/rhBridge/tracker';
 import { Eip1193, sendLaneTransaction, switchWalletChain } from '../../services/rhBridge/wallet';
 import { chainKey, deriveView, LaneSnapshot, WalletState } from './view';
+import type { ProfileCatalog } from '../../config/rhBridge/profiles';
+import { profileLane, legacyTslaProfile } from '../../config/rhBridge/profiles';
+import type { V2ApiClient } from '../../services/rhBridge/v2-api';
+import type { WalletIntentGuard } from '../bridge/walletIntent';
+import { StaleBridgeIntent } from '../bridge/walletIntent';
+import { readProfileSnapshot } from './v2';
 
 export interface ControllerDeps {
   api: RhApiClient | null;
@@ -50,6 +56,7 @@ export interface ControllerDeps {
   lane: LaneBinding;
   now: () => number;
   randomHex: () => string;
+  v2?: { api: V2ApiClient; catalog: ProfileCatalog };
 }
 
 type Listener = (snapshot: LaneSnapshot) => void;
@@ -72,6 +79,8 @@ export class RhLaneController {
   private actionLock = false;
   private tracking = false;
   private disposed = false;
+  private selectedAsset: string | null = null;
+  private v2Reading: { generation: number; promise: Promise<void> } | null = null;
 
   constructor(private readonly deps: ControllerDeps) {
     this.snapshot = {
@@ -85,6 +94,7 @@ export class RhLaneController {
       history: deps.storage ? EMPTY_HISTORY : { status: 'INVALID', records: [], invalidRows: 0 },
       busy: null,
       notice: deps.storage ? null : 'Browser storage is unavailable, so live actions stay disabled.',
+      ...(deps.v2 ? { v2: null } : {}),
     };
     if (deps.storage) {
       // A prompt that was open before this page load can no longer be observed.
@@ -124,15 +134,17 @@ export class RhLaneController {
 
   setWallet(wallet: WalletState, provider: Eip1193 | null): void {
     const previous = this.snapshot.wallet;
+    const providerChanged = this.provider !== provider;
     this.provider = provider;
     if (
       previous.account !== wallet.account ||
       previous.chainId !== wallet.chainId ||
-      previous.isInjected !== wallet.isInjected
+      previous.isInjected !== wallet.isInjected ||
+      providerChanged
     ) {
       // Any context change cancels whatever action captured the previous context.
       this.generation++;
-      this.set({ wallet, chain: {} });
+      this.set({ wallet, chain: {}, ...(this.deps.v2 ? { v2: null } : {}) });
     } else if (previous.hasProvider !== wallet.hasProvider) {
       this.set({ wallet });
     }
@@ -143,15 +155,74 @@ export class RhLaneController {
     this.set({ direction, quote: {}, chain: {}, notice: null });
   }
   setAmount(amountText: string): void {
+    if (amountText !== this.snapshot.amountText) this.generation++;
     this.set({ amountText, notice: null });
   }
   setRecipient(recipientText: string): void {
+    if (recipientText !== this.snapshot.recipientText) this.generation++;
     this.set({ recipientText, notice: null });
+  }
+
+  setSelection(assetId: string | null, direction: RhDirection, amountText: string, recipientText: string): void {
+    if (!this.deps.v2) return;
+    if (
+      this.selectedAsset === assetId &&
+      this.snapshot.direction === direction &&
+      this.snapshot.amountText === amountText &&
+      this.snapshot.recipientText === recipientText
+    )
+      return;
+    this.generation++;
+    this.selectedAsset = assetId;
+    const profile = assetId ? this.deps.v2.catalog.current(assetId) : null;
+    if (profile) this.deps.lane = profileLane(profile);
+    this.set({
+      direction,
+      amountText,
+      recipientText,
+      v2: null,
+      chain: {},
+      quote: {},
+      notice: profile || assetId === null ? null : 'Deployment pins are not configured. Live actions stay disabled.',
+    });
+  }
+  invalidateContext(): void {
+    this.generation++;
+    if (this.deps.v2) this.set({ v2: null });
   }
 
   // ----------------------------------------------------------------- reads
 
   async refreshLane(): Promise<void> {
+    if (this.deps.v2) {
+      const generation = this.generation,
+        profile = this.selectedAsset ? this.deps.v2.catalog.current(this.selectedAsset) : null;
+      if (!profile) return;
+      if (this.v2Reading?.generation === generation) return this.v2Reading.promise;
+      const promise = (async () => {
+        try {
+          const v2 = await readProfileSnapshot(
+            this.deps.v2!.api,
+            this.deps.v2!.catalog,
+            profile,
+            this.deps.chains,
+            this.snapshot,
+            this.deps.now
+          );
+          if (generation === this.generation) this.set({ v2, notice: null });
+        } catch {
+          if (generation === this.generation)
+            this.set({ v2: null, notice: 'Bridge observations are unavailable or stale. Live actions stay disabled.' });
+        }
+      })();
+      this.v2Reading = { generation, promise };
+      try {
+        await promise;
+      } finally {
+        if (this.v2Reading?.promise === promise) this.v2Reading = null;
+      }
+      return;
+    }
     const api = this.deps.api;
     if (!api) return;
     const [assets, limits, health, state] = await Promise.all([
@@ -174,6 +245,7 @@ export class RhLaneController {
   }
 
   async refreshQuote(): Promise<void> {
+    if (this.deps.v2) return this.refreshLane();
     const api = this.deps.api;
     const view = this.view();
     if (!api || this.snapshot.direction !== 'ONYX_TO_RH' || !view.grossRaw) return;
@@ -211,6 +283,7 @@ export class RhLaneController {
   }
 
   async refreshChain(): Promise<void> {
+    if (this.deps.v2) return this.refreshLane();
     const { chains, lane } = this.deps;
     const { direction, wallet } = this.snapshot;
     const account = wallet.account;
@@ -300,14 +373,88 @@ export class RhLaneController {
     }
   }
 
-  async approve(): Promise<void> {
+  async approve(guard?: WalletIntentGuard): Promise<void> {
     const view = this.view();
     if (!view.canApprove || !view.grossRaw || !view.recipient || this.actionLock) return;
+    if (this.deps.v2) {
+      const generation = this.generation,
+        lane = this.deps.lane,
+        direction = this.snapshot.direction,
+        gross = view.grossRaw,
+        recipient = view.recipient;
+      this.actionLock = true;
+      this.set({ busy: 'APPROVE', notice: null });
+      try {
+        guard?.assertCurrent();
+        await this.refreshLane();
+        guard?.assertCurrent();
+        const after = this.view();
+        if (
+          generation !== this.generation ||
+          !after.canApprove ||
+          after.grossRaw !== gross ||
+          after.recipient !== recipient
+        )
+          return this.stop('The approval details changed. Review them before continuing.');
+        this.actionLock = false;
+        await this.prompt(
+          'APPROVE',
+          buildApproval(direction, lane, gross),
+          gross,
+          recipient,
+          null,
+          null,
+          undefined,
+          generation,
+          guard
+        );
+      } finally {
+        this.actionLock = false;
+        this.set({ busy: null });
+      }
+      return;
+    }
     const call = buildApproval(this.snapshot.direction, this.deps.lane, view.grossRaw);
-    await this.prompt('APPROVE', call, view.grossRaw, view.recipient, null, null);
+    await this.prompt('APPROVE', call, view.grossRaw, view.recipient, null, null, undefined, undefined, guard);
   }
 
-  async bridge(): Promise<void> {
+  async bridge(guard?: WalletIntentGuard): Promise<void> {
+    if (this.deps.v2) {
+      const before = this.view();
+      if (!before.canBridge || !before.grossRaw || !before.recipient || this.actionLock) return;
+      const generation = this.generation,
+        lane = this.deps.lane,
+        direction = this.snapshot.direction,
+        gross = before.grossRaw,
+        recipient = before.recipient;
+      this.actionLock = true;
+      this.set({ busy: 'BRIDGE', notice: null });
+      try {
+        guard?.assertCurrent();
+        await this.refreshLane();
+        guard?.assertCurrent();
+        const after = this.view(),
+          x = this.snapshot.v2;
+        if (
+          generation !== this.generation ||
+          !after.canBridge ||
+          after.grossRaw !== gross ||
+          after.recipient !== recipient ||
+          !x?.quote ||
+          x.gross !== gross
+        )
+          return this.stop('The bridge details changed. Review them before continuing.');
+        const fee = x.quote.fee,
+          maxFee = direction === 'ONYX_TO_RH' ? x.quote.suggestedMaxFee : null;
+        const call = buildBridgeCall(direction, lane, { gross, recipient, maxFee: maxFee ?? undefined });
+        this.actionLock = false;
+        await this.prompt('BRIDGE', call, gross, recipient, fee, maxFee, before.approvedRecord, generation, guard);
+      } finally {
+        this.actionLock = false;
+        this.set({ busy: null });
+      }
+      return;
+    }
     const before = this.view();
     if (!before.canBridge || !before.grossRaw || !before.recipient || this.actionLock) return;
     const { direction } = this.snapshot;
@@ -389,7 +536,8 @@ export class RhLaneController {
     fee: string | null,
     maxFee: string | null,
     approved?: RhRecord,
-    capturedGeneration?: number
+    capturedGeneration?: number,
+    guard?: WalletIntentGuard
   ): Promise<void> {
     const storage = this.deps.storage;
     const provider = this.provider;
@@ -400,6 +548,7 @@ export class RhLaneController {
     this.set({ busy: step, notice: null });
     let record: RhRecord | undefined;
     try {
+      guard?.assertCurrent();
       const now = this.deps.now();
       try {
         if (
@@ -448,7 +597,17 @@ export class RhLaneController {
       }
       let outcome;
       try {
-        outcome = await sendLaneTransaction(provider, account, call);
+        const finalGuard: WalletIntentGuard | undefined = this.deps.v2
+          ? {
+              expectedAccount: account,
+              expectedChainId: call.chainId,
+              assertCurrent: () => {
+                if (this.disposed || generation !== this.generation) throw new StaleBridgeIntent();
+                guard?.assertCurrent();
+              },
+            }
+          : guard;
+        outcome = await sendLaneTransaction(provider, account, call, finalGuard);
       } catch {
         this.patch(record.id, { stage: 'FAILED', failure: 'CONTEXT_CHANGED' });
         this.set({ notice: 'The wallet account or network changed before signing. Nothing was sent.' });
@@ -510,12 +669,17 @@ export class RhLaneController {
 
   async trackOnce(): Promise<void> {
     const { api, chains, storage, lane } = this.deps;
-    if (!api || !storage || this.tracking) return;
+    if ((!api && !this.deps.v2) || !storage || this.tracking) return;
     this.tracking = true;
     try {
       const records = readHistory(storage);
       if (records.status !== 'READY') return;
       const claimed = records.records.map((r) => r.sourceTxHash).filter((h): h is string => !!h);
+      const claimedOperations = records.records.flatMap((r) =>
+        r.assetBinding && r.operationId
+          ? [operationClaim(r.assetBinding, r.operationId, chainPair(r.direction).source)]
+          : []
+      );
       for (const record of records.records) {
         if (
           !isOpen(record.stage) ||
@@ -524,16 +688,37 @@ export class RhLaneController {
           record.stage === 'FAILED'
         )
           continue;
-        if (!sameBindings(record.bindings, lane)) continue; // another deployment's record: shown, never tracked
+        const profile = this.deps.v2
+          ? record.assetBinding
+            ? this.deps.v2.catalog.recorded(record.assetBinding)
+            : sameBindings(record.bindings, RH_LANE)
+            ? legacyTslaProfile(this.deps.v2.catalog)
+            : null
+          : null;
+        const recordedLane = profile ? profileLane(profile) : lane;
+        if ((this.deps.v2 && !profile) || !sameBindings(record.bindings, recordedLane)) continue;
         let patches: RecordPatch[] = [];
         try {
-          patches = await trackRecord(record, { api, chains, lane, nowMs: this.deps.now(), claimedHashes: claimed });
+          patches = await trackRecord(record, {
+            api,
+            chains,
+            lane: recordedLane,
+            nowMs: this.deps.now(),
+            claimedHashes: claimed,
+            claimedOperations,
+            direction: record.direction,
+            ...(this.deps.v2 && profile ? { v2: { api: this.deps.v2.api, binding: profile.descriptor.binding } } : {}),
+          });
         } catch {
           continue; // read failure: try again next poll
         }
         for (const patch of patches) {
           try {
             updateRecord(storage, record.id, patch, this.deps.now());
+            if (profile && patch.operationId)
+              claimedOperations.push(
+                operationClaim(profile.descriptor.binding, patch.operationId, chainPair(record.direction).source)
+              );
           } catch {
             break;
           }

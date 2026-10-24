@@ -17,6 +17,11 @@ export interface ChainReader {
   // eth_getTransactionByHash: the transaction's nonce and sender, or null when the RPC does not know it.
   getTransaction(chainId: LaneChainId, txHash: string): Promise<{ nonce: number; from: string } | null>;
   getTransactionCount(chainId: LaneChainId, address: string, block: 'latest' | 'pending'): Promise<number>;
+  estimateGas?(chainId: LaneChainId, tx: { from: string; to: string; data: string; value: string }): Promise<string>;
+  gasPrice?(chainId: LaneChainId): Promise<string>;
+  getCode?(chainId: LaneChainId, address: string): Promise<string>;
+  getChainId?(chainId: LaneChainId): Promise<number>;
+  genesisHash?(chainId: LaneChainId): Promise<string>;
 }
 
 const QUANTITY = /^0x[0-9a-f]{1,64}$/i;
@@ -72,6 +77,25 @@ export function createChainReader(
     }
   }
   return Object.freeze({
+    async estimateGas(chainId: LaneChainId, tx: { from: string; to: string; data: string; value: string }) {
+      return quantity(await rpc(chainId, 'eth_estimateGas', [tx]));
+    },
+    async gasPrice(chainId: LaneChainId) {
+      return quantity(await rpc(chainId, 'eth_gasPrice', []));
+    },
+    async getCode(chainId: LaneChainId, address: string) {
+      const code = await rpc(chainId, 'eth_getCode', [address, 'latest']);
+      if (typeof code !== 'string' || !/^0x(?:[0-9a-f]{2})*$/i.test(code)) return fail('INVALID');
+      return code.toLowerCase();
+    },
+    async getChainId(chainId: LaneChainId) {
+      return Number(quantity(await rpc(chainId, 'eth_chainId', [])));
+    },
+    async genesisHash(chainId: LaneChainId) {
+      const block = (await rpc(chainId, 'eth_getBlockByNumber', ['0x0', false])) as { hash?: unknown };
+      if (typeof block?.hash !== 'string' || !/^0x[0-9a-f]{64}$/i.test(block.hash)) return fail('INVALID');
+      return block.hash.toLowerCase();
+    },
     async call(chainId: LaneChainId, to: string, data: string) {
       const result = await rpc(chainId, 'eth_call', [{ to, data }, 'latest']);
       return typeof result === 'string' && /^0x([0-9a-f]{2})*$/i.test(result) ? result : fail('INVALID');

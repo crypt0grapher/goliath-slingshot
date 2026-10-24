@@ -6,6 +6,8 @@
 // actions but preserved byte-for-byte on every write; nothing is ever cleared.
 import { LaneBinding, RH_STALE_PENDING_MS } from '../../config/rhBridge';
 import { chainPair, RH_HISTORY_KEY, RhDirection } from '../../constants/rhBridge';
+import type { Binding } from '../../services/rhBridge/v2-types';
+import { parseV2 } from '../../services/rhBridge/v2-schema';
 
 export const HISTORY_KEY = RH_HISTORY_KEY;
 export const MAX_RECORDS = 100;
@@ -73,7 +75,9 @@ export interface Bindings {
   minter: string;
 }
 export interface RhRecord {
-  schemaVersion: 1;
+  schemaVersion: 1 | 2;
+  assetBinding?: Binding;
+  assetKind?: 'ERC20' | 'NATIVE';
   id: string;
   direction: RhDirection;
   account: string;
@@ -140,7 +144,12 @@ export function validateRecord(value: unknown): RhRecord {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return invalid();
   const row = value as Record<string, unknown>;
   const keys = Object.keys(row);
-  if (keys.length !== KEYS.length || KEYS.some((key) => !keys.includes(key))) return invalid();
+  const expected = row.schemaVersion === 2 ? [...KEYS, 'assetBinding', 'assetKind'] : KEYS;
+  if (keys.length !== expected.length || expected.some((key) => !keys.includes(key))) return invalid();
+  if (row.schemaVersion === 2) {
+    parseV2('Binding', row.assetBinding);
+    if (row.assetKind !== 'ERC20' && row.assetKind !== 'NATIVE') return invalid();
+  }
   const b = row.bindings as Record<string, unknown>;
   if (
     !b ||
@@ -151,7 +160,7 @@ export function validateRecord(value: unknown): RhRecord {
     return invalid();
   }
   const checks: boolean[] = [
-    row.schemaVersion === 1,
+    row.schemaVersion === 1 || row.schemaVersion === 2,
     matches(/^rh-[0-9]{1,16}-[0-9a-f]{8}$/)(row.id),
     row.direction === 'RH_TO_ONYX' || row.direction === 'ONYX_TO_RH',
     matches(ADDRESS)(row.account),
@@ -250,6 +259,55 @@ function loadForWrite(storage: HistoryStorage): Loaded {
 }
 
 function write(storage: HistoryStorage, rows: unknown[]): void {
+  // Keep the exact lexical bytes of untouched/unknown rows, rather than migrating them on append.
+  const old = storage.getItem(HISTORY_KEY);
+  if (old) {
+    try {
+      const values = JSON.parse(old),
+        tokens: string[] = [];
+      let start = old.indexOf('[') + 1,
+        depth = 0,
+        string = false,
+        escape = false;
+      for (let i = start; i < old.lastIndexOf(']'); i++) {
+        const c = old[i];
+        if (string) {
+          if (escape) escape = false;
+          else if (c === '\\') escape = true;
+          else if (c === '"') string = false;
+        } else if (c === '"') string = true;
+        else if (c === '{' || c === '[') depth++;
+        else if (c === '}' || c === ']') depth--;
+        else if (c === ',' && depth === 0) {
+          tokens.push(old.slice(start, i));
+          start = i + 1;
+        }
+      }
+      if (old.slice(start, old.lastIndexOf(']')).trim()) tokens.push(old.slice(start, old.lastIndexOf(']')));
+      if (Array.isArray(values) && values.length === tokens.length) {
+        const originals = new Map<string, string[]>();
+        values.forEach((v, i) => {
+          const key = JSON.stringify(v),
+            list = originals.get(key) ?? [];
+          list.push(tokens[i]);
+          originals.set(key, list);
+        });
+        const encoded =
+          '[' +
+          rows
+            .map((row) => {
+              const key = JSON.stringify(row);
+              return originals.get(key)?.shift() ?? key;
+            })
+            .join(',') +
+          ']';
+        storage.setItem(HISTORY_KEY, encoded);
+        return;
+      }
+    } catch {
+      /* loadForWrite already refuses malformed documents; do not repair them here. */
+    }
+  }
   storage.setItem(HISTORY_KEY, JSON.stringify(rows));
 }
 
@@ -276,7 +334,8 @@ export interface IntentInput {
 export function createIntent(storage: HistoryStorage, input: IntentInput): RhRecord {
   chainPair(input.direction);
   const record = validateRecord({
-    schemaVersion: 1,
+    schemaVersion: input.lane.binding ? 2 : 1,
+    ...(input.lane.binding ? { assetBinding: input.lane.binding, assetKind: input.lane.kind ?? 'ERC20' } : {}),
     id: `rh-${input.nowMs}-${input.randomHex}`,
     direction: input.direction,
     account: input.account.toLowerCase(),

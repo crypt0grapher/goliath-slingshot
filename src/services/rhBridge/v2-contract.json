@@ -1,0 +1,1723 @@
+{
+  "source": "Reviewed UB04 public-api.v2.json; closed wire schemas only",
+  "$defs": {
+    "RawAmount": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]{0,77})$"
+    },
+    "Address": {
+      "type": "string",
+      "pattern": "^0x[0-9a-f]{40}$"
+    },
+    "Hash32": {
+      "type": "string",
+      "pattern": "^0x[0-9a-f]{64}$"
+    },
+    "Sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ChainId": {
+      "type": "integer",
+      "enum": [
+        46630,
+        8901
+      ]
+    },
+    "AssetId": {
+      "type": "string",
+      "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+    },
+    "Direction": {
+      "enum": [
+        "RH_TO_ONYX",
+        "ONYX_TO_RH"
+      ]
+    },
+    "Admission": {
+      "enum": [
+        "FROZEN",
+        "CLOSED",
+        "CANARY",
+        "OPEN"
+      ]
+    },
+    "OperationId": {
+      "type": "string",
+      "pattern": "^(RH_TO_ONYX|ONYX_TO_RH):0x[0-9a-f]{64}$"
+    },
+    "Binding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "assetId",
+        "profileSha256",
+        "profileVersion",
+        "abiVersion"
+      ],
+      "properties": {
+        "assetId": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "profileSha256": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "profileVersion": {
+          "enum": [
+            1,
+            2
+          ]
+        },
+        "abiVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
+    "Block": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chainId",
+        "number",
+        "hash",
+        "timestamp"
+      ],
+      "properties": {
+        "chainId": {
+          "$ref": "#/$defs/ChainId"
+        },
+        "number": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "hash": {
+          "$ref": "#/$defs/Hash32"
+        },
+        "timestamp": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      }
+    },
+    "Observation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "observedAt",
+        "expiresAt",
+        "freshness",
+        "robinhood",
+        "onyx",
+        "ledgerObservedAt"
+      ],
+      "properties": {
+        "observedAt": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "expiresAt": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "freshness": {
+          "enum": [
+            "FRESH",
+            "STALE",
+            "UNKNOWN"
+          ]
+        },
+        "robinhood": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Block"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "onyx": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Block"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ledgerObservedAt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "Caps": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "escrowReleaseCap",
+        "escrowCustodyCap",
+        "mint24hCap",
+        "outstandingCap",
+        "wrapperSupplyCap"
+      ],
+      "properties": {
+        "escrowReleaseCap": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "escrowCustodyCap": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "mint24hCap": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "outstandingCap": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "wrapperSupplyCap": {
+          "$ref": "#/$defs/RawAmount"
+        }
+      }
+    },
+    "Fees": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "feeBps",
+        "minFee",
+        "minExit",
+        "maxFeeBps",
+        "maxMinFee"
+      ],
+      "properties": {
+        "feeBps": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "minFee": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "minExit": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "maxFeeBps": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "maxMinFee": {
+          "$ref": "#/$defs/RawAmount"
+        }
+      }
+    },
+    "Contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chainId",
+        "address",
+        "runtimeCodeKeccak256",
+        "deploymentBlock",
+        "deploymentTx",
+        "onyxContractId"
+      ],
+      "properties": {
+        "chainId": {
+          "$ref": "#/$defs/ChainId"
+        },
+        "address": {
+          "$ref": "#/$defs/Address"
+        },
+        "runtimeCodeKeccak256": {
+          "$ref": "#/$defs/Hash32"
+        },
+        "deploymentBlock": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "deploymentTx": {
+          "$ref": "#/$defs/Hash32"
+        },
+        "onyxContractId": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^0\\.0\\.[1-9][0-9]*$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "Asset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding",
+        "symbol",
+        "wrapperSymbol",
+        "name",
+        "decimals",
+        "originChainId",
+        "kind",
+        "canonicalIdentifier",
+        "token",
+        "escrow",
+        "minter",
+        "wrapper",
+        "implementation",
+        "tokenRuntimeCodeKeccak256",
+        "issuerPolicy",
+        "manifestSha256"
+      ],
+      "properties": {
+        "binding": {
+          "$ref": "#/$defs/Binding"
+        },
+        "symbol": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "wrapperSymbol": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 96
+        },
+        "decimals": {
+          "const": 18
+        },
+        "originChainId": {
+          "const": 46630
+        },
+        "kind": {
+          "enum": [
+            "ERC20",
+            "NATIVE"
+          ]
+        },
+        "canonicalIdentifier": {
+          "$ref": "#/$defs/Address"
+        },
+        "token": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Address"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "escrow": {
+          "$ref": "#/$defs/Contract"
+        },
+        "minter": {
+          "$ref": "#/$defs/Contract"
+        },
+        "wrapper": {
+          "$ref": "#/$defs/Contract"
+        },
+        "implementation": {
+          "$ref": "#/$defs/Contract"
+        },
+        "tokenRuntimeCodeKeccak256": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hash32"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "issuerPolicy": {
+          "enum": [
+            "TSLA_ACCESS_CONTROLLED_REGISTRY",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "manifestSha256": {
+          "$ref": "#/$defs/Sha256"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "NATIVE"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "canonicalIdentifier": {
+                "const": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+              },
+              "token": {
+                "type": "null"
+              },
+              "tokenRuntimeCodeKeccak256": {
+                "type": "null"
+              },
+              "issuerPolicy": {
+                "const": "NOT_APPLICABLE"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "ERC20"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "token": {
+                "$ref": "#/$defs/Address"
+              },
+              "tokenRuntimeCodeKeccak256": {
+                "$ref": "#/$defs/Hash32"
+              },
+              "issuerPolicy": {
+                "const": "TSLA_ACCESS_CONTROLLED_REGISTRY"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Assets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "contractVersion",
+        "lane",
+        "registrySha256",
+        "assets"
+      ],
+      "properties": {
+        "contractVersion": {
+          "const": "2.0.0"
+        },
+        "lane": {
+          "const": "RH_TESTNET"
+        },
+        "registrySha256": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Asset"
+          }
+        }
+      }
+    },
+    "Limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding",
+        "observation",
+        "decimals",
+        "deposit",
+        "exit",
+        "caps",
+        "fee"
+      ],
+      "properties": {
+        "binding": {
+          "$ref": "#/$defs/Binding"
+        },
+        "observation": {
+          "$ref": "#/$defs/Observation"
+        },
+        "decimals": {
+          "const": 18
+        },
+        "deposit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "perTxMax",
+            "minAmount"
+          ],
+          "properties": {
+            "perTxMax": {
+              "$ref": "#/$defs/RawAmount"
+            },
+            "minAmount": {
+              "$ref": "#/$defs/RawAmount"
+            }
+          }
+        },
+        "exit": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "perTxMax",
+            "minExit"
+          ],
+          "properties": {
+            "perTxMax": {
+              "$ref": "#/$defs/RawAmount"
+            },
+            "minExit": {
+              "$ref": "#/$defs/RawAmount"
+            }
+          }
+        },
+        "caps": {
+          "$ref": "#/$defs/Caps"
+        },
+        "fee": {
+          "$ref": "#/$defs/Fees"
+        }
+      }
+    },
+    "FeeQuote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding",
+        "direction",
+        "gross",
+        "fee",
+        "net",
+        "suggestedMaxFee",
+        "feeBps",
+        "minFee",
+        "observation",
+        "quotedAt",
+        "expiresAt"
+      ],
+      "properties": {
+        "binding": {
+          "$ref": "#/$defs/Binding"
+        },
+        "direction": {
+          "$ref": "#/$defs/Direction"
+        },
+        "gross": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "fee": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "net": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "suggestedMaxFee": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "feeBps": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000
+        },
+        "minFee": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "observation": {
+          "$ref": "#/$defs/Observation"
+        },
+        "quotedAt": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "expiresAt": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      }
+    },
+    "Readiness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "globalAdmission",
+        "assetAdmission",
+        "effectiveAdmission",
+        "globalHeld",
+        "assetHeld",
+        "depositsHeld",
+        "exitsHeld",
+        "depositGateOpen",
+        "parametersMatchProfile",
+        "manifestVerified",
+        "consumersReady",
+        "sourceAndDestinationHealthy"
+      ],
+      "properties": {
+        "globalAdmission": {
+          "$ref": "#/$defs/Admission"
+        },
+        "assetAdmission": {
+          "$ref": "#/$defs/Admission"
+        },
+        "effectiveAdmission": {
+          "$ref": "#/$defs/Admission"
+        },
+        "globalHeld": {
+          "type": "boolean"
+        },
+        "assetHeld": {
+          "type": "boolean"
+        },
+        "depositsHeld": {
+          "type": "boolean"
+        },
+        "exitsHeld": {
+          "type": "boolean"
+        },
+        "depositGateOpen": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "parametersMatchProfile": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "manifestVerified": {
+          "type": "boolean"
+        },
+        "consumersReady": {
+          "type": "boolean"
+        },
+        "sourceAndDestinationHealthy": {
+          "type": "boolean"
+        }
+      }
+    },
+    "EffectiveState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding",
+        "observation",
+        "readiness",
+        "depositsOpen",
+        "exitsOpen",
+        "paused",
+        "issuer",
+        "collector",
+        "upgradePending",
+        "lagSeconds",
+        "etaSeconds",
+        "eligibility",
+        "reasonCodes"
+      ],
+      "properties": {
+        "binding": {
+          "$ref": "#/$defs/Binding"
+        },
+        "observation": {
+          "$ref": "#/$defs/Observation"
+        },
+        "readiness": {
+          "$ref": "#/$defs/Readiness"
+        },
+        "depositsOpen": {
+          "type": "boolean"
+        },
+        "exitsOpen": {
+          "type": "boolean"
+        },
+        "paused": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "escrow",
+            "minter",
+            "wrapper",
+            "token"
+          ],
+          "properties": {
+            "escrow": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "minter": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "wrapper": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "token": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          }
+        },
+        "issuer": {
+          "enum": [
+            "OPEN",
+            "CLOSED",
+            "FROZEN",
+            "UNKNOWN",
+            "NOT_APPLICABLE"
+          ]
+        },
+        "collector": {
+          "enum": [
+            "OPEN",
+            "CLOSED",
+            "FROZEN",
+            "UNKNOWN"
+          ]
+        },
+        "upgradePending": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "lagSeconds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "robinhood",
+            "onyx"
+          ],
+          "properties": {
+            "robinhood": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "onyx": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "etaSeconds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "RH_TO_ONYX",
+            "ONYX_TO_RH"
+          ],
+          "properties": {
+            "RH_TO_ONYX": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "ONYX_TO_RH": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "eligibility": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sender",
+            "recipient",
+            "status"
+          ],
+          "properties": {
+            "sender": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Address"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "recipient": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Address"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "status": {
+              "enum": [
+                "ALLOWED",
+                "DENIED",
+                "NOT_CHECKED",
+                "UNKNOWN"
+              ]
+            }
+          }
+        },
+        "reasonCodes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+          }
+        }
+      }
+    },
+    "Capacity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding",
+        "direction",
+        "observation",
+        "perTxMax",
+        "remainingCapacity",
+        "components",
+        "admissionAllowsNewSource"
+      ],
+      "properties": {
+        "binding": {
+          "$ref": "#/$defs/Binding"
+        },
+        "direction": {
+          "$ref": "#/$defs/Direction"
+        },
+        "observation": {
+          "$ref": "#/$defs/Observation"
+        },
+        "perTxMax": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "remainingCapacity": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "components": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "custodyRoom",
+            "rollingMintRoom",
+            "outstandingRoom",
+            "supplyRoom",
+            "rollingReleaseRoom",
+            "availableCustody",
+            "availableOutstanding",
+            "pendingUnminted",
+            "pendingUnreleased"
+          ],
+          "properties": {
+            "custodyRoom": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RawAmount"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "rollingMintRoom": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RawAmount"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "outstandingRoom": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RawAmount"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "supplyRoom": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RawAmount"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "rollingReleaseRoom": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RawAmount"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "availableCustody": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RawAmount"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "availableOutstanding": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RawAmount"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "pendingUnminted": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RawAmount"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "pendingUnreleased": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/RawAmount"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        "admissionAllowsNewSource": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Leg": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chainId",
+        "txHash",
+        "logIndex",
+        "blockNumber",
+        "explorerUrl",
+        "final"
+      ],
+      "properties": {
+        "chainId": {
+          "$ref": "#/$defs/ChainId"
+        },
+        "txHash": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hash32"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "logIndex": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawAmount"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "blockNumber": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RawAmount"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "explorerUrl": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uri",
+              "pattern": "^https://"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "final": {
+          "type": "boolean"
+        }
+      }
+    },
+    "Operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "binding",
+        "operationId",
+        "direction",
+        "status",
+        "holdCategory",
+        "sender",
+        "recipient",
+        "grossAmount",
+        "fee",
+        "netAmount",
+        "source",
+        "destination",
+        "createdAt",
+        "updatedAt",
+        "completedAt"
+      ],
+      "properties": {
+        "binding": {
+          "$ref": "#/$defs/Binding"
+        },
+        "operationId": {
+          "$ref": "#/$defs/OperationId"
+        },
+        "direction": {
+          "$ref": "#/$defs/Direction"
+        },
+        "status": {
+          "enum": [
+            "AWAITING_EXECUTION",
+            "EXECUTING",
+            "HELD",
+            "COMPLETED"
+          ]
+        },
+        "holdCategory": {
+          "anyOf": [
+            {
+              "enum": [
+                "LANE_PAUSED",
+                "UNDER_REVIEW"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sender": {
+          "$ref": "#/$defs/Address"
+        },
+        "recipient": {
+          "$ref": "#/$defs/Address"
+        },
+        "grossAmount": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "fee": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "netAmount": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "source": {
+          "$ref": "#/$defs/Leg"
+        },
+        "destination": {
+          "$ref": "#/$defs/Leg"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "updatedAt": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "completedAt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "OperationList": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "items"
+      ],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Operation"
+          }
+        }
+      }
+    },
+    "History": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "address",
+        "assetId",
+        "items",
+        "nextCursor"
+      ],
+      "properties": {
+        "address": {
+          "$ref": "#/$defs/Address"
+        },
+        "assetId": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AssetId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Operation"
+          }
+        },
+        "nextCursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{1,512}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "Health": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "observedAt",
+        "components",
+        "assets"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "ok",
+            "degraded",
+            "down"
+          ]
+        },
+        "observedAt": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "components": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "database",
+            "api",
+            "watcher",
+            "submitter",
+            "signer"
+          ],
+          "properties": {
+            "database": {
+              "enum": [
+                "ok",
+                "degraded",
+                "down",
+                "unknown"
+              ]
+            },
+            "api": {
+              "enum": [
+                "ok",
+                "degraded",
+                "down",
+                "unknown"
+              ]
+            },
+            "watcher": {
+              "enum": [
+                "ok",
+                "degraded",
+                "down",
+                "unknown"
+              ]
+            },
+            "submitter": {
+              "enum": [
+                "ok",
+                "degraded",
+                "down",
+                "unknown"
+              ]
+            },
+            "signer": {
+              "enum": [
+                "ok",
+                "degraded",
+                "down",
+                "unknown"
+              ]
+            }
+          }
+        },
+        "assets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "binding",
+              "status",
+              "consumersReady"
+            ],
+            "properties": {
+              "binding": {
+                "$ref": "#/$defs/Binding"
+              },
+              "status": {
+                "enum": [
+                  "ok",
+                  "degraded",
+                  "down",
+                  "unknown"
+                ]
+              },
+              "consumersReady": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    },
+    "Error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "error"
+      ],
+      "properties": {
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "code",
+            "message",
+            "requestId"
+          ],
+          "properties": {
+            "code": {
+              "enum": [
+                "INVALID_REQUEST",
+                "INVALID_AMOUNT",
+                "INVALID_ADDRESS",
+                "INVALID_CURSOR",
+                "ASSET_NOT_FOUND",
+                "NOT_FOUND",
+                "PROFILE_MISMATCH",
+                "AMOUNT_BELOW_MIN_EXIT",
+                "AMOUNT_ABOVE_PER_TX_MAX",
+                "AMOUNT_ABOVE_CAPACITY",
+                "CORS_ORIGIN_DENIED",
+                "METHOD_NOT_ALLOWED",
+                "RATE_LIMITED",
+                "SERVICE_UNAVAILABLE",
+                "PROFILE_UNAVAILABLE",
+                "PARAMETERS_UNAVAILABLE",
+                "CAPACITY_UNAVAILABLE",
+                "STALE_DATA"
+              ]
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[ -~]+$"
+            },
+            "requestId": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{8,64}$"
+            }
+          }
+        }
+      }
+    },
+    "NativeEscrowContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chainId",
+        "address",
+        "deployBlock",
+        "deployTx",
+        "onyxContractId"
+      ],
+      "properties": {
+        "chainId": {
+          "const": 46630
+        },
+        "address": {
+          "$ref": "#/$defs/Address"
+        },
+        "deployBlock": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "deployTx": {
+          "$ref": "#/$defs/Hash32"
+        },
+        "onyxContractId": {
+          "type": "null"
+        }
+      }
+    },
+    "NativeOnyxContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chainId",
+        "address",
+        "deployBlock",
+        "deployTx",
+        "onyxContractId"
+      ],
+      "properties": {
+        "chainId": {
+          "const": 8901
+        },
+        "address": {
+          "$ref": "#/$defs/Address"
+        },
+        "deployBlock": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "deployTx": {
+          "$ref": "#/$defs/Hash32"
+        },
+        "onyxContractId": {
+          "type": "string",
+          "pattern": "^0\\.0\\.[1-9][0-9]*$"
+        }
+      }
+    },
+    "NativeEscrowAnchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chainId",
+        "contract",
+        "eventFamily",
+        "deployTx",
+        "deployBlock",
+        "runtimeCodeKeccak256",
+        "anchorHeight",
+        "anchorBlockHash",
+        "deploymentAnchorSha256"
+      ],
+      "properties": {
+        "chainId": {
+          "const": 46630
+        },
+        "contract": {
+          "$ref": "#/$defs/Address"
+        },
+        "eventFamily": {
+          "const": "ESCROW"
+        },
+        "deployTx": {
+          "$ref": "#/$defs/Hash32"
+        },
+        "deployBlock": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "runtimeCodeKeccak256": {
+          "$ref": "#/$defs/Hash32"
+        },
+        "anchorHeight": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "anchorBlockHash": {
+          "$ref": "#/$defs/Hash32"
+        },
+        "deploymentAnchorSha256": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "NativeMinterAnchor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chainId",
+        "contract",
+        "eventFamily",
+        "deployTx",
+        "deployBlock",
+        "runtimeCodeKeccak256",
+        "anchorHeight",
+        "anchorBlockHash",
+        "deploymentAnchorSha256"
+      ],
+      "properties": {
+        "chainId": {
+          "const": 8901
+        },
+        "contract": {
+          "$ref": "#/$defs/Address"
+        },
+        "eventFamily": {
+          "const": "MINTER"
+        },
+        "deployTx": {
+          "$ref": "#/$defs/Hash32"
+        },
+        "deployBlock": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "runtimeCodeKeccak256": {
+          "$ref": "#/$defs/Hash32"
+        },
+        "anchorHeight": {
+          "$ref": "#/$defs/RawAmount"
+        },
+        "anchorBlockHash": {
+          "$ref": "#/$defs/Hash32"
+        },
+        "deploymentAnchorSha256": {
+          "$ref": "#/$defs/Sha256"
+        }
+      }
+    },
+    "NativeProfileLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "escrow",
+        "minter",
+        "fees",
+        "wrapper"
+      ],
+      "properties": {
+        "escrow": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "perTxMax",
+            "releaseCap",
+            "custodyCap"
+          ],
+          "properties": {
+            "perTxMax": {
+              "$ref": "#/$defs/RawAmount"
+            },
+            "releaseCap": {
+              "$ref": "#/$defs/RawAmount"
+            },
+            "custodyCap": {
+              "$ref": "#/$defs/RawAmount"
+            }
+          }
+        },
+        "minter": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "perTxMax",
+            "mint24hCap",
+            "outstandingCap"
+          ],
+          "properties": {
+            "perTxMax": {
+              "$ref": "#/$defs/RawAmount"
+            },
+            "mint24hCap": {
+              "$ref": "#/$defs/RawAmount"
+            },
+            "outstandingCap": {
+              "$ref": "#/$defs/RawAmount"
+            }
+          }
+        },
+        "fees": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "feeBps",
+            "minFee",
+            "minExit",
+            "maxMinFee",
+            "maxFeeBps"
+          ],
+          "properties": {
+            "feeBps": {
+              "$ref": "#/$defs/RawAmount"
+            },
+            "minFee": {
+              "$ref": "#/$defs/RawAmount"
+            },
+            "minExit": {
+              "$ref": "#/$defs/RawAmount"
+            },
+            "maxMinFee": {
+              "$ref": "#/$defs/RawAmount"
+            },
+            "maxFeeBps": {
+              "$ref": "#/$defs/RawAmount"
+            }
+          }
+        },
+        "wrapper": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "supplyCap"
+          ],
+          "properties": {
+            "supplyCap": {
+              "$ref": "#/$defs/RawAmount"
+            }
+          }
+        }
+      }
+    },
+    "NativeProfilePayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "network",
+        "profileVersion",
+        "origin",
+        "destination",
+        "contracts",
+        "asset",
+        "limits",
+        "abiVersion"
+      ],
+      "properties": {
+        "network": {
+          "const": "testnet"
+        },
+        "profileVersion": {
+          "const": 2
+        },
+        "origin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "chainId",
+            "genesisHash",
+            "kind",
+            "canonicalIdentifier"
+          ],
+          "properties": {
+            "chainId": {
+              "const": 46630
+            },
+            "genesisHash": {
+              "const": "0x829a42e6d68c872aafcef3abb2123fe371138fc415dd8b44381bbbf23049dd32"
+            },
+            "kind": {
+              "const": "NATIVE"
+            },
+            "canonicalIdentifier": {
+              "const": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+            }
+          }
+        },
+        "destination": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "chainId",
+            "genesisHash"
+          ],
+          "properties": {
+            "chainId": {
+              "const": 8901
+            },
+            "genesisHash": {
+              "const": "0xdc7a820f4bc825abbfec84107c41d2f84ea9aea2e4af78af511f05e20eb18e32"
+            }
+          }
+        },
+        "contracts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "escrow",
+            "minter",
+            "wrapper",
+            "implementation",
+            "codeHashes",
+            "deploymentAnchors"
+          ],
+          "properties": {
+            "escrow": {
+              "$ref": "#/$defs/NativeEscrowContract"
+            },
+            "minter": {
+              "$ref": "#/$defs/NativeOnyxContract"
+            },
+            "wrapper": {
+              "$ref": "#/$defs/NativeOnyxContract"
+            },
+            "implementation": {
+              "$ref": "#/$defs/NativeOnyxContract"
+            },
+            "codeHashes": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "escrow",
+                "minter",
+                "wrapper",
+                "implementation"
+              ],
+              "properties": {
+                "escrow": {
+                  "$ref": "#/$defs/Hash32"
+                },
+                "minter": {
+                  "$ref": "#/$defs/Hash32"
+                },
+                "wrapper": {
+                  "$ref": "#/$defs/Hash32"
+                },
+                "implementation": {
+                  "$ref": "#/$defs/Hash32"
+                }
+              }
+            },
+            "deploymentAnchors": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "escrow",
+                "minter"
+              ],
+              "properties": {
+                "escrow": {
+                  "$ref": "#/$defs/NativeEscrowAnchor"
+                },
+                "minter": {
+                  "$ref": "#/$defs/NativeMinterAnchor"
+                }
+              }
+            }
+          }
+        },
+        "asset": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "internalId",
+            "displaySymbol",
+            "wrapperSymbol",
+            "decimals"
+          ],
+          "properties": {
+            "internalId": {
+              "const": "RH_ETH"
+            },
+            "displaySymbol": {
+              "const": "ETH"
+            },
+            "wrapperSymbol": {
+              "const": "RHETH"
+            },
+            "decimals": {
+              "const": 18
+            }
+          }
+        },
+        "limits": {
+          "$ref": "#/$defs/NativeProfileLimits"
+        },
+        "abiVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9_.:-]+$"
+        }
+      }
+    }
+  }
+}

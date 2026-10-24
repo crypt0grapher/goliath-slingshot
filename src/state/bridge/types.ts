@@ -2,10 +2,8 @@
 // Enums
 // ============================================
 
-export enum BridgeNetwork {
-  SEPOLIA = 'SEPOLIA',
-  GOLIATH = 'GOLIATH',
-}
+import type { BridgeSelection } from '../../constants/bridge/registry';
+export { BridgeNetwork } from '../../constants/bridge/networks';
 
 export type BridgeDirection = 'SEPOLIA_TO_GOLIATH' | 'GOLIATH_TO_SEPOLIA';
 
@@ -52,13 +50,7 @@ export interface BridgeOperation {
 // Form State
 // ============================================
 
-export interface BridgeFormState {
-  originNetwork: BridgeNetwork;
-  destinationNetwork: BridgeNetwork;
-  selectedToken: BridgeTokenSymbol;
-  inputAmount: string; // User input string
-  recipient: string | null; // null = same as sender (v1 default)
-}
+export type BridgeFormState = BridgeSelection;
 
 // ============================================
 // Redux State

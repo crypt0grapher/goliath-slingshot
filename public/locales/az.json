@@ -488,5 +488,8 @@
   "pool.simple": "Simple",
   "pool.yourPoolShare": "Your pool share:",
   "pool.yourPosition": "Your position",
-  "pool.yourTotalPoolTokens": "Your total pool tokens:"
+  "pool.yourTotalPoolTokens": "Your total pool tokens:",
+  "bridgePerTransactionMax": "Əməliyyat üzrə maksimum",
+  "bridgeRemainingCapacity": "Qalan tutum",
+  "bridgeBalances": "Balanslar"
 }

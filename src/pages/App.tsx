@@ -23,10 +23,9 @@ import { OpenClaimAddressModalAndRedirectToSwap, RedirectPathToSwapOnly } from '
 import Bridge from './Bridge';
 import { migrationConfig } from '../config/migrationConfig';
 import { stakingConfig } from '../config/stakingConfig';
-import { RH_ROUTE, RH_TESTNET_BRIDGE_ENABLED } from '../config/rhBridge';
-
-// Robinhood testnet TSLA lane: lazy chunk, routed only when REACT_APP_RH_TESTNET_BRIDGE_ENABLED=true
-const RhBridge = React.lazy(() => import('./RhBridge'));
+import { RH_ROUTE } from '../config/rhBridge';
+import CompatibilityRedirect from './RhBridge/CompatibilityRedirect';
+import type { ControllerDeps } from '../hooks/rhBridge/controller';
 
 // Lazy-load Migrate so its bundle is only fetched when the feature is enabled
 const Migrate = React.lazy(() => import('./Migrate'));
@@ -68,9 +67,15 @@ const LoaderWrapper = styled.div`
   height: 100vh;
 `;
 
-export default function App() {
+export default function App({ bridgeDeps }: { bridgeDeps?: ControllerDeps } = {}) {
   return (
-    <Suspense fallback={<LoaderWrapper><Loader /></LoaderWrapper>}>
+    <Suspense
+      fallback={
+        <LoaderWrapper>
+          <Loader />
+        </LoaderWrapper>
+      }
+    >
       <Route component={DarkModeQueryParamReader} />
       <AppWrapper>
         <HeaderWrapper>
@@ -83,8 +88,8 @@ export default function App() {
           <Web3ReactManager>
             <Switch>
               <Route exact strict path="/swap" component={Swap} />
-              {RH_TESTNET_BRIDGE_ENABLED && <Route exact strict path={RH_ROUTE} component={RhBridge} />}
-              <Route exact strict path="/bridge" component={Bridge} />
+              <Route exact strict sensitive path={RH_ROUTE} component={CompatibilityRedirect} />
+              <Route exact strict sensitive path="/bridge" render={() => <Bridge rhDeps={bridgeDeps} />} />
               {migrationConfig.migrationEnabled ? (
                 <Route exact strict path="/migrate" component={Migrate} />
               ) : (

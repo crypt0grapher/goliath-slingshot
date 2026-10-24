@@ -264,6 +264,7 @@ export const LANE_ABI = new Interface([
   'function balanceOf(address owner) view returns (uint256)',
   'function decimals() view returns (uint8)',
   'function deposit(address token, uint256 amount, address onyxRecipient) returns (bytes32)',
+  'function depositNative(address onyxRecipient) payable returns (bytes32)',
   'function burn(address wrapper, uint256 grossAmount, address rhRecipient, uint256 maxFee) returns (bytes32)',
   'function restrictedMode() view returns (bool)',
   'function allowedHolder(address holder) view returns (bool)',
@@ -278,12 +279,13 @@ export const LANE_ABI = new Interface([
 ]);
 
 export interface LaneCall {
-  readonly kind: 'approve' | 'deposit' | 'burn';
+  readonly kind: 'approve' | 'deposit' | 'depositNative' | 'burn';
   readonly chainId: LaneChainId;
   readonly to: string; // lowercase
   readonly data: string;
   readonly spender?: string; // approve only, lowercase
   readonly amount: string;
+  readonly value?: string;
 }
 
 // The approval for a direction: TSLA -> escrow on 46630, wrapper GROSS -> minter on 8901.
@@ -331,6 +333,15 @@ export function buildBridgeCall(
   const recipient = validateRecipient(params.recipient, lane);
   const { source } = chainPair(direction);
   if (direction === 'RH_TO_ONYX') {
+    if (lane.kind === 'NATIVE')
+      return Object.freeze({
+        kind: 'depositNative',
+        chainId: source,
+        to: lane.escrow,
+        amount,
+        value: amount,
+        data: LANE_ABI.encodeFunctionData('depositNative', [recipient]),
+      });
     return Object.freeze({
       kind: 'deposit',
       chainId: source,

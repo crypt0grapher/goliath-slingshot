@@ -1,7 +1,7 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { ChevronDown } from 'react-feather';
-import { BridgeTokenSymbol, BRIDGE_TOKENS, BRIDGE_TOKEN_LIST } from '../../constants/bridge/tokens';
+import { BridgeAssetKey, BRIDGE_ASSETS } from '../../constants/bridge/registry';
 import EthereumLogo from '../../assets/images/ethereum-logo.png';
 
 const SelectorButton = styled.button`
@@ -35,13 +35,6 @@ const TokenIcon = styled.img`
   box-shadow: 0px 6px 10px rgba(0, 0, 0, 0.075);
 `;
 
-// Token logo URLs
-const TOKEN_LOGOS: Record<BridgeTokenSymbol, string> = {
-  ETH: EthereumLogo,
-  USDC: 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png',
-  XCN: '/images/tokens/xcn.png',
-};
-
 const TokenSymbol = styled.span`
   margin-right: 4px;
 `;
@@ -64,7 +57,11 @@ const DropdownMenu = styled.div<{ isOpen: boolean }>`
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
 `;
 
-const DropdownItem = styled.div<{ selected: boolean }>`
+const DropdownItem = styled.button<{ selected: boolean }>`
+  width: 100%;
+  border: 0;
+  font: inherit;
+  color: inherit;
   padding: 12px 16px;
   display: flex;
   align-items: center;
@@ -90,67 +87,102 @@ const ItemSymbol = styled.span`
 `;
 
 interface BridgeTokenSelectorProps {
-  selectedToken: BridgeTokenSymbol;
-  onSelect: (token: BridgeTokenSymbol) => void;
+  selectedAssetKey: BridgeAssetKey;
+  assetKeys: readonly BridgeAssetKey[];
+  onSelect: (key: BridgeAssetKey) => void;
 }
-
-export default function BridgeTokenSelector({ selectedToken, onSelect }: BridgeTokenSelectorProps) {
+export default function BridgeTokenSelector({ selectedAssetKey, assetKeys, onSelect }: BridgeTokenSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const hasMultipleTokens = BRIDGE_TOKEN_LIST.length > 1;
-
-  const handleToggle = useCallback(() => {
-    if (hasMultipleTokens) {
-      setIsOpen((prev) => !prev);
-    }
-  }, [hasMultipleTokens]);
-
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const selected = BRIDGE_ASSETS[selectedAssetKey];
+  const hasMultipleTokens = assetKeys.length > 1;
   const handleSelect = useCallback(
-    (token: BridgeTokenSymbol) => {
-      onSelect(token);
+    (key: BridgeAssetKey) => {
+      onSelect(key);
       setIsOpen(false);
+      triggerRef.current?.focus();
     },
     [onSelect]
   );
-
-  // Close dropdown when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
+    if (isOpen) dropdownRef.current?.querySelector<HTMLElement>('[aria-selected="true"]')?.focus();
+  }, [isOpen]);
+  useEffect(() => {
+    const outside = (event: MouseEvent) => {
+      if (!dropdownRef.current?.contains(event.target as Node)) setIsOpen(false);
     };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    document.addEventListener('mousedown', outside);
+    return () => document.removeEventListener('mousedown', outside);
   }, []);
-
+  const icon = (key: BridgeAssetKey) => (BRIDGE_ASSETS[key].symbol === 'ETH' ? EthereumLogo : BRIDGE_ASSETS[key].logo);
   return (
     <DropdownContainer ref={dropdownRef}>
-      <SelectorButton onClick={handleToggle} style={{ cursor: hasMultipleTokens ? 'pointer' : 'default' }}>
-        <TokenIcon src={TOKEN_LOGOS[selectedToken]} alt={selectedToken} />
-        <TokenSymbol>{selectedToken}</TokenSymbol>
+      <SelectorButton
+        ref={triggerRef}
+        type="button"
+        aria-label="Select bridge token"
+        aria-haspopup="listbox"
+        aria-expanded={isOpen}
+        onClick={() => hasMultipleTokens && setIsOpen((v) => !v)}
+      >
+        <TokenIcon
+          src={icon(selectedAssetKey)}
+          alt=""
+          onError={(e) => {
+            e.currentTarget.style.visibility = 'hidden';
+          }}
+        />
+        <TokenSymbol>{selected.symbol}</TokenSymbol>
         {hasMultipleTokens && <ChevronDown size={16} />}
       </SelectorButton>
-
-      <DropdownMenu isOpen={isOpen}>
-        {BRIDGE_TOKEN_LIST.map((symbol) => {
-          const config = BRIDGE_TOKENS[symbol];
-          return (
+      {isOpen && (
+        <DropdownMenu
+          isOpen
+          role="listbox"
+          aria-label="Bridge tokens"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setIsOpen(false);
+              triggerRef.current?.focus();
+              return;
+            }
+            const items = Array.from(dropdownRef.current?.querySelectorAll<HTMLElement>('[role="option"]') || []);
+            const at = items.indexOf(document.activeElement as HTMLElement);
+            const next =
+              e.key === 'ArrowDown'
+                ? (at + 1) % items.length
+                : e.key === 'ArrowUp'
+                ? (at - 1 + items.length) % items.length
+                : -1;
+            if (next >= 0) {
+              e.preventDefault();
+              items[next]?.focus();
+            }
+          }}
+        >
+          {assetKeys.map((key) => (
             <DropdownItem
-              key={symbol}
-              selected={symbol === selectedToken}
-              onClick={() => handleSelect(symbol)}
+              key={key}
+              type="button"
+              role="option"
+              aria-selected={key === selectedAssetKey}
+              selected={key === selectedAssetKey}
+              onClick={() => handleSelect(key)}
             >
-              <TokenIcon src={TOKEN_LOGOS[symbol]} alt={symbol} style={{ marginRight: 0 }} />
-              <ItemSymbol>{symbol}</ItemSymbol>
-              <TokenName>{config.name}</TokenName>
+              <TokenIcon
+                src={icon(key)}
+                alt=""
+                onError={(e) => {
+                  e.currentTarget.style.visibility = 'hidden';
+                }}
+              />
+              <ItemSymbol>{BRIDGE_ASSETS[key].symbol}</ItemSymbol>
+              <TokenName>{BRIDGE_ASSETS[key].name}</TokenName>
             </DropdownItem>
-          );
-        })}
-      </DropdownMenu>
+          ))}
+        </DropdownMenu>
+      )}
     </DropdownContainer>
   );
 }

@@ -16,6 +16,8 @@ import {
   validateRecipient,
 } from '../../services/rhBridge/lane';
 import { Assets, EffectiveState, FeeQuote, Health, Limits } from '../../services/rhBridge/schema';
+import type { V2Snapshot } from './v2';
+import { deriveV2View } from './v2';
 
 export interface WalletState {
   account: string | null; // lowercase
@@ -64,6 +66,7 @@ export interface LaneSnapshot {
   history: HistoryView;
   busy: null | 'APPROVE' | 'BRIDGE' | 'SWITCH';
   notice: string | null;
+  v2?: V2Snapshot | null;
 }
 
 export const chainKey = (account: string | null, direction: RhDirection, recipient: string | null): string =>
@@ -118,6 +121,7 @@ const blocks = (r: RhRecord): boolean =>
   (r.stage === 'UNCERTAIN' && r.step === 'BRIDGE');
 
 export function deriveView(s: LaneSnapshot, lane: LaneBinding, nowMs: number): LaneView {
+  if ('v2' in s) return deriveV2View(s, lane, nowMs);
   const { source, destination } = chainPair(s.direction);
   const gate = laneGate({
     direction: s.direction,

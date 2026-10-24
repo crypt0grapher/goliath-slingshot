@@ -28,6 +28,8 @@ export interface LaneBinding {
   readonly escrow: string;
   readonly wrapper: string;
   readonly minter: string;
+  readonly kind?: 'ERC20' | 'NATIVE';
+  readonly binding?: { readonly assetId: string; readonly profileSha256: string; readonly profileVersion: 1 | 2; readonly abiVersion: string };
 }
 
 if (

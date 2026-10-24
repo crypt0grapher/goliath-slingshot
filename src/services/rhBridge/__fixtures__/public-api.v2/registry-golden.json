@@ -1,0 +1,112 @@
+{
+  "classification": "SYNTHETIC OFFLINE vector; native addresses/hashes are fake and cannot authorize any transaction; TSLA source values included solely to exercise two-asset sorting.",
+  "assets": [
+    {
+      "binding": {
+        "assetId": "TSLA",
+        "profileSha256": "38a14bcb94536c4efb8d62d9d0a42ae702117db3e495f6884cf25839da47ee8e",
+        "profileVersion": 1,
+        "abiVersion": "rh-stock-bridge-abi-12fc53612bcf"
+      },
+      "symbol": "TSLA",
+      "wrapperSymbol": "TSLA",
+      "name": "SYNTHETIC TSLA descriptor",
+      "decimals": 18,
+      "originChainId": 46630,
+      "kind": "ERC20",
+      "canonicalIdentifier": "0xc9f9c86933092bbbfff3ccb4b105a4a94bf3bd4e",
+      "token": "0xc9f9c86933092bbbfff3ccb4b105a4a94bf3bd4e",
+      "tokenRuntimeCodeKeccak256": "0x2f367e6a678e7b30ab613d5963e541e6f4d3ca586de76e2f441fbfeb1a27c440",
+      "issuerPolicy": "TSLA_ACCESS_CONTROLLED_REGISTRY",
+      "manifestSha256": "5a84ff2f9603b85e21cd1aa1ca18d9f3662e425cb5b53f3c01e18a1032f9d363",
+      "escrow": {
+        "chainId": 46630,
+        "address": "0x4de29616f7be2bc44d9dff23abc5fcb5804df8b9",
+        "runtimeCodeKeccak256": "0xbd4614324f1d23c3f6eccad7c687e808deecfc02149861dc0009eefe90ff5ca4",
+        "deploymentBlock": "141017124",
+        "deploymentTx": "0x75f3ddb7393b03c65c1ba083e08a732668465885f33005fcbac43ca616683860",
+        "onyxContractId": null
+      },
+      "minter": {
+        "chainId": 8901,
+        "address": "0x3abf85db57b9052e20204543777c5165a2a47559",
+        "runtimeCodeKeccak256": "0x6495535d613f7ce5ecd16c7c5300a8925011e90281e488fea24e838fb670d71c",
+        "deploymentBlock": "6866764",
+        "deploymentTx": "0xe7c82413fa46cf10de730d4e5650f238f3d0c0746e92d9c8ad922060b405dd8d",
+        "onyxContractId": "0.0.6892"
+      },
+      "wrapper": {
+        "chainId": 8901,
+        "address": "0x9ff95cc4e7189cba6d398fbdbf9aee1d84cb233d",
+        "runtimeCodeKeccak256": "0xa85074286af3bf4c40de7f888751950ea8547cc2d2802aaf1b7cb0740cb59582",
+        "deploymentBlock": "6866773",
+        "deploymentTx": "0xc606876a6baeffd5da0f0231fb17396819586ad9f9ea228fcdd43d9096a634c2",
+        "onyxContractId": "0.0.6894"
+      },
+      "implementation": {
+        "chainId": 8901,
+        "address": "0x59650fe4f461356749c54b5a3d8004d56895565c",
+        "runtimeCodeKeccak256": "0xdaac7ac867bffacf50c820f12bfb9a093c54a4e2fbac040ad08f2a36a9cccd9a",
+        "deploymentBlock": "6866768",
+        "deploymentTx": "0x20f1a657bb24e087cbe518d338cc2880de9e6a3c62ff08bcd59926a74f858d95",
+        "onyxContractId": "0.0.6893"
+      }
+    },
+    {
+      "binding": {
+        "assetId": "RH_ETH",
+        "profileSha256": "8d8a6990604866b3e05aca52bb67ffe36b4a682fcc1ce0bfe0c6a548213df821",
+        "profileVersion": 2,
+        "abiVersion": "rh-native-bridge-abi-synthetic-v1"
+      },
+      "symbol": "ETH",
+      "wrapperSymbol": "RHETH",
+      "name": "SYNTHETIC native descriptor",
+      "decimals": 18,
+      "originChainId": 46630,
+      "kind": "NATIVE",
+      "canonicalIdentifier": "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+      "token": null,
+      "tokenRuntimeCodeKeccak256": null,
+      "issuerPolicy": "NOT_APPLICABLE",
+      "manifestSha256": "b4de794d5d9244c58b9e6ccba3ddcffaf61fe122aaa5dcdecd35c40f92b68267",
+      "escrow": {
+        "chainId": 46630,
+        "address": "0x1212121212121212121212121212121212121212",
+        "runtimeCodeKeccak256": "0x1111111111111111111111111111111111111111111111111111111111111111",
+        "deploymentBlock": "100",
+        "deploymentTx": "0x5555555555555555555555555555555555555555555555555555555555555555",
+        "onyxContractId": null
+      },
+      "minter": {
+        "chainId": 8901,
+        "address": "0x2323232323232323232323232323232323232323",
+        "runtimeCodeKeccak256": "0x2222222222222222222222222222222222222222222222222222222222222222",
+        "deploymentBlock": "200",
+        "deploymentTx": "0x6666666666666666666666666666666666666666666666666666666666666666",
+        "onyxContractId": "0.0.10001"
+      },
+      "wrapper": {
+        "chainId": 8901,
+        "address": "0x3434343434343434343434343434343434343434",
+        "runtimeCodeKeccak256": "0x3333333333333333333333333333333333333333333333333333333333333333",
+        "deploymentBlock": "210",
+        "deploymentTx": "0x7777777777777777777777777777777777777777777777777777777777777777",
+        "onyxContractId": "0.0.10003"
+      },
+      "implementation": {
+        "chainId": 8901,
+        "address": "0x4545454545454545454545454545454545454545",
+        "runtimeCodeKeccak256": "0x4444444444444444444444444444444444444444444444444444444444444444",
+        "deploymentBlock": "205",
+        "deploymentTx": "0x8888888888888888888888888888888888888888888888888888888888888888",
+        "onyxContractId": "0.0.10002"
+      }
+    }
+  ],
+  "registrySha256": "738d874142fa5860a874766238e01b8c3bcc3f58f0629d9e3a35e4be0b2bfd77",
+  "serializedPayloadUtf8": "{\"assets\":[{\"binding\":{\"abiVersion\":\"rh-native-bridge-abi-synthetic-v1\",\"assetId\":\"RH_ETH\",\"profileSha256\":\"8d8a6990604866b3e05aca52bb67ffe36b4a682fcc1ce0bfe0c6a548213df821\",\"profileVersion\":2},\"canonicalIdentifier\":\"0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"decimals\":18,\"escrow\":{\"address\":\"0x1212121212121212121212121212121212121212\",\"chainId\":46630,\"deploymentBlock\":\"100\",\"deploymentTx\":\"0x5555555555555555555555555555555555555555555555555555555555555555\",\"onyxContractId\":null,\"runtimeCodeKeccak256\":\"0x1111111111111111111111111111111111111111111111111111111111111111\"},\"implementation\":{\"address\":\"0x4545454545454545454545454545454545454545\",\"chainId\":8901,\"deploymentBlock\":\"205\",\"deploymentTx\":\"0x8888888888888888888888888888888888888888888888888888888888888888\",\"onyxContractId\":\"0.0.10002\",\"runtimeCodeKeccak256\":\"0x4444444444444444444444444444444444444444444444444444444444444444\"},\"issuerPolicy\":\"NOT_APPLICABLE\",\"kind\":\"NATIVE\",\"manifestSha256\":\"b4de794d5d9244c58b9e6ccba3ddcffaf61fe122aaa5dcdecd35c40f92b68267\",\"minter\":{\"address\":\"0x2323232323232323232323232323232323232323\",\"chainId\":8901,\"deploymentBlock\":\"200\",\"deploymentTx\":\"0x6666666666666666666666666666666666666666666666666666666666666666\",\"onyxContractId\":\"0.0.10001\",\"runtimeCodeKeccak256\":\"0x2222222222222222222222222222222222222222222222222222222222222222\"},\"name\":\"SYNTHETIC native descriptor\",\"originChainId\":46630,\"symbol\":\"ETH\",\"token\":null,\"tokenRuntimeCodeKeccak256\":null,\"wrapper\":{\"address\":\"0x3434343434343434343434343434343434343434\",\"chainId\":8901,\"deploymentBlock\":\"210\",\"deploymentTx\":\"0x7777777777777777777777777777777777777777777777777777777777777777\",\"onyxContractId\":\"0.0.10003\",\"runtimeCodeKeccak256\":\"0x3333333333333333333333333333333333333333333333333333333333333333\"},\"wrapperSymbol\":\"RHETH\"},{\"binding\":{\"abiVersion\":\"rh-stock-bridge-abi-12fc53612bcf\",\"assetId\":\"TSLA\",\"profileSha256\":\"38a14bcb94536c4efb8d62d9d0a42ae702117db3e495f6884cf25839da47ee8e\",\"profileVersion\":1},\"canonicalIdentifier\":\"0xc9f9c86933092bbbfff3ccb4b105a4a94bf3bd4e\",\"decimals\":18,\"escrow\":{\"address\":\"0x4de29616f7be2bc44d9dff23abc5fcb5804df8b9\",\"chainId\":46630,\"deploymentBlock\":\"141017124\",\"deploymentTx\":\"0x75f3ddb7393b03c65c1ba083e08a732668465885f33005fcbac43ca616683860\",\"onyxContractId\":null,\"runtimeCodeKeccak256\":\"0xbd4614324f1d23c3f6eccad7c687e808deecfc02149861dc0009eefe90ff5ca4\"},\"implementation\":{\"address\":\"0x59650fe4f461356749c54b5a3d8004d56895565c\",\"chainId\":8901,\"deploymentBlock\":\"6866768\",\"deploymentTx\":\"0x20f1a657bb24e087cbe518d338cc2880de9e6a3c62ff08bcd59926a74f858d95\",\"onyxContractId\":\"0.0.6893\",\"runtimeCodeKeccak256\":\"0xdaac7ac867bffacf50c820f12bfb9a093c54a4e2fbac040ad08f2a36a9cccd9a\"},\"issuerPolicy\":\"TSLA_ACCESS_CONTROLLED_REGISTRY\",\"kind\":\"ERC20\",\"manifestSha256\":\"5a84ff2f9603b85e21cd1aa1ca18d9f3662e425cb5b53f3c01e18a1032f9d363\",\"minter\":{\"address\":\"0x3abf85db57b9052e20204543777c5165a2a47559\",\"chainId\":8901,\"deploymentBlock\":\"6866764\",\"deploymentTx\":\"0xe7c82413fa46cf10de730d4e5650f238f3d0c0746e92d9c8ad922060b405dd8d\",\"onyxContractId\":\"0.0.6892\",\"runtimeCodeKeccak256\":\"0x6495535d613f7ce5ecd16c7c5300a8925011e90281e488fea24e838fb670d71c\"},\"name\":\"SYNTHETIC TSLA descriptor\",\"originChainId\":46630,\"symbol\":\"TSLA\",\"token\":\"0xc9f9c86933092bbbfff3ccb4b105a4a94bf3bd4e\",\"tokenRuntimeCodeKeccak256\":\"0x2f367e6a678e7b30ab613d5963e541e6f4d3ca586de76e2f441fbfeb1a27c440\",\"wrapper\":{\"address\":\"0x9ff95cc4e7189cba6d398fbdbf9aee1d84cb233d\",\"chainId\":8901,\"deploymentBlock\":\"6866773\",\"deploymentTx\":\"0xc606876a6baeffd5da0f0231fb17396819586ad9f9ea228fcdd43d9096a634c2\",\"onyxContractId\":\"0.0.6894\",\"runtimeCodeKeccak256\":\"0xa85074286af3bf4c40de7f888751950ea8547cc2d2802aaf1b7cb0740cb59582\"},\"wrapperSymbol\":\"TSLA\"}],\"contractVersion\":\"2.0.0\",\"lane\":\"RH_TESTNET\"}",
+  "digestPreimageUtf8": "RH_PUBLIC_ASSET_REGISTRY_V2\n{\"assets\":[{\"binding\":{\"abiVersion\":\"rh-native-bridge-abi-synthetic-v1\",\"assetId\":\"RH_ETH\",\"profileSha256\":\"8d8a6990604866b3e05aca52bb67ffe36b4a682fcc1ce0bfe0c6a548213df821\",\"profileVersion\":2},\"canonicalIdentifier\":\"0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\",\"decimals\":18,\"escrow\":{\"address\":\"0x1212121212121212121212121212121212121212\",\"chainId\":46630,\"deploymentBlock\":\"100\",\"deploymentTx\":\"0x5555555555555555555555555555555555555555555555555555555555555555\",\"onyxContractId\":null,\"runtimeCodeKeccak256\":\"0x1111111111111111111111111111111111111111111111111111111111111111\"},\"implementation\":{\"address\":\"0x4545454545454545454545454545454545454545\",\"chainId\":8901,\"deploymentBlock\":\"205\",\"deploymentTx\":\"0x8888888888888888888888888888888888888888888888888888888888888888\",\"onyxContractId\":\"0.0.10002\",\"runtimeCodeKeccak256\":\"0x4444444444444444444444444444444444444444444444444444444444444444\"},\"issuerPolicy\":\"NOT_APPLICABLE\",\"kind\":\"NATIVE\",\"manifestSha256\":\"b4de794d5d9244c58b9e6ccba3ddcffaf61fe122aaa5dcdecd35c40f92b68267\",\"minter\":{\"address\":\"0x2323232323232323232323232323232323232323\",\"chainId\":8901,\"deploymentBlock\":\"200\",\"deploymentTx\":\"0x6666666666666666666666666666666666666666666666666666666666666666\",\"onyxContractId\":\"0.0.10001\",\"runtimeCodeKeccak256\":\"0x2222222222222222222222222222222222222222222222222222222222222222\"},\"name\":\"SYNTHETIC native descriptor\",\"originChainId\":46630,\"symbol\":\"ETH\",\"token\":null,\"tokenRuntimeCodeKeccak256\":null,\"wrapper\":{\"address\":\"0x3434343434343434343434343434343434343434\",\"chainId\":8901,\"deploymentBlock\":\"210\",\"deploymentTx\":\"0x7777777777777777777777777777777777777777777777777777777777777777\",\"onyxContractId\":\"0.0.10003\",\"runtimeCodeKeccak256\":\"0x3333333333333333333333333333333333333333333333333333333333333333\"},\"wrapperSymbol\":\"RHETH\"},{\"binding\":{\"abiVersion\":\"rh-stock-bridge-abi-12fc53612bcf\",\"assetId\":\"TSLA\",\"profileSha256\":\"38a14bcb94536c4efb8d62d9d0a42ae702117db3e495f6884cf25839da47ee8e\",\"profileVersion\":1},\"canonicalIdentifier\":\"0xc9f9c86933092bbbfff3ccb4b105a4a94bf3bd4e\",\"decimals\":18,\"escrow\":{\"address\":\"0x4de29616f7be2bc44d9dff23abc5fcb5804df8b9\",\"chainId\":46630,\"deploymentBlock\":\"141017124\",\"deploymentTx\":\"0x75f3ddb7393b03c65c1ba083e08a732668465885f33005fcbac43ca616683860\",\"onyxContractId\":null,\"runtimeCodeKeccak256\":\"0xbd4614324f1d23c3f6eccad7c687e808deecfc02149861dc0009eefe90ff5ca4\"},\"implementation\":{\"address\":\"0x59650fe4f461356749c54b5a3d8004d56895565c\",\"chainId\":8901,\"deploymentBlock\":\"6866768\",\"deploymentTx\":\"0x20f1a657bb24e087cbe518d338cc2880de9e6a3c62ff08bcd59926a74f858d95\",\"onyxContractId\":\"0.0.6893\",\"runtimeCodeKeccak256\":\"0xdaac7ac867bffacf50c820f12bfb9a093c54a4e2fbac040ad08f2a36a9cccd9a\"},\"issuerPolicy\":\"TSLA_ACCESS_CONTROLLED_REGISTRY\",\"kind\":\"ERC20\",\"manifestSha256\":\"5a84ff2f9603b85e21cd1aa1ca18d9f3662e425cb5b53f3c01e18a1032f9d363\",\"minter\":{\"address\":\"0x3abf85db57b9052e20204543777c5165a2a47559\",\"chainId\":8901,\"deploymentBlock\":\"6866764\",\"deploymentTx\":\"0xe7c82413fa46cf10de730d4e5650f238f3d0c0746e92d9c8ad922060b405dd8d\",\"onyxContractId\":\"0.0.6892\",\"runtimeCodeKeccak256\":\"0x6495535d613f7ce5ecd16c7c5300a8925011e90281e488fea24e838fb670d71c\"},\"name\":\"SYNTHETIC TSLA descriptor\",\"originChainId\":46630,\"symbol\":\"TSLA\",\"token\":\"0xc9f9c86933092bbbfff3ccb4b105a4a94bf3bd4e\",\"tokenRuntimeCodeKeccak256\":\"0x2f367e6a678e7b30ab613d5963e541e6f4d3ca586de76e2f441fbfeb1a27c440\",\"wrapper\":{\"address\":\"0x9ff95cc4e7189cba6d398fbdbf9aee1d84cb233d\",\"chainId\":8901,\"deploymentBlock\":\"6866773\",\"deploymentTx\":\"0xc606876a6baeffd5da0f0231fb17396819586ad9f9ea228fcdd43d9096a634c2\",\"onyxContractId\":\"0.0.6894\",\"runtimeCodeKeccak256\":\"0xa85074286af3bf4c40de7f888751950ea8547cc2d2802aaf1b7cb0740cb59582\"},\"wrapperSymbol\":\"TSLA\"}],\"contractVersion\":\"2.0.0\",\"lane\":\"RH_TESTNET\"}",
+  "manifestUtf8": "{\n  \"classification\": \"SYNTHETIC_OFFLINE_NOT_DEPLOYMENT_AUTHORITY\",\n  \"payload\": {\n    \"network\": \"testnet\",\n    \"profileVersion\": 2,\n    \"origin\": {\n      \"chainId\": 46630,\n      \"genesisHash\": \"0x829a42e6d68c872aafcef3abb2123fe371138fc415dd8b44381bbbf23049dd32\",\n      \"kind\": \"NATIVE\",\n      \"canonicalIdentifier\": \"0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee\"\n    },\n    \"destination\": {\n      \"chainId\": 8901,\n      \"genesisHash\": \"0xdc7a820f4bc825abbfec84107c41d2f84ea9aea2e4af78af511f05e20eb18e32\"\n    },\n    \"contracts\": {\n      \"escrow\": {\n        \"chainId\": 46630,\n        \"address\": \"0x1212121212121212121212121212121212121212\",\n        \"deployBlock\": \"100\",\n        \"deployTx\": \"0x5555555555555555555555555555555555555555555555555555555555555555\",\n        \"onyxContractId\": null\n      },\n      \"minter\": {\n        \"chainId\": 8901,\n        \"address\": \"0x2323232323232323232323232323232323232323\",\n        \"deployBlock\": \"200\",\n        \"deployTx\": \"0x6666666666666666666666666666666666666666666666666666666666666666\",\n        \"onyxContractId\": \"0.0.10001\"\n      },\n      \"wrapper\": {\n        \"chainId\": 8901,\n        \"address\": \"0x3434343434343434343434343434343434343434\",\n        \"deployBlock\": \"210\",\n        \"deployTx\": \"0x7777777777777777777777777777777777777777777777777777777777777777\",\n        \"onyxContractId\": \"0.0.10003\"\n      },\n      \"implementation\": {\n        \"chainId\": 8901,\n        \"address\": \"0x4545454545454545454545454545454545454545\",\n        \"deployBlock\": \"205\",\n        \"deployTx\": \"0x8888888888888888888888888888888888888888888888888888888888888888\",\n        \"onyxContractId\": \"0.0.10002\"\n      },\n      \"codeHashes\": {\n        \"escrow\": \"0x1111111111111111111111111111111111111111111111111111111111111111\",\n        \"minter\": \"0x2222222222222222222222222222222222222222222222222222222222222222\",\n        \"wrapper\": \"0x3333333333333333333333333333333333333333333333333333333333333333\",\n        \"implementation\": \"0x4444444444444444444444444444444444444444444444444444444444444444\"\n      },\n      \"deploymentAnchors\": {\n        \"escrow\": {\n          \"chainId\": 46630,\n          \"contract\": \"0x1212121212121212121212121212121212121212\",\n          \"eventFamily\": \"ESCROW\",\n          \"deployTx\": \"0x5555555555555555555555555555555555555555555555555555555555555555\",\n          \"deployBlock\": \"100\",\n          \"runtimeCodeKeccak256\": \"0x1111111111111111111111111111111111111111111111111111111111111111\",\n          \"anchorHeight\": \"99\",\n          \"anchorBlockHash\": \"0x9999999999999999999999999999999999999999999999999999999999999999\",\n          \"deploymentAnchorSha256\": \"a5d6d085c8d104bc3ee30c82810db86ab47ebe60060197525a0564f6ca9920cf\"\n        },\n        \"minter\": {\n          \"chainId\": 8901,\n          \"contract\": \"0x2323232323232323232323232323232323232323\",\n          \"eventFamily\": \"MINTER\",\n          \"deployTx\": \"0x6666666666666666666666666666666666666666666666666666666666666666\",\n          \"deployBlock\": \"200\",\n          \"runtimeCodeKeccak256\": \"0x2222222222222222222222222222222222222222222222222222222222222222\",\n          \"anchorHeight\": \"199\",\n          \"anchorBlockHash\": \"0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n          \"deploymentAnchorSha256\": \"61c5eaca37885b311194b8e0b860198bc263cc8b2f0148b476c1c15eab5836af\"\n        }\n      }\n    },\n    \"asset\": {\n      \"internalId\": \"RH_ETH\",\n      \"displaySymbol\": \"ETH\",\n      \"wrapperSymbol\": \"RHETH\",\n      \"decimals\": 18\n    },\n    \"limits\": {\n      \"escrow\": {\n        \"perTxMax\": \"1000000000000000\",\n        \"releaseCap\": \"4000000000000000\",\n        \"custodyCap\": \"8000000000000000\"\n      },\n      \"minter\": {\n        \"perTxMax\": \"1000000000000000\",\n        \"mint24hCap\": \"4000000000000000\",\n        \"outstandingCap\": \"8000000000000000\"\n      },\n      \"fees\": {\n        \"feeBps\": \"25\",\n        \"minFee\": \"1000000000000\",\n        \"minExit\": \"20000000000000\",\n        \"maxMinFee\": \"10000000000000\",\n        \"maxFeeBps\": \"100\"\n      },\n      \"wrapper\": {\n        \"supplyCap\": \"8000000000000000\"\n      }\n    },\n    \"abiVersion\": \"rh-native-bridge-abi-synthetic-v1\"\n  }\n}\n",
+  "manifestSha256": "b4de794d5d9244c58b9e6ccba3ddcffaf61fe122aaa5dcdecd35c40f92b68267"
+}

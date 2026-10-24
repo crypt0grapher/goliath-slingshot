@@ -1,21 +1,15 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { BridgeState, BridgeFormState, BridgeOperation, BridgeNetwork, BridgeTokenSymbol, BridgeStatus } from './types';
+import type { BridgeAssetKey } from '../../constants/bridge/registry';
 import {
-  BridgeState,
-  BridgeFormState,
-  BridgeOperation,
-  BridgeNetwork,
-  BridgeTokenSymbol,
-  BridgeStatus,
-} from './types';
-import { DEFAULT_BRIDGE_TOKEN } from '../../constants/bridge/tokens';
+  DEFAULT_BRIDGE_SELECTION,
+  normalizeBridgeSelection,
+  changeBridgePair,
+  legacyAssetKey,
+  routeFor,
+} from '../../constants/bridge/registry';
 
-const initialFormState: BridgeFormState = {
-  originNetwork: BridgeNetwork.SEPOLIA,
-  destinationNetwork: BridgeNetwork.GOLIATH,
-  selectedToken: DEFAULT_BRIDGE_TOKEN,
-  inputAmount: '',
-  recipient: null,
-};
+const initialFormState: BridgeFormState = DEFAULT_BRIDGE_SELECTION;
 
 const initialState: BridgeState = {
   form: initialFormState,
@@ -38,31 +32,59 @@ const bridgeSlice = createSlice({
     // Form Actions
     // ========================================
     setOriginNetwork(state, action: PayloadAction<BridgeNetwork>) {
-      state.form.originNetwork = action.payload;
-      state.form.destinationNetwork =
-        action.payload === BridgeNetwork.SEPOLIA ? BridgeNetwork.GOLIATH : BridgeNetwork.SEPOLIA;
+      const form = normalizeBridgeSelection(state.form);
+      let destination = form.destinationNetwork;
+      if (destination === action.payload) destination = form.originNetwork;
+      if (!routeFor(action.payload, destination))
+        destination = action.payload === BridgeNetwork.GOLIATH ? BridgeNetwork.SEPOLIA : BridgeNetwork.GOLIATH;
+      state.form = changeBridgePair(form, action.payload, destination);
+      state.isConfirmModalOpen = false;
       state.error = null;
+    },
+    setDestinationNetwork(state, action: PayloadAction<BridgeNetwork>) {
+      state.form = changeBridgePair(normalizeBridgeSelection(state.form), state.form.originNetwork, action.payload);
+      state.isConfirmModalOpen = false;
+      state.error = null;
+    },
+    hydrateForm(state, action: PayloadAction<BridgeFormState>) {
+      state.form = normalizeBridgeSelection(action.payload);
+      state.isConfirmModalOpen = false;
     },
 
     swapDirection(state) {
-      const temp = state.form.originNetwork;
-      state.form.originNetwork = state.form.destinationNetwork;
-      state.form.destinationNetwork = temp;
+      const form = normalizeBridgeSelection(state.form);
+      state.form = changeBridgePair(form, form.destinationNetwork, form.originNetwork);
+      state.isConfirmModalOpen = false;
       state.error = null;
     },
 
     setSelectedToken(state, action: PayloadAction<BridgeTokenSymbol>) {
-      state.form.selectedToken = action.payload;
+      const key = legacyAssetKey(action.payload);
+      if (key && routeFor(state.form.originNetwork, state.form.destinationNetwork)?.assets.includes(key)) {
+        state.form.selectedAssetKey = key;
+        state.form.inputAmount = '';
+      }
+      state.isConfirmModalOpen = false;
+      state.error = null;
+    },
+    setSelectedAsset(state, action: PayloadAction<BridgeAssetKey>) {
+      if (routeFor(state.form.originNetwork, state.form.destinationNetwork)?.assets.includes(action.payload)) {
+        state.form.selectedAssetKey = action.payload;
+        state.form.inputAmount = '';
+      }
+      state.isConfirmModalOpen = false;
       state.error = null;
     },
 
     setInputAmount(state, action: PayloadAction<string>) {
       state.form.inputAmount = action.payload;
+      state.isConfirmModalOpen = false;
       state.error = null;
     },
 
     setRecipient(state, action: PayloadAction<string | null>) {
       state.form.recipient = action.payload;
+      state.isConfirmModalOpen = false;
     },
 
     resetForm(state) {
@@ -80,10 +102,7 @@ const bridgeSlice = createSlice({
       state.activeOperationId = op.id;
     },
 
-    updateOperation(
-      state,
-      action: PayloadAction<{ id: string; updates: Partial<BridgeOperation> }>
-    ) {
+    updateOperation(state, action: PayloadAction<{ id: string; updates: Partial<BridgeOperation> }>) {
       const { id, updates } = action.payload;
       if (state.operations[id]) {
         state.operations[id] = {

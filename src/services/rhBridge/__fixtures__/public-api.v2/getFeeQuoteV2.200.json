@@ -1,0 +1,61 @@
+{
+  "fixture": "getFeeQuoteV2.200",
+  "operationId": "getFeeQuoteV2",
+  "classification": "SYNTHETIC_OFFLINE_NOT_DEPLOYMENT_AUTHORITY",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/v2/fee-quote",
+    "query": {
+      "assetId": "RH_ETH",
+      "profileSha256": "8d8a6990604866b3e05aca52bb67ffe36b4a682fcc1ce0bfe0c6a548213df821",
+      "direction": "ONYX_TO_RH",
+      "gross": "100000000000000"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "no-referrer",
+      "vary": "Origin",
+      "x-request-id": "synthetic_request"
+    },
+    "body": {
+      "binding": {
+        "assetId": "RH_ETH",
+        "profileSha256": "8d8a6990604866b3e05aca52bb67ffe36b4a682fcc1ce0bfe0c6a548213df821",
+        "profileVersion": 2,
+        "abiVersion": "rh-native-bridge-abi-synthetic-v1"
+      },
+      "direction": "ONYX_TO_RH",
+      "gross": "100000000000000",
+      "fee": "1000000000000",
+      "net": "99000000000000",
+      "suggestedMaxFee": "1000000000000",
+      "feeBps": 25,
+      "minFee": "1000000000000",
+      "observation": {
+        "observedAt": "2026-10-23T19:00:00Z",
+        "expiresAt": "2026-10-23T19:00:15Z",
+        "freshness": "FRESH",
+        "robinhood": {
+          "chainId": 46630,
+          "number": "1000",
+          "hash": "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+          "timestamp": "2026-10-23T18:59:00Z"
+        },
+        "onyx": {
+          "chainId": 8901,
+          "number": "2000",
+          "hash": "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          "timestamp": "2026-10-23T18:59:55Z"
+        },
+        "ledgerObservedAt": "2026-10-23T19:00:00Z"
+      },
+      "quotedAt": "2026-10-23T19:00:00Z",
+      "expiresAt": "2026-10-23T19:00:15Z"
+    }
+  }
+}

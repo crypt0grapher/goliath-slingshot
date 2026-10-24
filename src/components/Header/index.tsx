@@ -12,7 +12,7 @@ import { useDarkModeManager } from '../../state/user/hooks';
 import { useETHBalances } from '../../state/wallet/hooks';
 import { migrationConfig } from '../../config/migrationConfig';
 import { stakingConfig } from '../../config/stakingConfig';
-import { RH_ROUTE, RH_TESTNET_BRIDGE_ENABLED } from '../../config/rhBridge';
+import { useBridgeSourceSwitch } from '../../hooks/bridge/useBridgeSourceSwitch';
 import { RH_TESTNET_CHAIN_ID } from '../../constants/rhBridge';
 
 import { LightCard } from '../Card';
@@ -384,13 +384,18 @@ export default function Header() {
   const [darkMode, toggleDarkMode] = useDarkModeManager();
   const { switchToGoliath, isLoading: isSwitchingNetwork } = useNetworkSwitch();
   const { pathname } = useLocation();
+  const bridgeSource = useBridgeSourceSwitch(pathname === '/bridge');
 
-  const isRobinhoodNetwork = RH_TESTNET_BRIDGE_ENABLED && Number(chainId) === RH_TESTNET_CHAIN_ID;
-  const isRhLaneNetwork = isRobinhoodNetwork && pathname === RH_ROUTE;
-  const isWrongNetwork = account && chainId && chainId !== GOLIATH_TESTNET_CHAIN_ID && !isRhLaneNetwork;
-  const networkName = isRobinhoodNetwork ? 'Robinhood Chain Testnet'
-    : chainId && NETWORK_LABELS[chainId] ? NETWORK_LABELS[chainId] : `Chain ${chainId}`;
-  const nativeSymbol = isRobinhoodNetwork ? 'ETH' : 'XCN';
+  const isRobinhoodNetwork = Number(chainId) === RH_TESTNET_CHAIN_ID;
+  const bridgePage = pathname === '/bridge';
+  const targetChain = bridgePage ? bridgeSource.source.chainId : GOLIATH_TESTNET_CHAIN_ID;
+  const isWrongNetwork = account && chainId && chainId !== targetChain;
+  const networkName = isRobinhoodNetwork
+    ? 'Robinhood Chain Testnet'
+    : chainId && NETWORK_LABELS[chainId]
+    ? NETWORK_LABELS[chainId]
+    : `Chain ${chainId}`;
+  const nativeSymbol = isRobinhoodNetwork || Number(chainId) === 11155111 ? 'ETH' : 'XCN';
 
   return (
     <HeaderFrame>
@@ -425,8 +430,9 @@ export default function Header() {
         {migrationConfig.migrationEnabled && (
           <StyledNavLink id={`migrate-nav-link`} to={'/migrate'}>
             {t('migration.nav.title')}
-            {migrationConfig.migrationDeadline &&
-              new Date() < new Date(migrationConfig.migrationDeadline) && <DeadlineDot />}
+            {migrationConfig.migrationDeadline && new Date() < new Date(migrationConfig.migrationDeadline) && (
+              <DeadlineDot />
+            )}
           </StyledNavLink>
         )}
         {stakingConfig.stakingEnabled ? (
@@ -434,9 +440,7 @@ export default function Header() {
             {t('yield')}
           </StyledNavLink>
         ) : (
-          <DisabledNavLink id={`yield-nav-link`}>
-            {t('yield')}
-          </DisabledNavLink>
+          <DisabledNavLink id={`yield-nav-link`}>{t('yield')}</DisabledNavLink>
         )}
       </HeaderLinks>
 
@@ -445,16 +449,16 @@ export default function Header() {
           <HideSmall>
             {isWrongNetwork ? (
               <WrongNetworkButton
-                onClick={switchToGoliath}
-                disabled={isSwitchingNetwork}
-                title={`Connected to ${networkName}. Click to switch to Onyx Testnet.`}
+                onClick={bridgePage ? bridgeSource.switchToSource : switchToGoliath}
+                disabled={bridgePage ? bridgeSource.busy : isSwitchingNetwork}
+                title={`Connected to ${networkName}. Click to switch to ${
+                  bridgePage ? bridgeSource.source.displayName : 'Onyx Testnet'
+                }.`}
               >
-                {isSwitchingNetwork ? 'Switching...' : networkName}
+                {(bridgePage ? bridgeSource.busy : isSwitchingNetwork) ? 'Switching...' : networkName}
               </WrongNetworkButton>
             ) : (
-              (chainId === GOLIATH_TESTNET_CHAIN_ID || isRhLaneNetwork) && (
-                <NetworkCard title={networkName}>{networkName}</NetworkCard>
-              )
+              chainId === targetChain && <NetworkCard title={networkName}>{networkName}</NetworkCard>
             )}
           </HideSmall>
           <AccountElement active={!!account} style={{ pointerEvents: 'auto' }}>
@@ -467,7 +471,12 @@ export default function Header() {
           </AccountElement>
         </HeaderElement>
         <HeaderElementWrap>
-          <StyledDocsLink href="https://docs.goliath.net" target="_blank" rel="noopener noreferrer" title="Documentation">
+          <StyledDocsLink
+            href="https://docs.goliath.net"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Documentation"
+          >
             <HelpCircle size={20} />
           </StyledDocsLink>
           <StyledMenuButton onClick={toggleDarkMode}>

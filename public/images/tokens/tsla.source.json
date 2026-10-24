@@ -1,0 +1,8 @@
+{
+  "source": "https://www.coingecko.com/en/stocks/tesla",
+  "asset": "https://assets.coingecko.com/rwas/images/48/standard/open-uri20260428-58-vews2t.?1777362334=",
+  "sha256": "195427363f5ef69bdf17608e9b3d47ce930923e241a0990b7dcf48f1596ec020",
+  "usage": "Tesla branding only; no token contract inferred",
+  "model": "gpt-6",
+  "thinkingEffort": "not-reported"
+}

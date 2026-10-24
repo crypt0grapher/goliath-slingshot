@@ -1,0 +1,31 @@
+{
+  "fixture": "getHistoryV2.400",
+  "operationId": "getHistoryV2",
+  "classification": "SYNTHETIC_OFFLINE_NOT_DEPLOYMENT_AUTHORITY",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/v2/history",
+    "query": {
+      "address": "0x8888888888888888888888888888888888888888",
+      "unexpected": "x"
+    }
+  },
+  "response": {
+    "status": 400,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "no-referrer",
+      "vary": "Origin",
+      "x-request-id": "synthetic_request"
+    },
+    "body": {
+      "error": {
+        "code": "INVALID_REQUEST",
+        "message": "Request refused.",
+        "requestId": "synthetic_request"
+      }
+    }
+  }
+}

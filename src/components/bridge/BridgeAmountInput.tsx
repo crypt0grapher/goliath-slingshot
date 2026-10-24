@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
-import { BridgeTokenSymbol } from '../../constants/bridge/tokens';
+import { BridgeAssetKey, BRIDGE_ASSETS } from '../../constants/bridge/registry';
 import BridgeTokenSelector from './BridgeTokenSelector';
 import { sanitizeAmountInput } from '../../utils/bridge/amounts';
 
@@ -87,20 +87,12 @@ const MaxButton = styled.button`
   }
 `;
 
-const HintText = styled.span`
-  font-size: 13px;
-  color: ${({ theme }) => theme.text3};
-
-  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-    font-size: 12px;
-  `}
-`;
-
 interface BridgeAmountInputProps {
   value: string;
   onUserInput: (value: string) => void;
-  selectedToken: BridgeTokenSymbol;
-  onTokenSelect: (token: BridgeTokenSymbol) => void;
+  selectedAssetKey: BridgeAssetKey;
+  assetKeys: readonly BridgeAssetKey[];
+  onTokenSelect: (token: BridgeAssetKey) => void;
   balance: string;
   onMax: () => void;
   showMaxButton?: boolean;
@@ -111,13 +103,13 @@ interface BridgeAmountInputProps {
 export default function BridgeAmountInput({
   value,
   onUserInput,
-  selectedToken,
+  selectedAssetKey,
+  assetKeys,
   onTokenSelect,
   balance,
   onMax,
   showMaxButton = true,
   disabled = false,
-  minAmountFormatted = null,
 }: BridgeAmountInputProps) {
   const handleInput = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,31 +120,25 @@ export default function BridgeAmountInput({
   );
 
   const { t } = useTranslation();
+  const selectedToken = BRIDGE_ASSETS[selectedAssetKey].symbol;
 
   return (
     <InputContainer>
       <InputRow>
         <StyledInput
           type="text"
+          aria-label="Bridge amount"
           inputMode="decimal"
           placeholder="0.0"
           value={value}
           onChange={handleInput}
           disabled={disabled}
         />
-        <BridgeTokenSelector selectedToken={selectedToken} onSelect={onTokenSelect} />
+        <BridgeTokenSelector selectedAssetKey={selectedAssetKey} assetKeys={assetKeys} onSelect={onTokenSelect} />
       </InputRow>
       <BalanceRow>
         <BalanceText>
-          Balance: {balance} {selectedToken}
-          {minAmountFormatted && (
-            <>
-              {' | '}
-              <HintText>
-                {t('bridgeMinimumHint', { amount: minAmountFormatted, token: selectedToken })}
-              </HintText>
-            </>
-          )}
+          {t('balanceLabel')} {balance} {selectedToken}
         </BalanceText>
         {showMaxButton && parseFloat(balance) > 0 && (
           <MaxButton onClick={onMax} type="button">

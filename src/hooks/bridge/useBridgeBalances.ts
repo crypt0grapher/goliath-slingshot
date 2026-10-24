@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: Apache-2.0
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useActiveWeb3React } from '../index';
 import { BridgeNetwork } from '../../constants/bridge/networks';
@@ -5,173 +6,50 @@ import { BridgeTokenSymbol, getTokenConfigForChain } from '../../constants/bridg
 import { getNativeBalance, getTokenBalance } from '../../services/bridgeProviders';
 import { formatAmount } from '../../utils/bridge/amounts';
 
-// Configuration for aggressive polling after transactions
-const AGGRESSIVE_POLL_INTERVAL = 2000; // ms - faster polling right after tx
-const AGGRESSIVE_POLL_DURATION = 10000; // ms - how long to poll aggressively
-const NORMAL_POLL_INTERVAL = 5000; // ms - normal polling interval
-
-interface UseBridgeBalancesReturn {
-  balance: string;
-  balanceAtomic: bigint;
-  isLoading: boolean;
-  error: string | null;
-  refetch: () => void;
-  triggerAggressivePolling: () => void; // Force aggressive polling after tx
-}
-
-export function useBridgeBalances(
-  token: BridgeTokenSymbol,
-  network: BridgeNetwork
-): UseBridgeBalancesReturn {
+export function useBridgeBalances(token: BridgeTokenSymbol, network: BridgeNetwork, enabled = true) {
   const { account } = useActiveWeb3React();
-  const [balanceAtomic, setBalanceAtomic] = useState<bigint>(BigInt(0));
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const hasFetchedRef = useRef(false);
-  const previousAccountRef = useRef<string | null | undefined>(null);
-  const aggressivePollingUntilRef = useRef<number>(0); // Timestamp when aggressive polling should stop
-  const lastFetchedBalanceRef = useRef<bigint>(BigInt(0)); // Track last balance to detect changes
-  const lastFetchFailedRef = useRef(false); // Skip a poll cycle after a failed fetch
-
-  // Reset balance only when account actually changes to a different account
-  useEffect(() => {
-    if (previousAccountRef.current !== account) {
-      if (previousAccountRef.current && account && previousAccountRef.current !== account) {
-        // Account changed to a different account - reset balance
-        setBalanceAtomic(BigInt(0));
-        hasFetchedRef.current = false;
-      } else if (!account && previousAccountRef.current) {
-        // Account disconnected - reset balance
-        setBalanceAtomic(BigInt(0));
-        hasFetchedRef.current = false;
-      }
-      previousAccountRef.current = account;
-    }
-  }, [account]);
-
-  const fetchBalance = useCallback(async (silent = false) => {
-    if (!account) {
-      // Don't reset balance here - let the effect above handle it
-      return;
-    }
-
-    if (!silent) {
-      setIsLoading(true);
-      setError(null);
-    }
-
-    try {
-      const tokenConfig = getTokenConfigForChain(token, network);
-
-      // Debug: log token config to identify balance fetch issues
-      console.log('[Bridge Balance]', {
-        token,
-        network,
-        tokenAddress: tokenConfig.address,
-        isNative: tokenConfig.isNative,
-        account,
-      });
-
-      let balance: bigint;
-      if (tokenConfig.isNative) {
-        balance = await getNativeBalance(account, network);
-        console.log('[Bridge Balance] Native balance:', balance.toString());
-      } else if (tokenConfig.address) {
-        console.log('[Bridge Balance] Fetching ERC20 balance from:', tokenConfig.address, 'on', network);
-        balance = await getTokenBalance(tokenConfig.address, account, network);
-        console.log('[Bridge Balance] ERC20 balance:', balance.toString());
-      } else {
-        console.warn('[Bridge Balance] No token address configured for', token, 'on', network);
-        balance = BigInt(0);
-      }
-
-      // Track if balance changed (useful for debugging and detecting updates)
-      if (balance !== lastFetchedBalanceRef.current) {
-        console.log('[Bridge Balance] Balance changed:', {
-          from: lastFetchedBalanceRef.current.toString(),
-          to: balance.toString(),
-          network,
-          token,
-        });
-        lastFetchedBalanceRef.current = balance;
-      }
-
-      setBalanceAtomic(balance);
-      hasFetchedRef.current = true;
-      lastFetchFailedRef.current = false;
-      if (!silent) {
-        setError(null);
-      }
-    } catch (err) {
-      console.error('Error fetching balance:', err);
-      lastFetchFailedRef.current = true;
-      if (!silent) {
-        setError('Failed to fetch balance');
-        // Don't reset balance on error - keep showing the previous value
-      }
-    } finally {
-      if (!silent) {
-        setIsLoading(false);
-      }
-    }
-  }, [account, token, network]);
-
-  useEffect(() => {
-    fetchBalance();
-  }, [fetchBalance]);
-
-  // Trigger aggressive polling mode (called after transactions)
+  const key = `${enabled ? account || '' : ''}|${network}|${token}|${enabled}`;
+  const [snapshot, setSnapshot] = useState<{ key: string; raw?: bigint; error?: string }>({ key: '' });
+  const [revision, setRevision] = useState(0);
+  const aggressiveUntil = useRef(0);
+  const refetch = useCallback(() => {
+    setRevision((n) => n + 1);
+  }, []);
   const triggerAggressivePolling = useCallback(() => {
-    console.log('[Bridge Balance] Aggressive polling triggered for', network, token);
-    aggressivePollingUntilRef.current = Date.now() + AGGRESSIVE_POLL_DURATION;
-    // Immediately fetch to get the latest balance
-    fetchBalance(false);
-  }, [fetchBalance, network, token]);
-
-  // Poll balances with adaptive interval (aggressive after tx, normal otherwise)
+    aggressiveUntil.current = Date.now() + 10000;
+    refetch();
+  }, [refetch]);
   useEffect(() => {
-    if (!account) return;
-
-    let intervalId: NodeJS.Timeout;
-
-    const poll = () => {
-      const isAggressiveMode = Date.now() < aggressivePollingUntilRef.current;
-      const interval = isAggressiveMode ? AGGRESSIVE_POLL_INTERVAL : NORMAL_POLL_INTERVAL;
-
-      // Skip this cycle if the last fetch failed (reduces RPC pressure after errors)
-      if (lastFetchFailedRef.current) {
-        lastFetchFailedRef.current = false; // Allow the next cycle
-      } else {
-        fetchBalance(true);
+    if (!enabled || !account) return;
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const poll = async () => {
+      try {
+        const config = getTokenConfigForChain(token, network);
+        const raw = config.isNative
+          ? await getNativeBalance(account, network)
+          : config.address
+          ? await getTokenBalance(config.address, account, network)
+          : undefined;
+        if (!stopped) setSnapshot(raw === undefined ? { key, error: 'Balance not available' } : { key, raw });
+      } catch {
+        if (!stopped) setSnapshot({ key, error: 'Balance not available' });
       }
-
-      // Schedule next poll with appropriate interval
-      intervalId = setTimeout(poll, interval);
+      if (!stopped) timer = setTimeout(poll, Date.now() < aggressiveUntil.current ? 2000 : 5000);
     };
-
-    // Start polling
-    const initialInterval = Date.now() < aggressivePollingUntilRef.current
-      ? AGGRESSIVE_POLL_INTERVAL
-      : NORMAL_POLL_INTERVAL;
-    intervalId = setTimeout(poll, initialInterval);
-
-    return () => clearTimeout(intervalId);
-  }, [account, fetchBalance]);
-
-  // Format the balance for display
-  // Show '-' while loading initial balance, '0' only after confirmed fetch
-  const balance = isLoading && !hasFetchedRef.current
-    ? '-'
-    : balanceAtomic > BigInt(0)
-      ? formatAmount(balanceAtomic, token, network)
-      : '0';
-
+    void poll();
+    return () => {
+      stopped = true;
+      clearTimeout(timer);
+    };
+  }, [account, enabled, key, network, revision, token]);
+  const current = enabled && account && snapshot.key === key ? snapshot : undefined;
   return {
-    balance,
-    balanceAtomic,
-    isLoading,
-    error,
-    refetch: fetchBalance,
+    balance: current?.raw === undefined ? '-' : formatAmount(current.raw, token, network),
+    balanceAtomic: current?.raw ?? BigInt(0),
+    isLoading: !!enabled && !!account && !current,
+    error: current?.error ?? null,
+    refetch,
     triggerAggressivePolling,
   };
 }

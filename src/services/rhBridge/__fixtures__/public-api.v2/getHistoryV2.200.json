@@ -1,0 +1,102 @@
+{
+  "fixture": "getHistoryV2.200",
+  "operationId": "getHistoryV2",
+  "classification": "SYNTHETIC_OFFLINE_NOT_DEPLOYMENT_AUTHORITY",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/v2/history",
+    "query": {
+      "address": "0x8888888888888888888888888888888888888888"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "no-referrer",
+      "vary": "Origin",
+      "x-request-id": "synthetic_request"
+    },
+    "body": {
+      "address": "0x8888888888888888888888888888888888888888",
+      "assetId": null,
+      "items": [
+        {
+          "binding": {
+            "assetId": "RH_ETH",
+            "profileSha256": "8d8a6990604866b3e05aca52bb67ffe36b4a682fcc1ce0bfe0c6a548213df821",
+            "profileVersion": 2,
+            "abiVersion": "rh-native-bridge-abi-synthetic-v1"
+          },
+          "operationId": "RH_TO_ONYX:0x1111111111111111111111111111111111111111111111111111111111111111",
+          "direction": "RH_TO_ONYX",
+          "status": "AWAITING_EXECUTION",
+          "holdCategory": "LANE_PAUSED",
+          "sender": "0x8888888888888888888888888888888888888888",
+          "recipient": "0x8888888888888888888888888888888888888888",
+          "grossAmount": "100000000000000",
+          "fee": "0",
+          "netAmount": "100000000000000",
+          "source": {
+            "chainId": 46630,
+            "txHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+            "logIndex": "0",
+            "blockNumber": "1000",
+            "explorerUrl": "https://explorer.testnet.chain.robinhood.com/tx/0x3333333333333333333333333333333333333333333333333333333333333333",
+            "final": true
+          },
+          "destination": {
+            "chainId": 8901,
+            "txHash": null,
+            "logIndex": null,
+            "blockNumber": null,
+            "explorerUrl": null,
+            "final": false
+          },
+          "createdAt": "2026-10-23T19:00:00Z",
+          "updatedAt": "2026-10-23T19:00:00Z",
+          "completedAt": null
+        },
+        {
+          "binding": {
+            "assetId": "TSLA",
+            "profileSha256": "38a14bcb94536c4efb8d62d9d0a42ae702117db3e495f6884cf25839da47ee8e",
+            "profileVersion": 1,
+            "abiVersion": "rh-stock-bridge-abi-12fc53612bcf"
+          },
+          "operationId": "RH_TO_ONYX:0x2222222222222222222222222222222222222222222222222222222222222222",
+          "direction": "RH_TO_ONYX",
+          "status": "AWAITING_EXECUTION",
+          "holdCategory": null,
+          "sender": "0x8888888888888888888888888888888888888888",
+          "recipient": "0x8888888888888888888888888888888888888888",
+          "grossAmount": "700000000000000000",
+          "fee": "0",
+          "netAmount": "700000000000000000",
+          "source": {
+            "chainId": 46630,
+            "txHash": "0x3333333333333333333333333333333333333333333333333333333333333333",
+            "logIndex": "0",
+            "blockNumber": "1000",
+            "explorerUrl": "https://explorer.testnet.chain.robinhood.com/tx/0x3333333333333333333333333333333333333333333333333333333333333333",
+            "final": true
+          },
+          "destination": {
+            "chainId": 8901,
+            "txHash": null,
+            "logIndex": null,
+            "blockNumber": null,
+            "explorerUrl": null,
+            "final": false
+          },
+          "createdAt": "2026-10-23T19:00:00Z",
+          "updatedAt": "2026-10-23T19:00:00Z",
+          "completedAt": null
+        }
+      ],
+      "nextCursor": null
+    }
+  }
+}

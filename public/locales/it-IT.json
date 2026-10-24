@@ -494,5 +494,8 @@
   "pool.simple": "Simple",
   "pool.yourPoolShare": "Your pool share:",
   "pool.yourPosition": "Your position",
-  "pool.yourTotalPoolTokens": "Your total pool tokens:"
+  "pool.yourTotalPoolTokens": "Your total pool tokens:",
+  "bridgePerTransactionMax": "Massimo per transazione",
+  "bridgeRemainingCapacity": "Capacità residua",
+  "bridgeBalances": "Saldi"
 }

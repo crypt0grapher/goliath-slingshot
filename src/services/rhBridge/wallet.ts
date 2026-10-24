@@ -4,6 +4,8 @@
 import { RH_WALLET_NETWORKS } from '../../config/rhBridge';
 import { LaneChainId } from '../../constants/rhBridge';
 import { LaneCall } from './lane';
+import type { WalletIntentGuard } from '../../hooks/bridge/walletIntent';
+import { beforeWalletPrompt } from '../../hooks/bridge/walletIntent';
 
 export interface Eip1193 {
   request(args: { method: string; params?: unknown[] }): Promise<unknown>;
@@ -100,13 +102,23 @@ const NOT_SENT_CODES: Array<number | string> = [4001, 4100, 4200, 4900, 4901, -3
 export async function sendLaneTransaction(
   provider: Eip1193,
   expectedAccount: string,
-  call: LaneCall
+  call: LaneCall,
+  guard?: WalletIntentGuard
 ): Promise<SendOutcome> {
   const context = await readWalletContext(provider);
   if (context.chainId !== call.chainId || !context.account || context.account !== expectedAccount.toLowerCase()) {
     return fail('CONTEXT_CHANGED');
   }
   let result: unknown;
+  const value = call.value ?? '0';
+  if (
+    !/^(0|[1-9][0-9]{0,77})$/.test(value) ||
+    BigInt(value) >= BigInt(1) << BigInt(256) ||
+    (call.kind === 'depositNative' ? value !== call.amount : value !== '0')
+  )
+    return fail('VALUE_MISMATCH');
+  await beforeWalletPrompt(guard, { provider });
+  guard?.assertCurrent();
   try {
     result = await provider.request({
       method: 'eth_sendTransaction',
@@ -115,7 +127,7 @@ export async function sendLaneTransaction(
           from: context.account,
           to: call.to,
           data: call.data,
-          value: '0x0',
+          value: '0x' + BigInt(value).toString(16),
           chainId: '0x' + call.chainId.toString(16),
         },
       ],

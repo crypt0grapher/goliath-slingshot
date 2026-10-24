@@ -114,7 +114,7 @@ test('feature flag defaults off: no page and no entry link', () => {
   expect(container.innerHTML).toBe('');
 });
 
-test('entry link from #/bridge points at the RH route', () => {
+test('retired separate-page entry banner stays absent even with the flag enabled', () => {
   act(() => {
     ReactDOM.render(
       <ThemeProvider theme={theme(false)}>
@@ -124,7 +124,7 @@ test('entry link from #/bridge points at the RH route', () => {
     );
   });
   expect(RH_ROUTE).toBe('/bridge/robinhood-testnet');
-  expect(container.querySelector('a')?.getAttribute('href')).toBe('#/bridge/robinhood-testnet');
+  expect(container.querySelector('a')).toBeNull();
 });
 
 test('API unreachable: live actions disabled with the reason; no wallet request', async () => {

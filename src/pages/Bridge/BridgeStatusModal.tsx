@@ -9,7 +9,8 @@ import { selectActiveOperation, selectIsStatusModalOpen, selectPollingError } fr
 import { bridgeActions } from '../../state/bridge/reducer';
 import { BridgeStatusStepper } from '../../components/bridge';
 import { BridgeNetwork, getExplorerTxUrl } from '../../constants/bridge/networks';
-import { useBridgeStatusPolling, useBridgeForm } from '../../hooks/bridge';
+import { useBridgeStatusPolling } from '../../hooks/bridge';
+import { useOptionalBridgeSession } from '../../hooks/bridge/BridgeSessionContext';
 import { formatEta } from '../../utils/bridge/eta';
 
 const ContentWrapper = styled.div`
@@ -127,7 +128,8 @@ export default function BridgeStatusModal() {
   const isOpen = useSelector(selectIsStatusModalOpen);
   const operation = useSelector(selectActiveOperation);
   const pollingError = useSelector(selectPollingError);
-  const { triggerBalanceRefresh } = useBridgeForm();
+  const session = useOptionalBridgeSession();
+  const triggerBalanceRefresh = () => session?.refreshBalances();
 
   // Start polling for status updates
   useBridgeStatusPolling(operation);
@@ -149,14 +151,10 @@ export default function BridgeStatusModal() {
     return null;
   }
 
-  const originNetwork =
-    operation.direction === 'SEPOLIA_TO_GOLIATH' ? BridgeNetwork.SEPOLIA : BridgeNetwork.GOLIATH;
-  const destNetwork =
-    operation.direction === 'SEPOLIA_TO_GOLIATH' ? BridgeNetwork.GOLIATH : BridgeNetwork.SEPOLIA;
+  const originNetwork = operation.direction === 'SEPOLIA_TO_GOLIATH' ? BridgeNetwork.SEPOLIA : BridgeNetwork.GOLIATH;
+  const destNetwork = operation.direction === 'SEPOLIA_TO_GOLIATH' ? BridgeNetwork.GOLIATH : BridgeNetwork.SEPOLIA;
 
-  const originExplorerUrl = operation.originTxHash
-    ? getExplorerTxUrl(originNetwork, operation.originTxHash)
-    : null;
+  const originExplorerUrl = operation.originTxHash ? getExplorerTxUrl(originNetwork, operation.originTxHash) : null;
 
   const destExplorerUrl = operation.destinationTxHash
     ? getExplorerTxUrl(destNetwork, operation.destinationTxHash)
@@ -165,15 +163,12 @@ export default function BridgeStatusModal() {
   const isCompleted = operation.status === 'COMPLETED';
   const isFailed = operation.status === 'FAILED' || operation.status === 'EXPIRED';
 
-  const directionLabel =
-    operation.direction === 'SEPOLIA_TO_GOLIATH' ? 'Sepolia → Onyx' : 'Onyx → Sepolia';
+  const directionLabel = operation.direction === 'SEPOLIA_TO_GOLIATH' ? 'Sepolia → Onyx' : 'Onyx → Sepolia';
 
   return (
     <Modal isOpen={isOpen} onDismiss={handleClose}>
       <ContentWrapper>
-        <Title>
-          {isCompleted ? t('bridgeComplete') : isFailed ? t('bridgeFailed') : t('bridgeInProgress')}
-        </Title>
+        <Title>{isCompleted ? t('bridgeComplete') : isFailed ? t('bridgeFailed') : t('bridgeInProgress')}</Title>
 
         <AmountSection>
           <AmountText>
@@ -182,13 +177,9 @@ export default function BridgeStatusModal() {
           <DirectionText>{directionLabel}</DirectionText>
         </AmountSection>
 
-        {isFailed && operation.errorMessage && (
-          <ErrorSection>{operation.errorMessage}</ErrorSection>
-        )}
+        {isFailed && operation.errorMessage && <ErrorSection>{operation.errorMessage}</ErrorSection>}
 
-        {!isFailed && pollingError && (
-          <WarningSection>{pollingError}</WarningSection>
-        )}
+        {!isFailed && pollingError && <WarningSection>{pollingError}</WarningSection>}
 
         {!isFailed && operation.status === 'DELAYED' && operation.errorMessage && (
           <WarningSection>{operation.errorMessage}</WarningSection>
@@ -221,12 +212,8 @@ export default function BridgeStatusModal() {
         </LinksSection>
 
         <ButtonsContainer>
-          {isCompleted && (
-            <ButtonPrimary onClick={handleBridgeMore}>{t('bridgeMore')}</ButtonPrimary>
-          )}
-          <ButtonOutlined onClick={handleClose}>
-            {isCompleted ? t('close') : t('closeBridgeContinues')}
-          </ButtonOutlined>
+          {isCompleted && <ButtonPrimary onClick={handleBridgeMore}>{t('bridgeMore')}</ButtonPrimary>}
+          <ButtonOutlined onClick={handleClose}>{isCompleted ? t('close') : t('closeBridgeContinues')}</ButtonOutlined>
         </ButtonsContainer>
       </ContentWrapper>
     </Modal>

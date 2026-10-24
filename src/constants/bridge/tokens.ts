@@ -79,10 +79,9 @@ export const DEFAULT_BRIDGE_TOKEN: BridgeTokenSymbol = 'ETH';
 /**
  * Get token config for a specific chain
  */
-export function getTokenConfigForChain(
-  token: BridgeTokenSymbol,
-  network: BridgeNetwork
-): ChainTokenConfig {
+export function getTokenConfigForChain(token: BridgeTokenSymbol, network: BridgeNetwork): ChainTokenConfig {
+  if (network !== BridgeNetwork.SEPOLIA && network !== BridgeNetwork.GOLIATH)
+    throw new Error('LEGACY_BRIDGE_NETWORK_REQUIRED');
   const config = BRIDGE_TOKENS[token];
   return network === BridgeNetwork.SEPOLIA ? config.sepolia : config.goliath;
 }

@@ -1,119 +1,92 @@
+// SPDX-License-Identifier: Apache-2.0
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { BridgeApiClient, FeeQuoteResponse } from '../../services/bridgeApi';
 import { bridgeConfig } from '../../config/bridgeConfig';
 import { BridgeDirection } from '../../state/bridge/types';
-import { isValidAmountString, isPositiveAmount } from '../../utils/bridge/amounts';
-
-const DEBOUNCE_MS = 300;
+import { isValidAmountString, isPositiveAmount, parseAmount } from '../../utils/bridge/amounts';
+import { BridgeNetwork } from '../../constants/bridge/networks';
+import type { BridgeTokenSymbol } from '../../constants/bridge/tokens';
 
 interface UseBridgeFeeParams {
   amount: string;
   token: string;
   direction: BridgeDirection;
+  enabled?: boolean;
 }
-
-interface UseBridgeFeeReturn {
-  feeQuote: FeeQuoteResponse | null;
-  isLoading: boolean;
-  error: string | null;
-}
-
-/**
- * Hook that fetches fee quotes from the backend with debounce.
- *
- * For SEPOLIA_TO_GOLIATH: returns a static zero-fee response (no API call).
- * For GOLIATH_TO_SEPOLIA: debounces 300ms, then fetches from backend.
- * Caches the last valid result to prevent flickering during typing.
- */
-export function useBridgeFee({ amount, token, direction }: UseBridgeFeeParams): UseBridgeFeeReturn {
-  const [feeQuote, setFeeQuote] = useState<FeeQuoteResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const abortControllerRef = useRef<AbortController | null>(null);
-  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const lastValidQuoteRef = useRef<FeeQuoteResponse | null>(null);
-
-  // Stable API client ref
-  const apiClientRef = useRef(new BridgeApiClient(bridgeConfig.statusApiBaseUrl));
-
-  const cleanup = useCallback(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-      debounceTimerRef.current = null;
-    }
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-  }, []);
-
+export function useBridgeFee({ amount, token, direction, enabled = true }: UseBridgeFeeParams) {
+  const key = `${direction}|${token}|${amount}|${enabled}`;
+  const [snapshot, setSnapshot] = useState<{
+    key: string;
+    quote?: FeeQuoteResponse;
+    error?: string;
+    expiresAt?: number;
+  }>({ key: '' });
+  const client = useRef(new BridgeApiClient(bridgeConfig.statusApiBaseUrl));
+  const [revision, setRevision] = useState(0);
+  const refetch = useCallback(() => setRevision((n) => n + 1), []);
   useEffect(() => {
-    // For deposits (S2G), fees are zero -- return static response immediately
-    if (direction === 'SEPOLIA_TO_GOLIATH') {
-      cleanup();
-      const zeroFee: FeeQuoteResponse = {
-        inputAmount: '0',
-        inputFormatted: amount || '0',
-        feeAmount: '0',
-        feeFormatted: '0',
-        feeBps: 0,
-        outputAmount: '0',
-        outputFormatted: amount || '0',
-        token,
-      };
-      setFeeQuote(zeroFee);
-      setIsLoading(false);
-      setError(null);
-      lastValidQuoteRef.current = null;
-      return cleanup;
-    }
-
-    // For withdrawals (G2S), validate input before fetching
-    if (!amount || !isValidAmountString(amount) || !isPositiveAmount(amount)) {
-      cleanup();
-      setFeeQuote(lastValidQuoteRef.current);
-      setIsLoading(false);
-      setError(null);
-      return cleanup;
-    }
-
-    // Debounce the API call
-    cleanup();
-    setIsLoading(true);
-    setError(null);
-
-    debounceTimerRef.current = setTimeout(async () => {
-      const controller = new AbortController();
-      abortControllerRef.current = controller;
-
-      try {
-        const result = await apiClientRef.current.getFeeQuote({
-          token,
-          amount,
-          direction,
-        });
-
-        // Check if this request was aborted while in-flight
-        if (controller.signal.aborted) return;
-
-        setFeeQuote(result);
-        lastValidQuoteRef.current = result;
-        setError(null);
-      } catch (err: any) {
-        if (controller.signal.aborted) return;
-        // On error, keep the last valid quote to prevent UI flicker
-        setFeeQuote(lastValidQuoteRef.current);
-        setError(err?.message || 'Failed to fetch fee quote');
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false);
+    if (!enabled || !amount || !isValidAmountString(amount) || !isPositiveAmount(amount)) return;
+    let stopped = false;
+    const timer = setTimeout(
+      async () => {
+        try {
+          if (!['ETH', 'XCN', 'USDC'].includes(token)) throw new Error('LEGACY_QUOTE_TOKEN');
+          const source = direction === 'SEPOLIA_TO_GOLIATH' ? BridgeNetwork.SEPOLIA : BridgeNetwork.GOLIATH;
+          const symbol = token as BridgeTokenSymbol;
+          const gross = parseAmount(amount, symbol, source).toString();
+          const quote =
+            direction === 'SEPOLIA_TO_GOLIATH'
+              ? {
+                  inputAmount: gross,
+                  inputFormatted: amount,
+                  feeAmount: '0',
+                  feeFormatted: '0',
+                  feeBps: 0,
+                  outputAmount: gross,
+                  outputFormatted: amount,
+                  token,
+                }
+              : await client.current.getFeeQuote({ amount, token, direction });
+          const raw = /^(0|[1-9][0-9]{0,77})$/;
+          if (
+            quote.token !== token ||
+            quote.inputAmount !== gross ||
+            !raw.test(quote.feeAmount) ||
+            !raw.test(quote.outputAmount) ||
+            BigInt(quote.feeAmount) >= BigInt(gross) ||
+            BigInt(quote.outputAmount) !== BigInt(gross) - BigInt(quote.feeAmount) ||
+            parseAmount(quote.feeFormatted, symbol, source).toString() !== quote.feeAmount ||
+            parseAmount(quote.outputFormatted, symbol, source).toString() !== quote.outputAmount ||
+            parseAmount(quote.inputFormatted, symbol, source).toString() !== gross
+          )
+            throw new Error('LEGACY_QUOTE_BINDING');
+          if (!stopped) setSnapshot({ key, quote, expiresAt: Date.now() + 30000 });
+        } catch {
+          if (!stopped) setSnapshot({ key, error: 'Fee unavailable' });
         }
-      }
-    }, DEBOUNCE_MS);
-
-    return cleanup;
-  }, [amount, token, direction, cleanup]);
-
-  return { feeQuote, isLoading, error };
+      },
+      direction === 'SEPOLIA_TO_GOLIATH' ? 0 : 300
+    );
+    return () => {
+      stopped = true;
+      clearTimeout(timer);
+    };
+  }, [amount, direction, enabled, key, revision, token]);
+  useEffect(() => {
+    if (!snapshot.quote) return;
+    const timer = setTimeout(
+      () => setSnapshot((current) => (current === snapshot ? { key: snapshot.key, error: 'Quote expired' } : current)),
+      Math.max(0, (snapshot.expiresAt ?? 0) - Date.now())
+    );
+    return () => clearTimeout(timer);
+  }, [snapshot]);
+  const current = snapshot.key === key ? snapshot : undefined;
+  return {
+    feeQuote: current?.quote ?? null,
+    isLoading: enabled && !!amount && !current,
+    error: current?.error ?? null,
+    isStale: current?.error === 'Quote expired',
+    refetch,
+    expiresAt: current?.expiresAt,
+  };
 }

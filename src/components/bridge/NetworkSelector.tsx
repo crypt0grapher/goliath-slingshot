@@ -139,6 +139,7 @@ interface NetworkSelectorProps {
   onSelect: (network: BridgeNetwork) => void;
   label: 'From' | 'To';
   disabled?: boolean;
+  allowedNetworks?: readonly BridgeNetwork[];
   // Routes to separate bridge lanes; these are never values of the legacy BridgeNetwork store.
   navigationOptions?: readonly { label: string; to: string; description: string }[];
 }
@@ -149,6 +150,7 @@ export default function NetworkSelector({
   label,
   disabled = false,
   navigationOptions = [],
+  allowedNetworks = [BridgeNetwork.SEPOLIA, BridgeNetwork.GOLIATH],
 }: NetworkSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -214,9 +216,12 @@ export default function NetworkSelector({
   }, []);
 
   return (
-    <DropdownContainer ref={dropdownRef} onBlur={(event) => {
-      if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setIsOpen(false);
-    }}>
+    <DropdownContainer
+      ref={dropdownRef}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setIsOpen(false);
+      }}
+    >
       <SelectorContainer
         ref={triggerRef}
         type="button"
@@ -246,7 +251,7 @@ export default function NetworkSelector({
 
       {isOpen && !disabled && (
         <DropdownMenu role="menu" aria-label={`${label} network choices`} onKeyDown={handleMenuKey}>
-          {Object.values(BridgeNetwork).map((network) => {
+          {allowedNetworks.map((network) => {
             const netMetadata = NETWORK_METADATA[network];
             return (
               <DropdownItem

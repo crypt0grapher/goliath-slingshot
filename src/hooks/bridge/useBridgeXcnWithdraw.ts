@@ -1,3 +1,5 @@
+import type { WalletIntentGuard } from './walletIntent';
+import { beforeWalletPrompt, walletLibraryForIntent, isStaleBridgeIntent } from './walletIntent';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import i18n from 'i18next';
@@ -17,7 +19,7 @@ const TX_WAIT_TIMEOUT_MS = 5 * 60 * 1000;
 const BIND_RETRY_MAX = 5;
 const BIND_RETRY_BASE_DELAY_MS = 2000;
 
-const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const waitForTxWithTimeout = async (
   tx: ethers.providers.TransactionResponse,
@@ -26,10 +28,7 @@ const waitForTxWithTimeout = async (
   return Promise.race([
     tx.wait(),
     new Promise<never>((_, reject) =>
-      setTimeout(
-        () => reject(new Error(i18n.t('errorTransactionTakingLong'))),
-        timeoutMs
-      )
+      setTimeout(() => reject(new Error(i18n.t('errorTransactionTakingLong'))), timeoutMs)
     ),
   ]);
 };
@@ -53,25 +52,36 @@ const EIP712_TYPES = {
 };
 
 interface UseXcnWithdrawReturn {
-  withdraw: (token: BridgeTokenSymbol, amountHuman: string, recipient: string) => Promise<string>;
+  withdraw: (
+    token: BridgeTokenSymbol,
+    amountHuman: string,
+    recipient: string,
+    guard?: WalletIntentGuard
+  ) => Promise<string>;
   isLoading: boolean;
   error: string | null;
 }
 
 export function useBridgeXcnWithdraw(): UseXcnWithdrawReturn {
   const { t } = useTranslation();
-  const { account, library, chainId } = useActiveWeb3React();
+  const { account, library } = useActiveWeb3React();
   const { isReady: providerReady, recheckProvider } = useProviderReady();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const withdraw = useCallback(
-    async (token: BridgeTokenSymbol, amountHuman: string, recipient: string): Promise<string> => {
+    async (
+      token: BridgeTokenSymbol,
+      amountHuman: string,
+      recipient: string,
+      guard?: WalletIntentGuard
+    ): Promise<string> => {
       if (!account || !library) {
         throw new Error(t('errorWalletNotConnected'));
       }
 
+      guard?.assertCurrent();
       setIsLoading(true);
       setError(null);
       dispatch(bridgeActions.setSubmitting(true));
@@ -80,11 +90,13 @@ export function useBridgeXcnWithdraw(): UseXcnWithdrawReturn {
         if (!providerReady) {
           recheckProvider();
           await wait(300);
+          guard?.assertCurrent();
         }
 
         // 0. Capability gate: verify backend supports XCN withdraw routes
         const apiClientCheck = new BridgeApiClient(bridgeConfig.statusApiBaseUrl);
         const xcnCapable = await apiClientCheck.checkXcnWithdrawCapability();
+        guard?.assertCurrent();
         if (!xcnCapable) {
           throw new Error(
             t('errorXcnWithdrawUnavailable') ||
@@ -93,7 +105,7 @@ export function useBridgeXcnWithdraw(): UseXcnWithdrawReturn {
         }
 
         const amountAtomic = parseAmount(amountHuman, token, BridgeNetwork.GOLIATH);
-        const signer = library.getSigner(account);
+        const signer = walletLibraryForIntent(library, guard).getSigner(account);
 
         // 1. Build and sign EIP-712 intent
         const idempotencyKey = uuidv4();
@@ -111,13 +123,11 @@ export function useBridgeXcnWithdraw(): UseXcnWithdrawReturn {
 
         let signature: string;
         try {
-          signature = await (signer as any)._signTypedData(
-            EIP712_DOMAIN,
-            EIP712_TYPES,
-            message
-          );
+          await beforeWalletPrompt(guard, library);
+          guard?.assertCurrent();
+          signature = await (signer as any)._signTypedData(EIP712_DOMAIN, EIP712_TYPES, message);
         } catch (err: any) {
-          if (err?.code === 4001 || err?.code === 'ACTION_REJECTED') {
+          if (isStaleBridgeIntent(err) || err?.code === 4001 || err?.code === 'ACTION_REJECTED') {
             throw err;
           }
           throw new Error(t('errorSignatureFailed') || 'Failed to sign intent');
@@ -143,12 +153,15 @@ export function useBridgeXcnWithdraw(): UseXcnWithdrawReturn {
         // 3. Send native XCN to relayer wallet
         let tx: ethers.providers.TransactionResponse;
         try {
+          await beforeWalletPrompt(guard, library);
+          guard?.assertCurrent();
           tx = await signer.sendTransaction({
             to: intentResponse.relayerWalletAddress,
             value: amountAtomic,
+            chainId: 8901,
           });
         } catch (err: any) {
-          if (err?.code === 4001 || err?.code === 'ACTION_REJECTED') {
+          if (isStaleBridgeIntent(err) || err?.code === 4001 || err?.code === 'ACTION_REJECTED') {
             throw err;
           }
           throw new Error(err?.message || 'Failed to send XCN to bridge');
@@ -206,8 +219,8 @@ export function useBridgeXcnWithdraw(): UseXcnWithdrawReturn {
                     errorMessage:
                       t('errorBindOriginFailed') ||
                       'Failed to register your transaction with the bridge after multiple attempts. ' +
-                      'Your funds are safe. Please contact support with your transaction hash: ' +
-                      tx.hash,
+                        'Your funds are safe. Please contact support with your transaction hash: ' +
+                        tx.hash,
                   })
                 );
               }
@@ -264,7 +277,7 @@ export function useBridgeXcnWithdraw(): UseXcnWithdrawReturn {
         dispatch(bridgeActions.setSubmitting(false));
       }
     },
-    [t, account, library, chainId, dispatch, providerReady, recheckProvider]
+    [t, account, library, dispatch, providerReady, recheckProvider]
   );
 
   return { withdraw, isLoading, error };
