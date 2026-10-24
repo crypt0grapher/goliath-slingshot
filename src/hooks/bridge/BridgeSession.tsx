@@ -394,7 +394,11 @@ function useSession(rhEnabled: boolean, rhAdapter?: BridgeAdapter) {
     notice:
       notice ||
       rh?.notice ||
-      (route.engine === 'RH' ? 'Robinhood bridge availability is being checked.' : legacy.validation.errorMessage?.key),
+      (route.engine === 'RH'
+        ? !rh || [rh.fee, rh.net, rh.perTxMax, rh.remainingCapacity].some((o) => o.status !== 'ready')
+          ? 'Robinhood bridge availability is being checked.'
+          : undefined
+        : legacy.validation.errorMessage?.key),
     connect,
     approve,
     confirm,

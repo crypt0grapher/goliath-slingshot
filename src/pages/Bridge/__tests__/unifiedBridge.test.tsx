@@ -201,6 +201,24 @@ test('shared card distinguishes the two capacity rows, shows connected-wallet ba
   expect(store.getState().bridge.form.inputAmount).toBe('0.7');
   expect(fixture.adapter.confirm).not.toHaveBeenCalled();
 });
+test.each(['ready', 'stale', 'error'])('RH availability notice reflects %s observations', async (state) => {
+  const fixture = rhFixture();
+  const errorNotice = 'Bridge observations are unavailable or stale. Live actions stay disabled.';
+  if (state === 'stale') {
+    fixture.adapter.remainingCapacity = { status: 'stale' };
+    fixture.adapter.canConfirm = false;
+  } else if (state === 'error') {
+    fixture.adapter.notice = errorNotice;
+    fixture.adapter.canConfirm = false;
+  }
+  await mount(fixture);
+  expect(mockSession.notice).toBe(
+    state === 'ready' ? undefined : state === 'error' ? errorNotice : 'Robinhood bridge availability is being checked.'
+  );
+  if (state === 'ready') expect(container.textContent).not.toContain('Robinhood bridge availability is being checked.');
+  else expect(mockSession.canConfirm).toBe(false);
+  expect(fixture.adapter.confirm).not.toHaveBeenCalled();
+});
 test('changing the selected asset invalidates a captured confirmation and clears old observations', async () => {
   const fixture = rhFixture();
   const store = await mount(fixture);
