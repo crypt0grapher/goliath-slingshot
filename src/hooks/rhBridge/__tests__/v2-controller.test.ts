@@ -203,6 +203,7 @@ test('independent chain/code qualification runs together and capacity is fetched
   };
   const first = c.refreshLane(),
     second = c.refreshLane();
+  expect(c.state.v2Loading).toBe(true);
   for (let i = 0; i < 100; i++) await Promise.resolve();
   expect(started.filter((x) => x === 'getChainId')).toHaveLength(2);
   expect(started.filter((x) => x === 'genesisHash')).toHaveLength(2);
@@ -210,6 +211,7 @@ test('independent chain/code qualification runs together and capacity is fetched
   expect(reads).not.toContain('capacity');
   hold.resolve();
   await Promise.all([first, second]);
+  expect(c.state.v2Loading).toBe(false);
   expect(reads.filter((x) => x === 'assets')).toHaveLength(1);
   expect(reads.filter((x) => x === 'capacity')).toHaveLength(1);
   expect(c.view().canBridge).toBe(true);
@@ -251,6 +253,34 @@ test.each(['limits', 'effectiveState', 'health', 'capacity'])(
     expect(c.view().canApprove).toBe(false);
   }
 );
+test('an older context finishing cannot clear the current loading state or restore its observations', async () => {
+  const f = v2Fixture(),
+    c = new RhLaneController(f.deps),
+    oldRead = deferred<void>(),
+    currentRead = deferred<void>(),
+    read = f.deps.v2!.api.read;
+  let assetsReads = 0;
+  f.deps.v2!.api = {
+    read: async (request) => {
+      if (request.kind === 'assets') await (++assetsReads === 1 ? oldRead.promise : currentRead.promise);
+      return read(request);
+    },
+  };
+  c.setSelection('RH_ETH', 'RH_TO_ONYX', '0.0001', '');
+  const old = c.refreshLane();
+  c.setSelection('TSLA', 'RH_TO_ONYX', '0.05', '');
+  const current = c.refreshLane();
+  expect(c.state.v2Loading).toBe(true);
+  oldRead.resolve();
+  await old;
+  expect(c.state.v2Loading).toBe(true);
+  expect(c.state.v2).toBeNull();
+  currentRead.resolve();
+  await current;
+  expect(c.state.v2Loading).toBe(false);
+  expect(c.state.v2?.profile.descriptor.binding.assetId).toBe('TSLA');
+  expect(f.state.sends).toHaveLength(0);
+});
 test('v2 history appends preserve exact untouched v1/unknown lexical row bytes', () => {
   const f = v2Fixture(),
     old = ' { "unknown" : ["keep,\\"bytes", {"nested":true}] } ';

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ButtonPrimary } from '../../components/Button';
 import { AutoColumn } from '../../components/Column';
 import { NetworkSelector, BridgeAmountInput, BridgeSummary, DirectionSwapButton } from '../../components/bridge';
-import { observationText, receiveAmountText } from '../../components/bridge/BridgeSummary';
+import { observationText, ObservationValue } from '../../components/bridge/BridgeSummary';
 import { bridgeAssetDisplayName } from '../../components/bridge/presentation';
 import { BridgeSessionProvider, useOptionalBridgeSession, useBridgeSession } from '../../hooks/bridge/BridgeSession';
 import { bridgeActions } from '../../state/bridge/reducer';
@@ -77,7 +77,9 @@ function StandardCard() {
           </NetworkRow>
           <OutputContainer>
             <OutputLabel>{t('youWillReceiveBridge')}</OutputLabel>
-            <OutputAmount>{receiveAmountText(s.net, s.asset.symbol, form.inputAmount)}</OutputAmount>
+            <OutputAmount>
+              <ObservationValue value={s.net} symbol={s.asset.symbol} inputAmount={form.inputAmount} />
+            </OutputAmount>
           </OutputContainer>
         </FormContainer>
         {s.recipientEditable && (
@@ -105,11 +107,11 @@ function StandardCard() {
           <OutputLabel>{t('bridgeBalances', { defaultValue: 'Balances' })}</OutputLabel>
           <OutputBalance>
             {s.asset.symbol} · {NETWORK_METADATA[form.originNetwork].displayName}:{' '}
-            {observationText(s.sourceBalance, s.asset.symbol)}
+            <ObservationValue value={s.sourceBalance} symbol={s.asset.symbol} />
           </OutputBalance>
           <OutputBalance>
             {s.asset.symbol} · {NETWORK_METADATA[form.destinationNetwork].displayName}:{' '}
-            {observationText(s.destinationBalance, s.asset.symbol)}
+            <ObservationValue value={s.destinationBalance} symbol={s.asset.symbol} />
           </OutputBalance>
           {s.asset.symbol === 'ETH' && <OutputBalance>{bridgeAssetDisplayName(s.asset)}</OutputBalance>}
         </OutputContainer>

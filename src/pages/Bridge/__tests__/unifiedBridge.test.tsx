@@ -14,6 +14,7 @@ import { BridgeNetwork } from '../../../constants/bridge/networks';
 import type { BridgeAdapter } from '../../../hooks/bridge/BridgeSession';
 import { selectionKey, observed } from '../../../hooks/bridge/BridgeSession';
 import type { BridgeSelection } from '../../../constants/bridge/registry';
+import { formatBridgeEta } from '../../../components/bridge/presentation';
 
 const mockDepositWalletPrompt = jest.fn(async () => ({
   hash: '0x' + 'a'.repeat(64),
@@ -221,11 +222,9 @@ test.each(['ready', 'stale', 'error'])('RH availability notice reflects %s obser
     fixture.adapter.canConfirm = false;
   }
   await mount(fixture);
-  expect(mockSession.notice).toBe(
-    state === 'ready' ? undefined : state === 'error' ? errorNotice : 'Robinhood bridge availability is being checked.'
-  );
-  if (state === 'ready') expect(container.textContent).not.toContain('Robinhood bridge availability is being checked.');
-  else expect(mockSession.canConfirm).toBe(false);
+  expect(mockSession.notice).toBe(state === 'error' ? errorNotice : undefined);
+  expect(container.textContent).not.toContain('Robinhood bridge availability is being checked.');
+  if (state !== 'ready') expect(mockSession.canConfirm).toBe(false);
   expect(fixture.adapter.confirm).not.toHaveBeenCalled();
 });
 test.each((['RH_ETH', 'TSLA'] as const).flatMap((asset) => ['', '0', '0.0'].map((amount) => ({ asset, amount }))))(
@@ -356,7 +355,7 @@ test.each(['0.01', '-1', 'abc', '.', '0..0', '1e-999'])(
     expect(receiveOutput()).toBe('Not available');
     expect(receiveSummary()).toBe('Not available');
     expect(mockSession.canConfirm).toBe(false);
-    expect(mockSession.notice).toBe('Robinhood bridge availability is being checked.');
+    expect(mockSession.notice).toBeUndefined();
     expect(fixture.adapter.confirm).not.toHaveBeenCalled();
   }
 );
@@ -436,6 +435,109 @@ test('confirmation visibly retains the exact recipient while the main summary av
   expect(container.querySelector('input[aria-label="Bridge recipient"]')).not.toBeNull();
   expect(fixture.adapter.confirm).not.toHaveBeenCalled();
 });
+test.each(['success', 'failure'])(
+  'real RH checks show loading lines until %s, keeping failures explicit',
+  async (outcome) => {
+    jest.useFakeTimers();
+    const { v2Fixture } = require('../../../services/rhBridge/__fixtures__/v2');
+    const fixture = v2Fixture();
+    jest.spyOn(Date, 'now').mockImplementation(() => fixture.state.now);
+    mockWallet = {
+      account: fixture.state.account,
+      chainId: 46630,
+      active: true,
+      connector: require('../../../connectors').injected,
+      library: { provider: fixture.provider },
+    };
+    const pending = deferred<void>();
+    const read = fixture.deps.v2.api.read;
+    fixture.deps.v2.api = {
+      read: async (request: any) => {
+        if (request.kind === 'assets') {
+          await pending.promise;
+          if (outcome === 'failure') throw new Error('Controlled readonly failure');
+        }
+        const response = await read(request);
+        if (request.kind !== 'effectiveState') return response;
+        const body = JSON.parse(JSON.stringify(response.body));
+        body.etaSeconds.RH_TO_ONYX = 1148;
+        return { ...response, body };
+      },
+    };
+    await mount({
+      selection: {
+        originNetwork: BridgeNetwork.ROBINHOOD,
+        destinationNetwork: BridgeNetwork.GOLIATH,
+        selectedAssetKey: 'RH_ETH',
+        inputAmount: '0.0001',
+        recipient: null,
+      },
+      rhDeps: fixture.deps,
+    });
+    await act(async () => {
+      jest.advanceTimersByTime(300);
+    });
+    const summary = () => container.querySelector('[aria-label="Bridge summary"]')!;
+    expect(summary().querySelectorAll('[aria-busy="true"]')).toHaveLength(5);
+    expect(summary().textContent).not.toContain('Not available');
+    expect(container.textContent).not.toContain('Robinhood bridge availability is being checked.');
+    expect(mockSession.canConfirm).toBe(false);
+    expect(mockSession.canApprove).toBe(false);
+    await act(async () => {
+      pending.resolve();
+      for (let i = 0; i < 150; i++) await Promise.resolve();
+    });
+    expect(summary().querySelectorAll('[aria-busy="true"]')).toHaveLength(0);
+    if (outcome === 'success') {
+      expect(summary().textContent).toContain('~19 minutes 8 seconds');
+      expect(summary().textContent).not.toContain('1148 seconds');
+      expect(mockSession.canConfirm).toBe(true);
+      expect(mockSession.notice).toBeUndefined();
+    } else {
+      expect(summary().textContent).toContain('Not available');
+      expect(mockSession.notice).toBe('Bridge observations are unavailable or stale. Live actions stay disabled.');
+      expect(mockSession.canConfirm).toBe(false);
+      expect(mockSession.canApprove).toBe(false);
+    }
+    expect(fixture.state.sends).toHaveLength(0);
+  }
+);
+test.each([
+  [0, '~0 seconds'],
+  [1, '~1 second'],
+  [59, '~59 seconds'],
+  [60, '~1 minute'],
+  [61, '~1 minute 1 second'],
+  [120, '~2 minutes'],
+  [1148, '~19 minutes 8 seconds'],
+  [3601, '~60 minutes 1 second'],
+  [null, undefined],
+  [-1, undefined],
+  [Infinity, undefined],
+])('ETA %s is presented as %s', (seconds, expected) => {
+  expect(formatBridgeEta(seconds as number | null)).toBe(expected);
+});
+test.each(['', '0', '0.0'])(
+  'zero receive remains visible while the other fields load (amount "%s")',
+  async (amount) => {
+    const fixture = rhFixture();
+    fixture.selection.inputAmount = amount;
+    fixture.selection.selectedAssetKey = 'RH_ETH';
+    fixture.adapter.binding = { ...fixture.adapter.binding, assetId: 'RH_ETH' };
+    fixture.adapter.selectionKey = selectionKey(fixture.selection, mockWallet.account, mockWallet.chainId);
+    for (const field of ['fee', 'net', 'eta', 'perTxMax', 'remainingCapacity'] as const)
+      fixture.adapter[field] = { status: 'loading' };
+    await mount(fixture);
+    expect(receiveOutput()).toBe('0.0 ETH');
+    expect(receiveSummary()).toBe('0.0 ETH');
+    expect(
+      container.querySelector('[aria-label="Bridge summary"]')!.querySelectorAll('[aria-busy="true"]')
+    ).toHaveLength(4);
+    expect(mockSession.notice).toBeUndefined();
+    expect(mockSession.canConfirm).toBe(false);
+    expect(fixture.adapter.confirm).not.toHaveBeenCalled();
+  }
+);
 test('real RH controller keeps expired same-context values visibly stale across failed refreshes without enabling actions', async () => {
   jest.useFakeTimers();
   const { v2Fixture } = require('../../../services/rhBridge/__fixtures__/v2');

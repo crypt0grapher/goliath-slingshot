@@ -16,6 +16,7 @@ import { RhLaneController } from './controller';
 import type { ControllerDeps } from './controller';
 import type { BridgeAdapter, BridgeObservation } from '../bridge/BridgeSession';
 import { selectionKey } from '../bridge/BridgeSession';
+import { formatBridgeEta } from '../../components/bridge/presentation';
 function browserDeps(): ControllerDeps {
   let storage = null;
   try {
@@ -171,8 +172,11 @@ export function useUnifiedRhBridge(selection: BridgeSelection, enabled: boolean,
     const x = snapshot.v2 ?? snapshot.v2Display,
       valid = x && x.profile.descriptor.binding.profileSha256 === profile.descriptor.binding.profileSha256;
     const fresh = !!valid && x === snapshot.v2 && (override?.now ?? Date.now)() < x!.validUntil;
+    const checking = snapshot.v2Loading || (!snapshot.v2 && !snapshot.notice);
     const observation = (value: string | undefined): BridgeObservation =>
-      !valid
+      checking && (!valid || value === undefined)
+        ? { status: 'loading' }
+        : !valid
         ? { status: 'unavailable' }
         : !fresh
         ? { status: 'stale', value }
@@ -188,7 +192,7 @@ export function useUnifiedRhBridge(selection: BridgeSelection, enabled: boolean,
       binding: profile.descriptor.binding,
       fee: observation(display(quote?.fee)),
       net: observation(display(quote?.net)),
-      eta: observation(eta === null || eta === undefined ? undefined : `~${eta} seconds`),
+      eta: observation(formatBridgeEta(eta)),
       perTxMax: observation(display(x?.capacity.perTxMax)),
       remainingCapacity: observation(display(x?.capacity.remainingCapacity)),
       sourceBalance: account ? observation(display(x?.sourceBalance)) : { status: 'disconnected' },

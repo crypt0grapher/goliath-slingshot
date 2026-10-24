@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import React from 'react';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { useTranslation } from 'react-i18next';
 import type { BridgeObservation } from '../../hooks/bridge/BridgeSession';
 import { isBlankOrZeroAmount } from './presentation';
@@ -26,6 +26,21 @@ const Row = styled.div`
     color: ${({ theme }) => theme.text2};
   }
 `;
+const pulse = keyframes`
+  50% { opacity: 0.4; }
+`;
+const LoadingLine = styled.span`
+  display: inline-block;
+  width: 88px;
+  height: 12px;
+  vertical-align: middle;
+  border-radius: 4px;
+  background-color: ${({ theme }) => theme.bg3};
+  animation: ${pulse} 1.4s ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
+`;
 export function observationText(value: BridgeObservation, symbol = ''): string {
   if (value.status === 'ready' && value.value !== undefined) return value.value + (symbol ? ` ${symbol}` : '');
   if (value.status === 'stale' && value.value !== undefined)
@@ -40,6 +55,22 @@ export function observationText(value: BridgeObservation, symbol = ''): string {
 }
 export function receiveAmountText(value: BridgeObservation, symbol: string, inputAmount?: string): string {
   return isBlankOrZeroAmount(inputAmount) ? `0.0 ${symbol}` : observationText(value, symbol);
+}
+export function ObservationValue({
+  value,
+  symbol = '',
+  inputAmount,
+}: {
+  value: BridgeObservation;
+  symbol?: string;
+  inputAmount?: string;
+}) {
+  if (isBlankOrZeroAmount(inputAmount)) return <>{`0.0 ${symbol}`}</>;
+  return value.status === 'loading' ? (
+    <LoadingLine role="status" aria-label="Loading bridge detail" aria-busy="true" />
+  ) : (
+    <>{observationText(value, symbol)}</>
+  );
 }
 interface BridgeSummaryProps {
   symbol: string;
@@ -64,16 +95,26 @@ export default function BridgeSummary({
   showRecipient = false,
 }: BridgeSummaryProps) {
   const { t } = useTranslation();
-  const rows: Array<[string, string]> = [
+  const rows: Array<[string, React.ReactNode]> = [
     [
       t('bridgeFee'),
-      fee.status === 'ready' && /^(0|0\.0+)$/.test(fee.value || '') ? t('free') : observationText(fee, symbol),
+      fee.status === 'ready' && /^(0|0\.0+)$/.test(fee.value || '') ? (
+        t('free')
+      ) : (
+        <ObservationValue value={fee} symbol={symbol} />
+      ),
     ],
-    [t('bridgeYouReceive'), receiveAmountText(net, symbol, inputAmount)],
-    [t('estimatedTime'), observationText(eta)],
-    ...(showRecipient ? ([[t('recipient'), recipient || 'Connect wallet']] as Array<[string, string]>) : []),
-    [t('bridgePerTransactionMax', { defaultValue: 'Per-transaction max' }), observationText(perTxMax, symbol)],
-    [t('bridgeRemainingCapacity', { defaultValue: 'Remaining capacity' }), observationText(remainingCapacity, symbol)],
+    [t('bridgeYouReceive'), <ObservationValue value={net} symbol={symbol} inputAmount={inputAmount} />],
+    [t('estimatedTime'), <ObservationValue value={eta} />],
+    ...(showRecipient ? ([[t('recipient'), recipient || 'Connect wallet']] as Array<[string, React.ReactNode]>) : []),
+    [
+      t('bridgePerTransactionMax', { defaultValue: 'Per-transaction max' }),
+      <ObservationValue value={perTxMax} symbol={symbol} />,
+    ],
+    [
+      t('bridgeRemainingCapacity', { defaultValue: 'Remaining capacity' }),
+      <ObservationValue value={remainingCapacity} symbol={symbol} />,
+    ],
   ];
   return (
     <SummaryContainer aria-label="Bridge summary">

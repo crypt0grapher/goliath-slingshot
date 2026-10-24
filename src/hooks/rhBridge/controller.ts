@@ -94,7 +94,7 @@ export class RhLaneController {
       history: deps.storage ? EMPTY_HISTORY : { status: 'INVALID', records: [], invalidRows: 0 },
       busy: null,
       notice: deps.storage ? null : 'Browser storage is unavailable, so live actions stay disabled.',
-      ...(deps.v2 ? { v2: null, v2Display: null } : {}),
+      ...(deps.v2 ? { v2: null, v2Display: null, v2Loading: false } : {}),
     };
     if (deps.storage) {
       // A prompt that was open before this page load can no longer be observed.
@@ -144,7 +144,7 @@ export class RhLaneController {
     ) {
       // Any context change cancels whatever action captured the previous context.
       this.generation++;
-      this.set({ wallet, chain: {}, ...(this.deps.v2 ? { v2: null, v2Display: null } : {}) });
+      this.set({ wallet, chain: {}, ...(this.deps.v2 ? { v2: null, v2Display: null, v2Loading: false } : {}) });
     } else if (previous.hasProvider !== wallet.hasProvider) {
       this.set({ wallet });
     }
@@ -188,6 +188,7 @@ export class RhLaneController {
       recipientText,
       v2: null,
       v2Display: null,
+      v2Loading: false,
       chain: {},
       quote: {},
       notice: profile || assetId === null ? null : 'Deployment pins are not configured. Live actions stay disabled.',
@@ -195,7 +196,7 @@ export class RhLaneController {
   }
   invalidateContext(): void {
     this.generation++;
-    if (this.deps.v2) this.set({ v2: null, v2Display: null });
+    if (this.deps.v2) this.set({ v2: null, v2Display: null, v2Loading: false });
   }
 
   // ----------------------------------------------------------------- reads
@@ -206,6 +207,7 @@ export class RhLaneController {
         profile = this.selectedAsset ? this.deps.v2.catalog.current(this.selectedAsset) : null;
       if (!profile) return;
       if (this.v2Reading?.generation === generation) return this.v2Reading.promise;
+      this.set({ v2Loading: true });
       const promise = (async () => {
         try {
           const v2 = await readProfileSnapshot(
@@ -227,6 +229,7 @@ export class RhLaneController {
         await promise;
       } finally {
         if (this.v2Reading?.promise === promise) this.v2Reading = null;
+        if (generation === this.generation) this.set({ v2Loading: false });
       }
       return;
     }
