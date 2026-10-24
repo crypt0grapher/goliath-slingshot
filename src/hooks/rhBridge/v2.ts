@@ -52,73 +52,88 @@ export async function readProfileSnapshot(
   } catch {
     /* Invalid recipient keeps actions closed. */
   }
-  const [assets, limits, state, capacity, health] = await Promise.all([
-    readV2<V2.Assets>(api, { kind: 'assets' }, 'Assets'),
-    readV2<V2.Limits>(api, { kind: 'limits', binding: b }, 'Limits'),
-    readV2<V2.EffectiveState>(
-      api,
-      { kind: 'effectiveState', binding: b, sender: s.wallet.account ?? undefined, recipient },
-      'EffectiveState'
-    ),
-    readV2<V2.Capacity>(api, { kind: 'capacity', binding: b, direction }, 'Capacity'),
-    readV2<V2.Health>(api, { kind: 'health' }, 'Health'),
-  ]);
+  const assets = await readV2<V2.Assets>(api, { kind: 'assets' }, 'Assets');
   bindRegistry(assets, catalog);
-  if (![limits, state, capacity].every((x) => sameBinding(x.binding, b)) || capacity.direction !== direction)
-    throw new Error('RH_V2_BINDING');
-  const pinned = profileLimits(profile);
-  for (const key of ['deposit', 'exit', 'caps', 'fee'] as const)
-    for (const [name, value] of Object.entries(pinned[key]))
-      if ((limits[key] as any)[name] !== value) throw new Error('RH_PARAMETERS_MISMATCH');
-  let validUntil = Math.min(
-    freshObservation(limits.observation, 30000, now()),
-    freshObservation(state.observation, 30000, now()),
-    freshObservation(capacity.observation, 15000, now())
-  );
-  const healthAt = timeMs(health.observedAt);
-  if (
-    healthAt > now() + 5000 ||
-    now() - healthAt > 30000 ||
-    !health.assets.some((x) => sameBinding(x.binding, b) && x.status === 'ok' && x.consumersReady)
-  )
-    throw new Error('RH_V2_HEALTH');
-  validUntil = Math.min(validUntil, healthAt + 30000);
-  const result: V2Snapshot = { profile, limits, state, capacity, health, validUntil };
-  if (!s.wallet.account) return result;
+  const observations = async () => {
+    const [limits, state, capacity, health] = await Promise.all([
+      readV2<V2.Limits>(api, { kind: 'limits', binding: b }, 'Limits'),
+      readV2<V2.EffectiveState>(
+        api,
+        { kind: 'effectiveState', binding: b, sender: s.wallet.account ?? undefined, recipient },
+        'EffectiveState'
+      ),
+      readV2<V2.Capacity>(api, { kind: 'capacity', binding: b, direction }, 'Capacity'),
+      readV2<V2.Health>(api, { kind: 'health' }, 'Health'),
+    ]);
+    if (![limits, state, capacity].every((x) => sameBinding(x.binding, b)) || capacity.direction !== direction)
+      throw new Error('RH_V2_BINDING');
+    const pinned = profileLimits(profile);
+    for (const key of ['deposit', 'exit', 'caps', 'fee'] as const)
+      for (const [name, value] of Object.entries(pinned[key]))
+        if ((limits[key] as any)[name] !== value) throw new Error('RH_PARAMETERS_MISMATCH');
+    let validUntil = Math.min(
+      freshObservation(limits.observation, 30000, now()),
+      freshObservation(state.observation, 30000, now()),
+      freshObservation(capacity.observation, 15000, now())
+    );
+    const healthAt = timeMs(health.observedAt);
+    if (
+      healthAt > now() + 5000 ||
+      now() - healthAt > 30000 ||
+      !health.assets.some((x) => sameBinding(x.binding, b) && x.status === 'ok' && x.consumersReady)
+    )
+      throw new Error('RH_V2_HEALTH');
+    validUntil = Math.min(validUntil, healthAt + 30000);
+    if (now() >= validUntil) throw new Error('RH_V2_STALE');
+    return { limits, state, capacity, health, validUntil };
+  };
+  if (!s.wallet.account) {
+    return { profile, ...(await observations()) };
+  }
   const account = s.wallet.account;
   if (!chains.getCode || !chains.getChainId || !chains.genesisHash) throw new Error('RH_CODE_UNAVAILABLE');
-  for (const id of [46630, 8901] as const)
-    if ((await chains.getChainId(id)) !== id || (await chains.genesisHash(id)) !== GENESIS[id])
-      throw new Error('RH_CHAIN_MISMATCH');
   const contracts = [a.escrow, a.minter, a.wrapper, a.implementation];
-  for (const c of contracts)
-    if (keccak256(await chains.getCode(c.chainId, c.address)) !== c.runtimeCodeKeccak256)
-      throw new Error('RH_CODE_MISMATCH');
-  if (a.kind === 'ERC20' && keccak256(await chains.getCode(46630, a.token!)) !== a.tokenRuntimeCodeKeccak256)
-    throw new Error('RH_TOKEN_CODE_MISMATCH');
-  const [rhBalance, onyxBalance, nativeBalance] = await Promise.all([
-    a.kind === 'NATIVE' ? chains.getBalance(46630, account) : readTokenBalance(chains, 46630, a.token!, account),
-    readTokenBalance(chains, 8901, a.wrapper.address, account),
-    chains.getBalance(source, account),
+  const [identities, codes, tokenCode] = await Promise.all([
+    Promise.all(([46630, 8901] as const).map((id) => Promise.all([chains.getChainId!(id), chains.genesisHash!(id)]))),
+    Promise.all(contracts.map((c) => chains.getCode!(c.chainId, c.address))),
+    a.kind === 'ERC20' ? chains.getCode(46630, a.token!) : Promise.resolve(undefined),
   ]);
-  if (
-    (a.kind === 'ERC20' && (await readDecimals(chains, 46630, a.token!)) !== 18) ||
-    (await readDecimals(chains, 8901, a.wrapper.address)) !== 18
-  )
-    throw new Error('RH_DECIMALS_MISMATCH');
+  for (const [index, id] of ([46630, 8901] as const).entries())
+    if (identities[index][0] !== id || identities[index][1] !== GENESIS[id]) throw new Error('RH_CHAIN_MISMATCH');
+  for (const [index, c] of contracts.entries())
+    if (keccak256(codes[index]) !== c.runtimeCodeKeccak256) throw new Error('RH_CODE_MISMATCH');
+  if (a.kind === 'ERC20' && keccak256(tokenCode!) !== a.tokenRuntimeCodeKeccak256)
+    throw new Error('RH_TOKEN_CODE_MISMATCH');
+  const nativeDeposit = a.kind === 'NATIVE' && direction === 'RH_TO_ONYX';
+  const rhRead =
+    a.kind === 'NATIVE' ? chains.getBalance(46630, account) : readTokenBalance(chains, 46630, a.token!, account);
+  const [rhBalance, onyxBalance, nativeBalance, rhDecimals, wrapperDecimals, allowance] = await Promise.all([
+    rhRead,
+    readTokenBalance(chains, 8901, a.wrapper.address, account),
+    nativeDeposit ? rhRead : chains.getBalance(source, account),
+    a.kind === 'ERC20' ? readDecimals(chains, 46630, a.token!) : Promise.resolve(18),
+    readDecimals(chains, 8901, a.wrapper.address),
+    nativeDeposit
+      ? Promise.resolve(undefined)
+      : readAllowance(
+          chains,
+          source,
+          direction === 'RH_TO_ONYX' ? a.token! : a.wrapper.address,
+          account,
+          direction === 'RH_TO_ONYX' ? a.escrow.address : a.minter.address
+        ),
+  ]);
+  if (rhDecimals !== 18 || wrapperDecimals !== 18) throw new Error('RH_DECIMALS_MISMATCH');
+  // Dynamic observations arrive after independent RPC qualification, retaining every original expiry.
+  const { limits, state, capacity, health, validUntil } = await observations();
+  const result: V2Snapshot = { profile, limits, state, capacity, health, validUntil, allowance };
   result.sourceBalance = direction === 'RH_TO_ONYX' ? rhBalance : onyxBalance;
   result.destinationBalance = direction === 'RH_TO_ONYX' ? onyxBalance : rhBalance;
   result.nativeBalance = nativeBalance;
-  const nativeDeposit = a.kind === 'NATIVE' && direction === 'RH_TO_ONYX';
-  result.allowance = nativeDeposit
-    ? undefined
-    : await readAllowance(
-        chains,
-        source,
-        direction === 'RH_TO_ONYX' ? a.token! : a.wrapper.address,
-        account,
-        direction === 'RH_TO_ONYX' ? a.escrow.address : a.minter.address
-      );
+  const freshResult = () => {
+    if (now() >= result.validUntil) throw new Error('RH_V2_STALE');
+    return result;
+  };
   let gross: string | undefined;
   try {
     if (s.amountText) gross = parseUnits(s.amountText, 18);
@@ -147,7 +162,7 @@ export async function readProfileSnapshot(
           throw new Error('RH_FEE_MISMATCH');
       }
     } catch {
-      return result;
+      return freshResult();
     }
     result.quote = quote;
     result.gross = candidate;
@@ -183,7 +198,7 @@ export async function readProfileSnapshot(
           }
           result.maxRaw = max.toString();
         } else result.maxRaw = maximum.toString();
-        if (gross) reserve = await estimate(gross);
+        if (gross && nativeDeposit) reserve = await estimate(gross);
         result.gasReserve = reserve.toString();
       } catch {
         result.maxRaw = undefined;
@@ -191,8 +206,7 @@ export async function readProfileSnapshot(
       }
     }
   }
-  if (now() >= result.validUntil) throw new Error('RH_V2_STALE');
-  return result;
+  return freshResult();
 }
 export function deriveV2View(s: LaneSnapshot, lane: ReturnType<typeof profileLane>, now: number): LaneView {
   const x = s.v2,

@@ -266,7 +266,8 @@ test('actual App reviewed native pins cannot authorize actions against a differe
         fixture.state.requests.some((url: string) =>
           url.includes('assetId=RH_ETH&profileSha256=3dde968a2121f9b94482240df81492d91fdcefbc53727b1b0bbd9c9b7cb8bee2')
         )
-      ).toBe(true);
+      ).toBe(false);
+      expect(fixture.state.requests.every((url: string) => url.endsWith('/assets'))).toBe(true);
       expect(fixture.state.sends).toEqual([]);
     },
     () => {

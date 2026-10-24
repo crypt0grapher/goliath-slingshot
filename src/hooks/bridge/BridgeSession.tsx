@@ -17,6 +17,7 @@ import { useBridgeBurn } from './useBridgeBurn';
 import { useBridgeXcnWithdraw } from './useBridgeXcnWithdraw';
 import { useBridgeNetworkSwitch } from './useBridgeNetworkSwitch';
 import { getStaticEtaEstimate } from '../../utils/bridge/eta';
+import { isPositiveAmount, isValidAmountString } from '../../utils/bridge/amounts';
 import { BridgeSessionContext } from './BridgeSessionContext';
 import type { WalletIntentGuard, WalletActionOwner } from './walletIntent';
 import {
@@ -144,6 +145,9 @@ function useSession(rhEnabled: boolean, rhAdapter?: BridgeAdapter) {
     !/^0x0{40}$/.test(recipient) &&
     (recipientEditable || recipient.toLowerCase() === account?.toLowerCase());
   const walletMatches = !!account && chainId === NETWORK_METADATA[selection.originNetwork].chainId;
+  const quoteExpected =
+    selection.inputAmount !== '' &&
+    (!isValidAmountString(selection.inputAmount) || isPositiveAmount(selection.inputAmount));
   const balance = (value: string, loading: boolean, error: string | null): BridgeObservation =>
     !account
       ? { status: 'disconnected' }
@@ -395,7 +399,10 @@ function useSession(rhEnabled: boolean, rhAdapter?: BridgeAdapter) {
       notice ||
       rh?.notice ||
       (route.engine === 'RH'
-        ? !rh || [rh.fee, rh.net, rh.perTxMax, rh.remainingCapacity].some((o) => o.status !== 'ready')
+        ? !rh ||
+          [rh.perTxMax, rh.remainingCapacity, ...(quoteExpected ? [rh.fee, rh.net] : [])].some(
+            (o) => o.status !== 'ready'
+          )
           ? 'Robinhood bridge availability is being checked.'
           : undefined
         : legacy.validation.errorMessage?.key),

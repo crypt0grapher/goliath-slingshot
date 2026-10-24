@@ -110,11 +110,30 @@ export function useUnifiedRhBridge(selection: BridgeSelection, enabled: boolean,
   ]);
   useEffect(() => {
     let stopped = false,
-      timer: ReturnType<typeof setTimeout>;
+      timer: ReturnType<typeof setTimeout>,
+      failures = 0;
+    const now = override?.now ?? Date.now;
     const loop = async () => {
+      if (stopped) return;
+      const started = now();
       if (rh) await controller.refreshLane();
+      if (stopped) return;
+      const elapsed = Math.max(0, now() - started);
+      let delay = 10000;
+      if (rh) {
+        const current = controller.state.v2;
+        if (current && now() < current.validUntil) {
+          failures = 0;
+          const headroom = Math.max(2000, elapsed + 1000);
+          delay = Math.max(1000, 10000 - elapsed, Math.min(10000, current.validUntil - now() - headroom));
+        } else {
+          failures++;
+          delay = Math.min(60000, 10000 * Math.pow(2, failures - 1));
+        }
+      }
+      const nextReadAt = now() + delay;
       if (controller.hasOpenRecords()) await controller.trackOnce();
-      if (!stopped) timer = setTimeout(loop, 10000);
+      if (!stopped) timer = setTimeout(loop, Math.max(1000, nextReadAt - now()));
     };
     timer = setTimeout(loop, rh ? 300 : 0);
     return () => {
@@ -133,6 +152,7 @@ export function useUnifiedRhBridge(selection: BridgeSelection, enabled: boolean,
     chainId,
     provider,
     transitionEpoch,
+    override?.now,
   ]);
   useEffect(() => {
     const timer = setInterval(() => tick((x) => x + 1), 1000);

@@ -228,6 +228,26 @@ test.each(['ready', 'stale', 'error'])('RH availability notice reflects %s obser
   else expect(mockSession.canConfirm).toBe(false);
   expect(fixture.adapter.confirm).not.toHaveBeenCalled();
 });
+test.each((['RH_ETH', 'TSLA'] as const).flatMap((asset) => ['', '0', '0.0'].map((amount) => ({ asset, amount }))))(
+  '$asset amount "$amount" does not treat an intentionally absent amount quote as unavailable service',
+  async ({ asset, amount }) => {
+    const fixture = rhFixture();
+    fixture.selection.selectedAssetKey = asset;
+    fixture.selection.inputAmount = amount;
+    fixture.adapter.selectionKey = selectionKey(fixture.selection, mockWallet.account, mockWallet.chainId);
+    fixture.adapter.binding = { ...fixture.adapter.binding, assetId: asset };
+    fixture.adapter.sourceBalance = observed('0');
+    fixture.adapter.fee = { status: 'unavailable' };
+    fixture.adapter.net = { status: 'unavailable' };
+    await mount(fixture);
+    expect(mockSession.notice).toBeUndefined();
+    expect(mockSession.canConfirm).toBe(false);
+    expect(mockSession.canApprove).toBe(false);
+    expect(mockSession.fee.status).toBe('unavailable');
+    expect(mockSession.net.status).toBe('unavailable');
+    expect(fixture.adapter.confirm).not.toHaveBeenCalled();
+  }
+);
 test('changing the selected asset invalidates a captured confirmation and clears old observations', async () => {
   const fixture = rhFixture();
   const store = await mount(fixture);
@@ -336,6 +356,7 @@ test.each(['0.01', '-1', 'abc', '.', '0..0', '1e-999'])(
     expect(receiveOutput()).toBe('Not available');
     expect(receiveSummary()).toBe('Not available');
     expect(mockSession.canConfirm).toBe(false);
+    expect(mockSession.notice).toBe('Robinhood bridge availability is being checked.');
     expect(fixture.adapter.confirm).not.toHaveBeenCalled();
   }
 );
@@ -482,6 +503,200 @@ test('real RH controller keeps expired same-context values visibly stale across 
     await controller.refreshLane();
   });
   expect(receiveOutput()).toBe(expiredText);
+  expect(fixture.state.sends).toHaveLength(0);
+});
+test('healthy 15-second observations stay fresh through slow independent RPC reads and repeated polling', async () => {
+  jest.useFakeTimers();
+  const { v2Fixture } = require('../../../services/rhBridge/__fixtures__/v2');
+  const { RhLaneController } = require('../../../hooks/rhBridge/controller');
+  const fixture = v2Fixture();
+  jest.spyOn(Date, 'now').mockImplementation(() => fixture.state.now);
+  mockWallet = {
+    account: fixture.state.account,
+    chainId: 46630,
+    active: true,
+    connector: require('../../../connectors').injected,
+    library: { provider: fixture.provider },
+  };
+  for (const method of ['getChainId', 'genesisHash', 'getCode', 'getBalance', 'call', 'gasPrice', 'estimateGas']) {
+    const original = fixture.chains[method];
+    fixture.chains[method] = async (...args: any[]) => {
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      return original(...args);
+    };
+  }
+  let active = 0,
+    maxActive = 0;
+  const refresh = RhLaneController.prototype.refreshLane;
+  jest.spyOn(RhLaneController.prototype, 'refreshLane').mockImplementation(async function (this: any) {
+    active++;
+    maxActive = Math.max(maxActive, active);
+    try {
+      return await refresh.call(this);
+    } finally {
+      active--;
+    }
+  });
+  await mount({
+    selection: {
+      originNetwork: BridgeNetwork.ROBINHOOD,
+      destinationNetwork: BridgeNetwork.GOLIATH,
+      selectedAssetKey: 'RH_ETH',
+      inputAmount: '0.0001',
+      recipient: null,
+    },
+    rhDeps: fixture.deps,
+  });
+  let fresh = 0,
+    requestsAtWarmup = 0;
+  for (let step = 1; step <= 80; step++) {
+    await act(async () => {
+      fixture.state.now += 1000;
+      jest.advanceTimersByTime(1000);
+      for (let i = 0; i < 150; i++) await Promise.resolve();
+    });
+    if (step === 20) requestsAtWarmup = fixture.transport.mock.calls.length;
+    if (step > 20 && mockSession.net.status === 'ready') fresh++;
+  }
+  expect(fresh).toBe(60); // Healthy controlled path is continuously fresh; no TTL is changed.
+  expect(fixture.transport.mock.calls.length - requestsAtWarmup).toBeLessThanOrEqual(42);
+  expect(maxActive).toBe(1);
+  expect(fixture.state.sends).toHaveLength(0);
+});
+test('failed background reads even with a blank amount back off and stay visibly disabled', async () => {
+  jest.useFakeTimers();
+  const fixture = require('../../../services/rhBridge/__fixtures__/v2').v2Fixture(),
+    starts: number[] = [];
+  jest.spyOn(Date, 'now').mockImplementation(() => fixture.state.now);
+  mockWallet = {
+    account: fixture.state.account,
+    chainId: 46630,
+    active: true,
+    connector: require('../../../connectors').injected,
+    library: { provider: fixture.provider },
+  };
+  fixture.deps.v2.api = {
+    read: async (request: any) => {
+      if (request.kind === 'assets') starts.push(fixture.state.now);
+      throw Error('RH_V2_RATE_LIMITED');
+    },
+  };
+  await mount({
+    selection: {
+      originNetwork: BridgeNetwork.ROBINHOOD,
+      destinationNetwork: BridgeNetwork.GOLIATH,
+      selectedAssetKey: 'RH_ETH',
+      inputAmount: '',
+      recipient: null,
+    },
+    rhDeps: fixture.deps,
+  });
+  for (let step = 0; step < 100; step++)
+    await act(async () => {
+      fixture.state.now += 1000;
+      jest.advanceTimersByTime(1000);
+      for (let i = 0; i < 40; i++) await Promise.resolve();
+    });
+  expect(starts).toHaveLength(4);
+  expect(starts.slice(1).map((time, i) => time - starts[i])).toEqual([10000, 20000, 40000]);
+  expect(mockSession.canConfirm).toBe(false);
+  expect(mockSession.notice).toBe('Bridge observations are unavailable or stale. Live actions stay disabled.');
+  expect(fixture.state.sends).toHaveLength(0);
+});
+test('real empty native wallet needs no amount quote and has no perpetual availability warning', async () => {
+  jest.useFakeTimers();
+  const fixture = require('../../../services/rhBridge/__fixtures__/v2').v2Fixture();
+  fixture.state.nativeBalance = '0';
+  jest.spyOn(Date, 'now').mockImplementation(() => fixture.state.now);
+  mockWallet = {
+    account: fixture.state.account,
+    chainId: 46630,
+    active: true,
+    connector: require('../../../connectors').injected,
+    library: { provider: fixture.provider },
+  };
+  const store = await mount({
+    selection: {
+      originNetwork: BridgeNetwork.ROBINHOOD,
+      destinationNetwork: BridgeNetwork.GOLIATH,
+      selectedAssetKey: 'RH_ETH',
+      inputAmount: '',
+      recipient: null,
+    },
+    rhDeps: fixture.deps,
+  });
+  for (const amount of ['', '0', '0.0']) {
+    await act(async () => {
+      store.dispatch(bridgeActions.setInputAmount(amount));
+    });
+    await act(async () => {
+      fixture.state.now += 1000;
+      jest.advanceTimersByTime(300);
+      for (let i = 0; i < 150; i++) await Promise.resolve();
+    });
+    expect(mockSession.perTxMax.status).toBe('ready');
+    expect(mockSession.remainingCapacity.status).toBe('ready');
+    expect(mockSession.sourceBalance.value).toBe('0');
+    expect(mockSession.fee.status).toBe('unavailable');
+    expect(mockSession.net.status).toBe('unavailable');
+    expect(mockSession.notice).toBeUndefined();
+    expect(mockSession.canConfirm).toBe(false);
+    expect(mockSession.canApprove).toBe(false);
+    expect(receiveOutput()).toBe('0.0 ETH');
+  }
+  expect(fixture.transport.mock.calls.some(([url]: any[]) => url.includes('/fee-quote'))).toBe(false);
+  expect(fixture.state.sends).toHaveLength(0);
+});
+test('unmount during a pending refresh prevents tracking and future background reads', async () => {
+  jest.useFakeTimers();
+  const fixture = require('../../../services/rhBridge/__fixtures__/v2').v2Fixture();
+  const { RhLaneController } = require('../../../hooks/rhBridge/controller');
+  jest.spyOn(Date, 'now').mockImplementation(() => fixture.state.now);
+  mockWallet = {
+    account: fixture.state.account,
+    chainId: 46630,
+    active: true,
+    connector: require('../../../connectors').injected,
+    library: { provider: fixture.provider },
+  };
+  const held = deferred<void>(),
+    entered = deferred<void>(),
+    read = fixture.deps.v2.api.read;
+  fixture.deps.v2.api = {
+    read: async (request: any) => {
+      if (request.kind === 'assets') {
+        entered.resolve();
+        await held.promise;
+      }
+      return read(request);
+    },
+  };
+  const tracking = jest.spyOn(RhLaneController.prototype, 'trackOnce').mockResolvedValue(undefined);
+  jest.spyOn(RhLaneController.prototype, 'hasOpenRecords').mockReturnValue(true);
+  await mount({
+    selection: {
+      originNetwork: BridgeNetwork.ROBINHOOD,
+      destinationNetwork: BridgeNetwork.GOLIATH,
+      selectedAssetKey: 'RH_ETH',
+      inputAmount: '0.0001',
+      recipient: null,
+    },
+    rhDeps: fixture.deps,
+  });
+  await act(async () => {
+    jest.advanceTimersByTime(300);
+    await entered.promise;
+  });
+  act(() => {
+    ReactDOM.unmountComponentAtNode(container);
+  });
+  await act(async () => {
+    held.resolve();
+    for (let i = 0; i < 150; i++) await Promise.resolve();
+    jest.advanceTimersByTime(60000);
+  });
+  expect(tracking).not.toHaveBeenCalled();
+  expect(fixture.transport.mock.calls.filter(([url]: any[]) => url.includes('/assets'))).toHaveLength(1);
   expect(fixture.state.sends).toHaveLength(0);
 });
 test('flag-off hides RH choices and normalizes persisted RH selection without deleting history', async () => {

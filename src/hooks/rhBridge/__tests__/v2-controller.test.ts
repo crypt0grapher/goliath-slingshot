@@ -178,6 +178,79 @@ test('initial repeated failure remains unavailable; only a new successful read r
   expect(c.view().canBridge).toBe(true);
   expect(c.state.notice).toBeNull();
 });
+test('independent chain/code qualification runs together and capacity is fetched only after costly reads', async () => {
+  const f = v2Fixture(),
+    c = new RhLaneController(f.deps),
+    hold = deferred<void>(),
+    started: string[] = [];
+  c.setWallet({ account: f.state.account, chainId: 46630, isInjected: true, hasProvider: true }, f.provider);
+  c.setSelection('RH_ETH', 'RH_TO_ONYX', '0.0001', '');
+  for (const method of ['getChainId', 'genesisHash', 'getCode'] as const) {
+    const original = f.chains[method]!;
+    f.chains[method] = async (...args: any[]) => {
+      started.push(method);
+      await hold.promise;
+      return (original as any)(...args);
+    };
+  }
+  const reads: string[] = [],
+    read = f.deps.v2!.api.read;
+  f.deps.v2!.api = {
+    read: async (request) => {
+      reads.push(request.kind);
+      return read(request);
+    },
+  };
+  const first = c.refreshLane(),
+    second = c.refreshLane();
+  for (let i = 0; i < 100; i++) await Promise.resolve();
+  expect(started.filter((x) => x === 'getChainId')).toHaveLength(2);
+  expect(started.filter((x) => x === 'genesisHash')).toHaveLength(2);
+  expect(started.filter((x) => x === 'getCode')).toHaveLength(4);
+  expect(reads).not.toContain('capacity');
+  hold.resolve();
+  await Promise.all([first, second]);
+  expect(reads.filter((x) => x === 'assets')).toHaveLength(1);
+  expect(reads.filter((x) => x === 'capacity')).toHaveLength(1);
+  expect(c.view().canBridge).toBe(true);
+});
+test.each(['limits', 'effectiveState', 'health', 'capacity'])(
+  'a late fresh capacity never extends the original %s deadline',
+  async (kind) => {
+    const f = v2Fixture(),
+      c = new RhLaneController(f.deps),
+      hold = deferred<void>(),
+      entered = deferred<void>(),
+      start = f.state.now;
+    c.setWallet({ account: f.state.account, chainId: 46630, isInjected: true, hasProvider: true }, f.provider);
+    c.setSelection('RH_ETH', 'RH_TO_ONYX', '0.0001', '');
+    const read = f.deps.v2!.api.read;
+    f.deps.v2!.api = {
+      read: async (request) => {
+        const response = await read(request);
+        if (request.kind !== kind) return response;
+        const body = JSON.parse(JSON.stringify(response.body));
+        if (kind === 'health') body.observedAt = new Date(start - 29000).toISOString();
+        else body.observation.expiresAt = new Date(start + 1000).toISOString();
+        return { ...response, body };
+      },
+    };
+    const code = f.chains.getCode!;
+    f.chains.getCode = async (...args) => {
+      entered.resolve();
+      await hold.promise;
+      return code(...args);
+    };
+    const pending = c.refreshLane();
+    await entered.promise;
+    f.state.now += 2000;
+    hold.resolve();
+    await pending;
+    expect(c.state.v2).toBeNull();
+    expect(c.view().canBridge).toBe(false);
+    expect(c.view().canApprove).toBe(false);
+  }
+);
 test('v2 history appends preserve exact untouched v1/unknown lexical row bytes', () => {
   const f = v2Fixture(),
     old = ' { "unknown" : ["keep,\\"bytes", {"nested":true}] } ';
