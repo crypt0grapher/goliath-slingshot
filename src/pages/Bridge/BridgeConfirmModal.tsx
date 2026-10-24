@@ -9,6 +9,7 @@ import { selectIsConfirmModalOpen } from '../../state/bridge/selectors';
 import { useBridgeSession } from '../../hooks/bridge/BridgeSession';
 import { NETWORK_METADATA } from '../../constants/bridge/networks';
 import BridgeSummary from '../../components/bridge/BridgeSummary';
+import { bridgeAssetDisplayName } from '../../components/bridge/presentation';
 
 const Content = styled.div`
   padding: 1rem;
@@ -27,7 +28,7 @@ export default function BridgeConfirmModal() {
       <Content>
         <h3>{t('confirmBridge')}</h3>
         <p>
-          {s.confirmation?.amount} {s.asset.symbol} · {s.asset.name}
+          {s.confirmation?.amount} {s.asset.symbol} · {bridgeAssetDisplayName(s.asset)}
         </p>
         <p>
           {NETWORK_METADATA[s.selection.originNetwork].displayName} →{' '}
@@ -38,7 +39,8 @@ export default function BridgeConfirmModal() {
           fee={s.fee}
           net={s.net}
           eta={s.eta}
-          recipient={s.confirmation?.recipient || ''}
+          recipient={s.confirmation?.recipient}
+          showRecipient
           perTxMax={s.perTxMax}
           remainingCapacity={s.remainingCapacity}
         />

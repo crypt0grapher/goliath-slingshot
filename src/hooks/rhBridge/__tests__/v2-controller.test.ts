@@ -76,6 +76,108 @@ test('untrusted registry/code changes and global holds cannot enable native acti
   await f.c.refreshLane();
   expect(f.c.view().canBridge).toBe(false);
 });
+test('failed reads retain only display data with original expiry and never retain action authority', async () => {
+  const f = await setup(),
+    previous = f.c.state.v2!;
+  f.deps.v2!.api = {
+    read: async () => {
+      throw new Error('Controlled read failure');
+    },
+  };
+  await f.c.refreshLane();
+  expect(f.c.state.v2).toBeNull();
+  expect(f.c.state.v2Display).toBe(previous);
+  expect(f.c.state.v2Display!.validUntil).toBe(previous.validUntil);
+  expect(f.c.view().canBridge).toBe(false);
+  expect(f.c.view().canApprove).toBe(false);
+  expect(f.c.state.notice).toBe('Bridge observations are unavailable or stale. Live actions stay disabled.');
+  await f.c.refreshLane();
+  expect(f.c.state.v2Display).toBe(previous);
+  expect(f.c.view().canBridge).toBe(false);
+});
+test.each([
+  'asset',
+  'amount',
+  'recipient',
+  'direction',
+  'account',
+  'chain',
+  'provider',
+  'wallet-event',
+  'amount-setter',
+  'recipient-setter',
+  'direction-setter',
+])('retained display never resurrects after an away-and-back %s context transition', async (change) => {
+  const f = await setup();
+  f.deps.v2!.api = {
+    read: async () => {
+      throw new Error('Controlled read failure');
+    },
+  };
+  await f.c.refreshLane();
+  expect(f.c.state.v2Display).not.toBeNull();
+  const wallet = { account: f.state.account, chainId: 46630, isInjected: true, hasProvider: true };
+  if (['asset', 'amount', 'recipient', 'direction'].includes(change)) {
+    f.c.setSelection(
+      change === 'asset' ? 'TSLA' : 'RH_ETH',
+      change === 'direction' ? 'ONYX_TO_RH' : 'RH_TO_ONYX',
+      change === 'amount' ? '0.0002' : '0.0001',
+      change === 'recipient' ? '0xaa91057c8f98af30c44bb8708399bf4daa188a81' : ''
+    );
+    f.c.setSelection('RH_ETH', 'RH_TO_ONYX', '0.0001', '');
+  } else if (change === 'wallet-event') f.c.invalidateContext();
+  else if (change === 'amount-setter') {
+    f.c.setAmount('0.0002');
+    f.c.setAmount('0.0001');
+  } else if (change === 'recipient-setter') {
+    f.c.setRecipient('0xaa91057c8f98af30c44bb8708399bf4daa188a81');
+    f.c.setRecipient('');
+  } else if (change === 'direction-setter') {
+    f.c.setDirection('ONYX_TO_RH');
+    f.c.setDirection('RH_TO_ONYX');
+  } else {
+    f.c.setWallet(
+      {
+        ...wallet,
+        ...(change === 'account'
+          ? { account: '0xaa91057c8f98af30c44bb8708399bf4daa188a81' }
+          : change === 'chain'
+          ? { chainId: 8901 }
+          : {}),
+      },
+      change === 'provider' ? { request: async () => undefined } : f.provider
+    );
+    f.c.setWallet(wallet, f.provider);
+  }
+  expect(f.c.state.v2Display).toBeNull();
+  await f.c.refreshLane();
+  expect(f.c.state.v2Display).toBeNull();
+  expect(f.c.state.v2).toBeNull();
+  expect(f.c.view().canBridge).toBe(false);
+  expect(f.c.view().canApprove).toBe(false);
+});
+test('initial repeated failure remains unavailable; only a new successful read restores authority', async () => {
+  const f = v2Fixture(),
+    c = new RhLaneController(f.deps),
+    api = f.deps.v2!.api;
+  c.setWallet({ account: f.state.account, chainId: 46630, isInjected: true, hasProvider: true }, f.provider);
+  c.setSelection('RH_ETH', 'RH_TO_ONYX', '0.0001', '');
+  f.deps.v2!.api = {
+    read: async () => {
+      throw new Error('Controlled initial failure');
+    },
+  };
+  await c.refreshLane();
+  await c.refreshLane();
+  expect(c.state.v2).toBeNull();
+  expect(c.state.v2Display).toBeNull();
+  expect(c.view().canBridge).toBe(false);
+  f.deps.v2!.api = api;
+  await c.refreshLane();
+  expect(c.state.v2Display).toBe(c.state.v2);
+  expect(c.view().canBridge).toBe(true);
+  expect(c.state.notice).toBeNull();
+});
 test('v2 history appends preserve exact untouched v1/unknown lexical row bytes', () => {
   const f = v2Fixture(),
     old = ' { "unknown" : ["keep,\\"bytes", {"nested":true}] } ';

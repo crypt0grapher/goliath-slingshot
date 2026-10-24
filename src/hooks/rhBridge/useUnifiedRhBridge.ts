@@ -148,14 +148,14 @@ export function useUnifiedRhBridge(selection: BridgeSelection, enabled: boolean,
     if (!rh) return undefined;
     const profile = (override?.v2?.catalog ?? REVIEWED_PROFILES).current(selection.selectedAssetKey);
     if (!profile) return undefined;
-    const x = snapshot.v2,
+    const x = snapshot.v2 ?? snapshot.v2Display,
       valid = x && x.profile.descriptor.binding.profileSha256 === profile.descriptor.binding.profileSha256;
-    const fresh = !!valid && (override?.now ?? Date.now)() < x!.validUntil;
+    const fresh = !!valid && x === snapshot.v2 && (override?.now ?? Date.now)() < x!.validUntil;
     const observation = (value: string | undefined): BridgeObservation =>
       !valid
         ? { status: 'unavailable' }
         : !fresh
-        ? { status: 'stale' }
+        ? { status: 'stale', value }
         : value === undefined
         ? { status: 'unavailable' }
         : { status: 'ready', value };

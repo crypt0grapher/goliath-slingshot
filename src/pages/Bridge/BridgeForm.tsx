@@ -5,7 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { ButtonPrimary } from '../../components/Button';
 import { AutoColumn } from '../../components/Column';
 import { NetworkSelector, BridgeAmountInput, BridgeSummary, DirectionSwapButton } from '../../components/bridge';
-import { observationText } from '../../components/bridge/BridgeSummary';
+import { observationText, receiveAmountText } from '../../components/bridge/BridgeSummary';
+import { bridgeAssetDisplayName } from '../../components/bridge/presentation';
 import { BridgeSessionProvider, useOptionalBridgeSession, useBridgeSession } from '../../hooks/bridge/BridgeSession';
 import { bridgeActions } from '../../state/bridge/reducer';
 import { BridgeNetwork, NETWORK_METADATA } from '../../constants/bridge/networks';
@@ -76,7 +77,7 @@ function StandardCard() {
           </NetworkRow>
           <OutputContainer>
             <OutputLabel>{t('youWillReceiveBridge')}</OutputLabel>
-            <OutputAmount>{observationText(s.net, s.asset.symbol)}</OutputAmount>
+            <OutputAmount>{receiveAmountText(s.net, s.asset.symbol, form.inputAmount)}</OutputAmount>
           </OutputContainer>
         </FormContainer>
         {s.recipientEditable && (
@@ -93,10 +94,10 @@ function StandardCard() {
         )}
         <BridgeSummary
           symbol={s.asset.symbol}
+          inputAmount={form.inputAmount}
           fee={s.fee}
           net={s.net}
           eta={s.eta}
-          recipient={s.recipient}
           perTxMax={s.perTxMax}
           remainingCapacity={s.remainingCapacity}
         />
@@ -110,7 +111,7 @@ function StandardCard() {
             {s.asset.symbol} · {NETWORK_METADATA[form.destinationNetwork].displayName}:{' '}
             {observationText(s.destinationBalance, s.asset.symbol)}
           </OutputBalance>
-          {s.asset.symbol === 'ETH' && <OutputBalance>{s.asset.name}</OutputBalance>}
+          {s.asset.symbol === 'ETH' && <OutputBalance>{bridgeAssetDisplayName(s.asset)}</OutputBalance>}
         </OutputContainer>
         {s.notice && <ErrorMessage role="status">{t(s.notice)}</ErrorMessage>}
         {form.inputAmount && s.account && s.fee.status !== 'ready' && (

@@ -94,7 +94,7 @@ export class RhLaneController {
       history: deps.storage ? EMPTY_HISTORY : { status: 'INVALID', records: [], invalidRows: 0 },
       busy: null,
       notice: deps.storage ? null : 'Browser storage is unavailable, so live actions stay disabled.',
-      ...(deps.v2 ? { v2: null } : {}),
+      ...(deps.v2 ? { v2: null, v2Display: null } : {}),
     };
     if (deps.storage) {
       // A prompt that was open before this page load can no longer be observed.
@@ -144,21 +144,27 @@ export class RhLaneController {
     ) {
       // Any context change cancels whatever action captured the previous context.
       this.generation++;
-      this.set({ wallet, chain: {}, ...(this.deps.v2 ? { v2: null } : {}) });
+      this.set({ wallet, chain: {}, ...(this.deps.v2 ? { v2: null, v2Display: null } : {}) });
     } else if (previous.hasProvider !== wallet.hasProvider) {
       this.set({ wallet });
     }
   }
   setDirection(direction: RhDirection): void {
+    if (this.deps.v2)
+      return this.setSelection(this.selectedAsset, direction, this.snapshot.amountText, this.snapshot.recipientText);
     if (direction === this.snapshot.direction) return;
     this.generation++;
     this.set({ direction, quote: {}, chain: {}, notice: null });
   }
   setAmount(amountText: string): void {
+    if (this.deps.v2)
+      return this.setSelection(this.selectedAsset, this.snapshot.direction, amountText, this.snapshot.recipientText);
     if (amountText !== this.snapshot.amountText) this.generation++;
     this.set({ amountText, notice: null });
   }
   setRecipient(recipientText: string): void {
+    if (this.deps.v2)
+      return this.setSelection(this.selectedAsset, this.snapshot.direction, this.snapshot.amountText, recipientText);
     if (recipientText !== this.snapshot.recipientText) this.generation++;
     this.set({ recipientText, notice: null });
   }
@@ -181,6 +187,7 @@ export class RhLaneController {
       amountText,
       recipientText,
       v2: null,
+      v2Display: null,
       chain: {},
       quote: {},
       notice: profile || assetId === null ? null : 'Deployment pins are not configured. Live actions stay disabled.',
@@ -188,7 +195,7 @@ export class RhLaneController {
   }
   invalidateContext(): void {
     this.generation++;
-    if (this.deps.v2) this.set({ v2: null });
+    if (this.deps.v2) this.set({ v2: null, v2Display: null });
   }
 
   // ----------------------------------------------------------------- reads
@@ -209,7 +216,7 @@ export class RhLaneController {
             this.snapshot,
             this.deps.now
           );
-          if (generation === this.generation) this.set({ v2, notice: null });
+          if (generation === this.generation) this.set({ v2, v2Display: v2, notice: null });
         } catch {
           if (generation === this.generation)
             this.set({ v2: null, notice: 'Bridge observations are unavailable or stale. Live actions stay disabled.' });

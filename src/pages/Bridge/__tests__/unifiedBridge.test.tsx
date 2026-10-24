@@ -290,6 +290,200 @@ test('unknown/stale RH observations cannot appear Free or enable a bridge action
     ).disabled
   ).toBe(true);
 });
+const receiveOutput = () =>
+  Array.from(container.querySelectorAll('div')).find((element) => element.textContent === 'youWillReceiveBridge')!
+    .nextElementSibling!.textContent;
+const receiveSummary = () =>
+  Array.from(container.querySelectorAll('dt')).find((element) => element.textContent === 'bridgeYouReceive')!
+    .nextElementSibling!.textContent;
+test.each(['RH_ETH', 'SEPOLIA_ETH', 'TSLA'] as const)(
+  '%s empty and numeric-zero amounts display zero without claiming a live quote or enabling actions',
+  async (asset) => {
+    const fixture = rhFixture();
+    fixture.selection.selectedAssetKey = asset;
+    if (asset === 'SEPOLIA_ETH') {
+      fixture.selection.originNetwork = BridgeNetwork.SEPOLIA;
+      mockWallet = { ...mockWallet, chainId: 11155111 };
+    }
+    fixture.selection.inputAmount = '';
+    fixture.adapter.selectionKey = selectionKey(fixture.selection, mockWallet.account, mockWallet.chainId);
+    fixture.adapter.binding = { ...fixture.adapter.binding, assetId: asset === 'TSLA' ? 'TSLA' : 'RH_ETH' };
+    fixture.adapter.net = { status: 'unavailable' };
+    const store = await mount(fixture);
+    for (const amount of ['', '0', '0.0', '00.000', '.0']) {
+      await act(async () => {
+        store.dispatch(bridgeActions.setInputAmount(amount));
+      });
+      expect(receiveOutput()).toBe(`0.0 ${asset === 'TSLA' ? 'TSLA' : 'ETH'}`);
+      expect(receiveSummary()).toBe(receiveOutput());
+      expect(mockSession.canConfirm).toBe(false);
+      expect(mockSession.canApprove).toBe(false);
+      expect(mockSession.net.status).not.toBe('ready');
+      expect(store.getState().bridge.form.selectedAssetKey).toBe(asset);
+    }
+    expect(fixture.adapter.confirm).not.toHaveBeenCalled();
+    expect(fixture.adapter.approve).not.toHaveBeenCalled();
+  }
+);
+test.each(['0.01', '-1', 'abc', '.', '0..0', '1e-999'])(
+  'unavailable receive details for %s remain honest and disabled',
+  async (amount) => {
+    const fixture = rhFixture();
+    fixture.selection.inputAmount = amount;
+    fixture.adapter.selectionKey = selectionKey(fixture.selection, mockWallet.account, mockWallet.chainId);
+    fixture.adapter.net = { status: 'unavailable' };
+    await mount(fixture);
+    expect(receiveOutput()).toBe('Not available');
+    expect(receiveSummary()).toBe('Not available');
+    expect(mockSession.canConfirm).toBe(false);
+    expect(fixture.adapter.confirm).not.toHaveBeenCalled();
+  }
+);
+test.each(['RH_ETH', 'SEPOLIA_ETH'] as const)(
+  '%s uses Ethereum in visible token and balance names while retaining its distinct selection identity',
+  async (asset) => {
+    const fixture = rhFixture();
+    fixture.selection.selectedAssetKey = asset;
+    if (asset === 'SEPOLIA_ETH') fixture.selection.originNetwork = BridgeNetwork.SEPOLIA;
+    const store = await mount(fixture);
+    expect(container.querySelector('[aria-label="Balances"]')!.textContent).toContain('Ethereum');
+    await act(async () => {
+      (container.querySelector('[aria-label="Select bridge token"]') as HTMLButtonElement).click();
+    });
+    const eth = Array.from(container.querySelectorAll('[role="option"]')).find((option) =>
+      option.textContent?.startsWith('ETH')
+    )!;
+    expect(eth.textContent).toBe('ETHEthereum');
+    expect(container.textContent).not.toMatch(/Ether · (Robinhood|Sepolia) origin/);
+    await act(async () => {
+      (eth as HTMLButtonElement).click();
+    });
+    expect(store.getState().bridge.form.selectedAssetKey).toBe(asset);
+    const storedAsset = require('../../../constants/bridge/registry').BRIDGE_ASSETS[asset];
+    expect(storedAsset.name).toBe(asset === 'RH_ETH' ? 'Ether · Robinhood origin' : 'Ether · Sepolia origin');
+    expect(storedAsset.originChainId).toBe(asset === 'RH_ETH' ? 46630 : 11155111);
+  }
+);
+test('ETH confirmation uses the Ethereum display name without changing the captured RH asset', async () => {
+  const fixture = rhFixture();
+  fixture.selection.selectedAssetKey = 'RH_ETH';
+  fixture.adapter.binding = { ...fixture.adapter.binding, assetId: 'RH_ETH' };
+  fixture.adapter.selectionKey = selectionKey(fixture.selection, mockWallet.account, mockWallet.chainId);
+  const store = await mount(fixture);
+  await act(async () => {
+    Array.from(container.querySelectorAll('button'))
+      .find((button) => button.textContent === 'confirmBridge')!
+      .click();
+  });
+  expect(store.getState().bridge.isConfirmModalOpen).toBe(true);
+  expect(container.textContent).toContain('0.1 ETH · Ethereum');
+  expect(container.textContent).not.toContain('Ether · Robinhood origin');
+  expect(store.getState().bridge.form.selectedAssetKey).toBe('RH_ETH');
+  expect(fixture.adapter.confirm).not.toHaveBeenCalled();
+});
+test('summary has five rows while the editable recipient remains bound to the transfer', async () => {
+  const fixture = rhFixture();
+  const store = await mount(fixture);
+  const summary = container.querySelector('[aria-label="Bridge summary"]')!;
+  expect(summary.querySelectorAll('dt')).toHaveLength(5);
+  expect(Array.from(summary.querySelectorAll('dt')).map((row) => row.textContent)).not.toContain('recipient');
+  const recipient = container.querySelector('input[aria-label="Bridge recipient"]') as HTMLInputElement;
+  expect(recipient).not.toBeNull();
+  await act(async () => {
+    store.dispatch(bridgeActions.setRecipient('0xaa91057c8f98af30c44bb8708399bf4daa188a81'));
+  });
+  expect(recipient.value).toBe('0xaa91057c8f98af30c44bb8708399bf4daa188a81');
+  expect(mockSession.recipient).toBe(recipient.value);
+  expect(fixture.adapter.confirm).not.toHaveBeenCalled();
+});
+test('confirmation visibly retains the exact recipient while the main summary avoids the duplicate row', async () => {
+  const fixture = rhFixture();
+  await mount(fixture);
+  const main = container.querySelector('[aria-label="Bridge summary"]')!;
+  expect(main.querySelectorAll('dt')).toHaveLength(5);
+  expect(Array.from(main.querySelectorAll('dt')).map((row) => row.textContent)).not.toContain('recipient');
+  await act(async () => {
+    mockSession.openConfirm();
+  });
+  const summaries = container.querySelectorAll('[aria-label="Bridge summary"]');
+  expect(summaries).toHaveLength(2);
+  const confirmation = summaries[1];
+  expect(confirmation.querySelectorAll('dt')).toHaveLength(6);
+  const recipient = Array.from(confirmation.querySelectorAll('dt')).find((row) => row.textContent === 'recipient')!;
+  expect(recipient.nextElementSibling!.textContent).toBe(mockWallet.account);
+  expect(mockSession.confirmation.recipient).toBe(mockWallet.account);
+  expect(container.querySelector('input[aria-label="Bridge recipient"]')).not.toBeNull();
+  expect(fixture.adapter.confirm).not.toHaveBeenCalled();
+});
+test('real RH controller keeps expired same-context values visibly stale across failed refreshes without enabling actions', async () => {
+  jest.useFakeTimers();
+  const { v2Fixture } = require('../../../services/rhBridge/__fixtures__/v2');
+  const { RhLaneController } = require('../../../hooks/rhBridge/controller');
+  const fixture = v2Fixture();
+  fixture.state.account = '0xaa91057c8f98af30c44bb8708399bf4daa188a81';
+  jest.spyOn(Date, 'now').mockImplementation(() => fixture.state.now);
+  mockWallet = {
+    account: fixture.state.account,
+    chainId: 46630,
+    active: true,
+    connector: require('../../../connectors').injected,
+    library: { provider: fixture.provider },
+  };
+  let controller: any;
+  const originalRefresh = RhLaneController.prototype.refreshLane;
+  jest.spyOn(RhLaneController.prototype, 'refreshLane').mockImplementation(function (this: any) {
+    controller = this;
+    return originalRefresh.call(this);
+  });
+  const read = fixture.deps.v2.api.read;
+  let failed = false;
+  fixture.deps.v2.api = {
+    read: async (request: any) => {
+      if (failed) throw new Error('Controlled readonly failure');
+      return read(request);
+    },
+  };
+  await mount({
+    selection: {
+      originNetwork: BridgeNetwork.ROBINHOOD,
+      destinationNetwork: BridgeNetwork.GOLIATH,
+      selectedAssetKey: 'RH_ETH',
+      inputAmount: '0.0001',
+      recipient: null,
+    },
+    rhDeps: fixture.deps,
+  });
+  await act(async () => {
+    jest.advanceTimersByTime(300);
+    for (let i = 0; i < 100; i++) await Promise.resolve();
+  });
+  expect(mockSession.canConfirm).toBe(true);
+  const original = controller.state.v2;
+  fixture.state.now = original.validUntil + 1;
+  await act(async () => {
+    jest.advanceTimersByTime(1000);
+  });
+  expect(mockSession.net.status).toBe('stale');
+  const expiredText = receiveOutput();
+  failed = true;
+  await act(async () => {
+    await controller.refreshLane();
+  });
+  expect(controller.state.v2).toBeNull(); // The original action authority remains fail closed.
+  expect(receiveOutput()).toBe(expiredText);
+  expect(receiveOutput()).toContain('0.0001 ETH');
+  expect(receiveOutput()).toContain('Stale');
+  expect(mockSession.net.status).toBe('stale');
+  expect(controller.state.v2Display.validUntil).toBe(original.validUntil);
+  expect(mockSession.canConfirm).toBe(false);
+  expect(mockSession.canApprove).toBe(false);
+  expect(mockSession.notice).toBe('Bridge observations are unavailable or stale. Live actions stay disabled.');
+  await act(async () => {
+    await controller.refreshLane();
+  });
+  expect(receiveOutput()).toBe(expiredText);
+  expect(fixture.state.sends).toHaveLength(0);
+});
 test('flag-off hides RH choices and normalizes persisted RH selection without deleting history', async () => {
   const fixture = rhFixture();
   const preserved = '[{"unknown":"keep"}]';

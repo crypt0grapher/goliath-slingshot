@@ -67,6 +67,8 @@ export interface LaneSnapshot {
   busy: null | 'APPROVE' | 'BRIDGE' | 'SWITCH';
   notice: string | null;
   v2?: V2Snapshot | null;
+  // Display only: last complete read for this exact context; never consulted by action derivation.
+  v2Display?: V2Snapshot | null;
 }
 
 export const chainKey = (account: string | null, direction: RhDirection, recipient: string | null): string =>

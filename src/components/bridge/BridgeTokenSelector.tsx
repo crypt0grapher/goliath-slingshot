@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { ChevronDown } from 'react-feather';
 import { BridgeAssetKey, BRIDGE_ASSETS } from '../../constants/bridge/registry';
 import EthereumLogo from '../../assets/images/ethereum-logo.png';
+import { bridgeAssetDisplayName } from './presentation';
 
 const SelectorButton = styled.button`
   display: flex;
@@ -178,7 +179,7 @@ export default function BridgeTokenSelector({ selectedAssetKey, assetKeys, onSel
                 }}
               />
               <ItemSymbol>{BRIDGE_ASSETS[key].symbol}</ItemSymbol>
-              <TokenName>{BRIDGE_ASSETS[key].name}</TokenName>
+              <TokenName>{bridgeAssetDisplayName(BRIDGE_ASSETS[key])}</TokenName>
             </DropdownItem>
           ))}
         </DropdownMenu>
