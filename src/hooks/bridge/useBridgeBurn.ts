@@ -151,9 +151,14 @@ export function useBridgeBurn(): UseBurnReturn {
           guard?.assertCurrent();
           const signer = walletLibraryForIntent(library, guard).getSigner(account);
           const bridgeContract = new ethers.Contract(bridgeAddress, BRIDGE_GOLIATH_ABI, signer as any);
+          const transaction = await bridgeContract.populateTransaction.burn(
+            tokenConfig.address,
+            amountAtomic.toString(),
+            recipient
+          );
           await beforeWalletPrompt(guard, library);
           guard?.assertCurrent();
-          return bridgeContract.burn(tokenConfig.address, amountAtomic.toString(), recipient, { chainId: 8901 });
+          return signer.sendTransaction({ ...transaction, chainId: 8901 });
         };
 
         let tx: ethers.ContractTransaction;

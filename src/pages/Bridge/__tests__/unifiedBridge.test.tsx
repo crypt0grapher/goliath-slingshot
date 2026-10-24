@@ -31,8 +31,10 @@ jest.mock('ethers', () => {
     ethers: {
       ...actual.ethers,
       Contract: jest.fn().mockImplementation(() => ({
-        depositNative: mockDepositWalletPrompt,
-        approve: mockApproveWalletPrompt,
+        populateTransaction: {
+          depositNative: async () => ({ action: 'deposit' }),
+          approve: async () => ({ action: 'approve' }),
+        },
         estimateGas: { approve: mockApprovalGas },
       })),
     },
@@ -147,8 +149,10 @@ beforeEach(() => {
   mockApproveWalletPrompt.mockClear();
   mockApprovalGas.mockReset().mockResolvedValue(require('ethers').ethers.BigNumber.from(21000));
   (require('ethers').ethers.Contract as jest.Mock).mockImplementation(() => ({
-    depositNative: mockDepositWalletPrompt,
-    approve: mockApproveWalletPrompt,
+    populateTransaction: {
+      depositNative: async () => ({ action: 'deposit' }),
+      approve: async () => ({ action: 'approve' }),
+    },
     estimateGas: { approve: mockApprovalGas },
   }));
   global.fetch = jest.fn(async () => ({ ok: true, json: async () => ({}) })) as any;
@@ -546,7 +550,10 @@ async function legacyFixture(asset: 'SEPOLIA_ETH' | 'SEPOLIA_XCN' = 'SEPOLIA_ETH
     library: {
       provider: { request: async ({ method }: any) => (method === 'eth_accounts' ? [ACCOUNT] : '0xaa36a7') },
       getTransactionCount: jest.fn(async () => 0),
-      getSigner: () => ({}),
+      getSigner: () => ({
+        sendTransaction: (transaction: { action: string }) =>
+          transaction.action === 'approve' ? mockApproveWalletPrompt() : mockDepositWalletPrompt(),
+      }),
     },
   };
   const transports = require('../../../services/bridgeProviders');

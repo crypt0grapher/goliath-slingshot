@@ -140,20 +140,12 @@ export function useBridgeDeposit(): UseDepositReturn {
           const signer = walletLibraryForIntent(library, guard).getSigner(account);
           const bridgeContract = new ethers.Contract(bridgeAddress, BRIDGE_SEPOLIA_ABI, signer as any);
 
+          const transaction = tokenConfig.isNative
+            ? await bridgeContract.populateTransaction.depositNative(recipient, { value: amountAtomic.toString() })
+            : await bridgeContract.populateTransaction.deposit(tokenConfig.address, amountAtomic.toString(), recipient);
           await beforeWalletPrompt(guard, library);
           guard?.assertCurrent();
-          if (tokenConfig.isNative) {
-            // Native ETH deposit - use depositNative function
-            return bridgeContract.depositNative(recipient, {
-              value: amountAtomic.toString(),
-              chainId: 11155111,
-            });
-          } else {
-            // ERC-20 deposit
-            return bridgeContract.deposit(tokenConfig.address, amountAtomic.toString(), recipient, {
-              chainId: 11155111,
-            });
-          }
+          return signer.sendTransaction({ ...transaction, chainId: 11155111 });
         };
 
         let tx: ethers.ContractTransaction;

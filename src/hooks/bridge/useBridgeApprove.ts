@@ -95,13 +95,17 @@ export function useBridgeApprove(
             return tokenContract.estimateGas.approve(bridgeAddress, exactAmount);
           });
 
-        await beforeWalletPrompt(guard, library);
-        guard?.assertCurrent();
-        const tx = await tokenContract.approve(
+        const transaction = await tokenContract.populateTransaction.approve(
           bridgeAddress,
           useExact && amount ? parseAmount(amount, token, network).toString() : ethers.constants.MaxUint256,
-          { gasLimit: calculateGasMargin(estimatedGas), chainId: network === BridgeNetwork.SEPOLIA ? 11155111 : 8901 }
+          { gasLimit: calculateGasMargin(estimatedGas) }
         );
+        await beforeWalletPrompt(guard, library);
+        guard?.assertCurrent();
+        const tx = await signer.sendTransaction({
+          ...transaction,
+          chainId: network === BridgeNetwork.SEPOLIA ? 11155111 : 8901,
+        });
 
         // Wait for transaction with timeout to prevent indefinite hanging
         const receipt = await Promise.race([
