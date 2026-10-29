@@ -491,5 +491,5 @@
   "pool.yourTotalPoolTokens": "Your total pool tokens:",
   "bridgePerTransactionMax": "Per-transaction max",
   "bridgeRemainingCapacity": "Remaining capacity",
-  "bridgeBalances": "Balances"
+  "bridgeBalances": "Your balances"
 }

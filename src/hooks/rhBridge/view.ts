@@ -18,6 +18,7 @@ import {
 import { Assets, EffectiveState, FeeQuote, Health, Limits } from '../../services/rhBridge/schema';
 import type { V2Snapshot } from './v2';
 import { deriveV2View } from './v2';
+import type { BalanceChannelState } from '../../services/rhBridge/balanceObservations';
 
 export interface WalletState {
   account: string | null; // lowercase
@@ -69,8 +70,12 @@ export interface LaneSnapshot {
   v2?: V2Snapshot | null;
   // Presentation only; freshness and action authority still come from v2.
   v2Loading?: boolean;
+  // A finished read that produced no action snapshot. Presentation only; never enables an action.
+  v2ReadFailed?: boolean;
   // Display only: last complete read for this exact context; never consulted by action derivation.
   v2Display?: V2Snapshot | null;
+  // Display only. Action authority stays on v2.
+  balanceChannel?: BalanceChannelState;
 }
 
 export const chainKey = (account: string | null, direction: RhDirection, recipient: string | null): string =>

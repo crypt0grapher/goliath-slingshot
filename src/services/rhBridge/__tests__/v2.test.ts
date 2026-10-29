@@ -5,6 +5,7 @@ import { freshObservation, parseV2, raw256 } from '../v2-schema';
 import {
   bindRegistry,
   createProfileCatalog,
+  legacyTslaProfile,
   profileLimits,
   registryDigest,
   REVIEWED_PROFILES,
@@ -39,7 +40,7 @@ test('independent browser registry digest matches golden, sorts a copy and rejec
   expect(JSON.stringify(assets)).toBe(before);
   expect(() => registryDigest([assets[0], assets[0]])).toThrow();
   expect(registryDigest([REVIEWED_PROFILES.current('TSLA')!.descriptor])).toBe(
-    '76ac1504343d527c88ece6047a9d0d781bb1a4013e9f4b4ebb3e4c72507a2256'
+    '91fae2890dd0556ccd0319186cfcb876421df6b6a466413a3c51d75cbdd2760e'
   );
   expect(() =>
     bindRegistry(
@@ -49,7 +50,11 @@ test('independent browser registry digest matches golden, sorts a copy and rejec
   ).toThrow();
 });
 test('compiled native profile binds the independently reviewed actual deployment and exact manifest bytes', () => {
-  expect(REVIEWED_PROFILES.registrySha256).toBe('3f7b3b1438e44690f670b5faf87483560257c6d118044269c950332e00af80e4');
+  expect(REVIEWED_PROFILES.registrySha256).toBe('b0d39a065440ca3f83475eee9adc126c0600b8ae406dc98f35b664e96002f25f');
+  expect(profileLimits(REVIEWED_PROFILES.current('TSLA')!).deposit.perTxMax).toBe('1000000000000000000');
+  expect(legacyTslaProfile(REVIEWED_PROFILES)?.descriptor.binding.profileSha256).toBe(
+    '38a14bcb94536c4efb8d62d9d0a42ae702117db3e495f6884cf25839da47ee8e'
+  );
   expect(RH_NATIVE_CONFIGURATION.status).toBe('REVIEWED');
   const native = REVIEWED_PROFILES.current('RH_ETH')!;
   expect(native.descriptor).toMatchObject({

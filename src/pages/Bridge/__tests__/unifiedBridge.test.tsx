@@ -200,7 +200,7 @@ test('shared card distinguishes the two capacity rows, shows connected-wallet ba
   const summary = container.querySelector('[aria-label="Bridge summary"]')!;
   expect(summary.textContent).toContain('0.7 TSLA');
   expect(summary.textContent).toContain('2.75 TSLA');
-  const balances = container.querySelector('[aria-label="Balances"]')!;
+  const balances = container.querySelector('[aria-label="Your balances"]')!;
   expect(balances.textContent).toContain('Robinhood Chain Testnet: 1 TSLA');
   expect(balances.textContent).toContain('Onyx Testnet: 2 TSLA');
   await act(async () => {
@@ -213,16 +213,17 @@ test('shared card distinguishes the two capacity rows, shows connected-wallet ba
 });
 test.each(['ready', 'stale', 'error'])('RH availability notice reflects %s observations', async (state) => {
   const fixture = rhFixture();
-  const errorNotice = 'Bridge observations are unavailable or stale. Live actions stay disabled.';
   if (state === 'stale') {
     fixture.adapter.remainingCapacity = { status: 'stale' };
     fixture.adapter.canConfirm = false;
   } else if (state === 'error') {
-    fixture.adapter.notice = errorNotice;
     fixture.adapter.canConfirm = false;
   }
   await mount(fixture);
-  expect(mockSession.notice).toBe(state === 'error' ? errorNotice : undefined);
+  expect(mockSession.notice).toBeUndefined();
+  expect(container.textContent).not.toContain(
+    'Bridge observations are unavailable or stale. Live actions stay disabled.'
+  );
   expect(container.textContent).not.toContain('Robinhood bridge availability is being checked.');
   if (state !== 'ready') expect(mockSession.canConfirm).toBe(false);
   expect(fixture.adapter.confirm).not.toHaveBeenCalled();
@@ -260,7 +261,7 @@ test('changing the selected asset invalidates a captured confirmation and clears
     store.dispatch(bridgeActions.setSelectedAsset('RH_ETH'));
   });
   expect(store.getState().bridge.isConfirmModalOpen).toBe(false);
-  expect(container.querySelector('[aria-label="Balances"]')!.textContent).not.toContain('2 TSLA');
+  expect(container.querySelector('[aria-label="Your balances"]')!.textContent).not.toContain('2 TSLA');
   expect(fixture.adapter.confirm).not.toHaveBeenCalled();
 });
 
@@ -366,7 +367,7 @@ test.each(['RH_ETH', 'SEPOLIA_ETH'] as const)(
     fixture.selection.selectedAssetKey = asset;
     if (asset === 'SEPOLIA_ETH') fixture.selection.originNetwork = BridgeNetwork.SEPOLIA;
     const store = await mount(fixture);
-    expect(container.querySelector('[aria-label="Balances"]')!.textContent).toContain('Ethereum');
+    expect(container.querySelector('[aria-label="Your balances"]')!.textContent).toContain('Ethereum');
     await act(async () => {
       (container.querySelector('[aria-label="Select bridge token"]') as HTMLButtonElement).click();
     });
@@ -478,7 +479,8 @@ test.each(['success', 'failure'])(
       jest.advanceTimersByTime(300);
     });
     const summary = () => container.querySelector('[aria-label="Bridge summary"]')!;
-    expect(summary().querySelectorAll('[aria-busy="true"]')).toHaveLength(5);
+    // Fee and receive are local previews. Only ETA, per-transaction max, and remaining capacity wait on the lane read.
+    expect(summary().querySelectorAll('[aria-busy="true"]')).toHaveLength(3);
     expect(summary().textContent).not.toContain('Not available');
     expect(container.textContent).not.toContain('Robinhood bridge availability is being checked.');
     expect(mockSession.canConfirm).toBe(false);
@@ -495,7 +497,10 @@ test.each(['success', 'failure'])(
       expect(mockSession.notice).toBeUndefined();
     } else {
       expect(summary().textContent).toContain('Not available');
-      expect(mockSession.notice).toBe('Bridge observations are unavailable or stale. Live actions stay disabled.');
+      expect(mockSession.notice).toBeUndefined();
+      expect(container.textContent).not.toContain(
+        'Bridge observations are unavailable or stale. Live actions stay disabled.'
+      );
       expect(mockSession.canConfirm).toBe(false);
       expect(mockSession.canApprove).toBe(false);
     }
@@ -586,21 +591,24 @@ test('real RH controller keeps expired same-context values visibly stale across 
   await act(async () => {
     jest.advanceTimersByTime(1000);
   });
-  expect(mockSession.net.status).toBe('stale');
+  expect(mockSession.net.status).toBe('ready');
   const expiredText = receiveOutput();
+  expect(expiredText).toContain('0.0001 ETH');
+  expect(expiredText).not.toContain('Not available');
   failed = true;
   await act(async () => {
     await controller.refreshLane();
   });
   expect(controller.state.v2).toBeNull(); // The original action authority remains fail closed.
   expect(receiveOutput()).toBe(expiredText);
-  expect(receiveOutput()).toContain('0.0001 ETH');
-  expect(receiveOutput()).toContain('Stale');
-  expect(mockSession.net.status).toBe('stale');
+  expect(mockSession.net.status).toBe('ready');
   expect(controller.state.v2Display.validUntil).toBe(original.validUntil);
   expect(mockSession.canConfirm).toBe(false);
   expect(mockSession.canApprove).toBe(false);
-  expect(mockSession.notice).toBe('Bridge observations are unavailable or stale. Live actions stay disabled.');
+  expect(mockSession.notice).toBeUndefined();
+  expect(container.textContent).not.toContain(
+    'Bridge observations are unavailable or stale. Live actions stay disabled.'
+  );
   await act(async () => {
     await controller.refreshLane();
   });
@@ -702,7 +710,10 @@ test('failed background reads even with a blank amount back off and stay visibly
   expect(starts).toHaveLength(4);
   expect(starts.slice(1).map((time, i) => time - starts[i])).toEqual([10000, 20000, 40000]);
   expect(mockSession.canConfirm).toBe(false);
-  expect(mockSession.notice).toBe('Bridge observations are unavailable or stale. Live actions stay disabled.');
+  expect(mockSession.notice).toBeUndefined();
+  expect(container.textContent).not.toContain(
+    'Bridge observations are unavailable or stale. Live actions stay disabled.'
+  );
   expect(fixture.state.sends).toHaveLength(0);
 });
 test('real empty native wallet needs no amount quote and has no perpetual availability warning', async () => {
@@ -739,8 +750,10 @@ test('real empty native wallet needs no amount quote and has no perpetual availa
     expect(mockSession.perTxMax.status).toBe('ready');
     expect(mockSession.remainingCapacity.status).toBe('ready');
     expect(mockSession.sourceBalance.value).toBe('0');
-    expect(mockSession.fee.status).toBe('unavailable');
-    expect(mockSession.net.status).toBe('unavailable');
+    expect(mockSession.fee.status).toBe('ready');
+    expect(mockSession.fee.value).toBe('0');
+    expect(mockSession.net.status).toBe('ready');
+    expect(mockSession.net.value).toBe('0');
     expect(mockSession.notice).toBeUndefined();
     expect(mockSession.canConfirm).toBe(false);
     expect(mockSession.canApprove).toBe(false);
@@ -1240,8 +1253,9 @@ test('R2: a quote becoming stale then ready with identical values cannot resurre
     jest.advanceTimersByTime(30000);
   });
   expect(container.textContent).toContain('Stale — refreshing');
+  expect(container.textContent).not.toContain('Refresh bridge details');
   await act(async () => {
-    // Exercise the actual session/fee refresh rather than clicking the busy-disabled refresh control.
+    // The quote is renewed by the session, not by a button.
     mockSession.refreshDetails();
   });
   await act(async () => {

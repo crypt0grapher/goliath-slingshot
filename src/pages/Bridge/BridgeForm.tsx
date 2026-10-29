@@ -103,8 +103,11 @@ function StandardCard() {
           perTxMax={s.perTxMax}
           remainingCapacity={s.remainingCapacity}
         />
-        <OutputContainer as="section" aria-label="Balances">
-          <OutputLabel>{t('bridgeBalances', { defaultValue: 'Balances' })}</OutputLabel>
+        <OutputContainer as="section" aria-label="Your balances">
+          <OutputLabel>{t('bridgeBalances')}</OutputLabel>
+          <button type="button" onClick={() => s.refreshBalances()}>
+            Refresh balances
+          </button>
           <OutputBalance>
             {s.asset.symbol} · {NETWORK_METADATA[form.originNetwork].displayName}:{' '}
             <ObservationValue value={s.sourceBalance} symbol={s.asset.symbol} />
@@ -116,11 +119,7 @@ function StandardCard() {
           {s.asset.symbol === 'ETH' && <OutputBalance>{bridgeAssetDisplayName(s.asset)}</OutputBalance>}
         </OutputContainer>
         {s.notice && <ErrorMessage role="status">{t(s.notice)}</ErrorMessage>}
-        {form.inputAmount && s.account && s.fee.status !== 'ready' && (
-          <button type="button" onClick={s.refreshDetails} disabled={s.busy}>
-            Refresh bridge details
-          </button>
-        )}
+        {disabled && s.account && s.actionReason && <p role="status">{s.actionReason}</p>}
         <ButtonPrimary onClick={action} disabled={disabled}>
           {label}
         </ButtonPrimary>

@@ -89,9 +89,9 @@ export default function Bridge({
     <BridgeSessionProvider rhEnabled={rhEnabled} rhAdapter={rhAdapter ?? runtime.adapter}>
       <BridgeContent />
       <UnifiedRhHistory
-        controller={runtime.controller}
         history={runtime.snapshot.history}
         catalog={rhDeps?.v2?.catalog}
+        etaSeconds={(runtime.snapshot.v2 ?? runtime.snapshot.v2Display)?.state.etaSeconds}
       />
     </BridgeSessionProvider>
   );

@@ -11,12 +11,16 @@ import { REVIEWED_PROFILES } from '../../config/rhBridge/profiles';
 import { createChainReader } from '../../services/rhBridge/chainReads';
 import { createV2ApiClient } from '../../services/rhBridge/v2-api';
 import { isEip1193 } from '../../services/rhBridge/wallet';
-import { formatUnits } from '../../services/rhBridge/lane';
+import { formatUnits, previewTransferAmounts } from '../../services/rhBridge/lane';
+import { profileLimits } from '../../config/rhBridge/profiles';
 import { RhLaneController } from './controller';
 import type { ControllerDeps } from './controller';
 import type { BridgeAdapter, BridgeObservation } from '../bridge/BridgeSession';
 import { selectionKey } from '../bridge/BridgeSession';
-import { formatBridgeEta } from '../../components/bridge/presentation';
+import { formatBridgeEta, shownObservation } from '../../components/bridge/presentation';
+import type { PresentedBalance } from '../../services/rhBridge/balanceObservations';
+import { shouldPollBalances } from '../../services/rhBridge/balanceSchedule';
+import type { BridgeAuthority } from '../bridge/BridgeSession';
 function browserDeps(): ControllerDeps {
   let storage = null;
   try {
@@ -46,6 +50,15 @@ export function useUnifiedRhBridge(selection: BridgeSelection, enabled: boolean,
   const [transitionEpoch, bumpTransition] = useState(0);
   const store = useStore<{ bridge: { form: unknown } }>();
   const lastForm = useRef(selectionKey(selection));
+  const shown = useRef<
+    Partial<
+      Record<
+        'fee' | 'net' | 'eta' | 'perTxMax' | 'remainingCapacity' | 'sourceBalance' | 'destinationBalance',
+        BridgeObservation
+      >
+    >
+  >({});
+  const shownIdentity = useRef('');
   const wallet = useActiveWeb3React();
   const provider =
     wallet.active && wallet.connector === injected && isEip1193(wallet.library?.provider)
@@ -61,6 +74,10 @@ export function useUnifiedRhBridge(selection: BridgeSelection, enabled: boolean,
         const live = normalizeBridgeSelection(store.getState().bridge.form, enabled),
           key = selectionKey(live);
         if (key === lastForm.current) return;
+        const previous = lastForm.current.split('|');
+        const next = key.split('|');
+        const amountOnly =
+          previous.length === next.length && next.every((part, index) => index === 3 || part === previous[index]);
         lastForm.current = key;
         controller.setSelection(
           enabled && routeFor(live.originNetwork, live.destinationNetwork)?.engine === 'RH'
@@ -70,7 +87,7 @@ export function useUnifiedRhBridge(selection: BridgeSelection, enabled: boolean,
           live.inputAmount,
           live.recipient || ''
         );
-        bumpTransition((x) => x + 1);
+        if (!amountOnly) bumpTransition((x) => x + 1);
       }),
     [store, enabled, controller]
   );
@@ -133,7 +150,6 @@ export function useUnifiedRhBridge(selection: BridgeSelection, enabled: boolean,
         }
       }
       const nextReadAt = now() + delay;
-      if (controller.hasOpenRecords()) await controller.trackOnce();
       if (!stopped) timer = setTimeout(loop, Math.max(1000, nextReadAt - now()));
     };
     timer = setTimeout(loop, rh ? 300 : 0);
@@ -147,7 +163,6 @@ export function useUnifiedRhBridge(selection: BridgeSelection, enabled: boolean,
     selection.selectedAssetKey,
     selection.originNetwork,
     selection.destinationNetwork,
-    selection.inputAmount,
     selection.recipient,
     account,
     chainId,
@@ -155,6 +170,34 @@ export function useUnifiedRhBridge(selection: BridgeSelection, enabled: boolean,
     transitionEpoch,
     override?.now,
   ]);
+  useEffect(() => {
+    if (!rh) return undefined;
+    let stopped = false;
+    let timer: ReturnType<typeof setTimeout>;
+    const tick = () => {
+      if (stopped) return;
+      // Approval receipts are polled on their own clock so a held snapshot cannot delay them.
+      if (controller.hasOpenRecords()) void controller.trackOnce();
+      if (shouldPollBalances(typeof document === 'undefined' || document.visibilityState !== 'hidden'))
+        controller.refreshBalances('poll');
+      if (!stopped) timer = setTimeout(tick, 1000);
+    };
+    timer = setTimeout(tick, 1000);
+    const onVisible = () => {
+      if (!stopped && document.visibilityState === 'visible') controller.refreshBalances('focus');
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      stopped = true;
+      clearTimeout(timer);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
+  }, [controller, rh]);
+  useEffect(() => {
+    if (!rh) return undefined;
+    const timer = setTimeout(() => void controller.refreshAmountQuote(), 400);
+    return () => clearTimeout(timer);
+  }, [controller, rh, selection.inputAmount, selection.selectedAssetKey, selection.originNetwork]);
   useEffect(() => {
     const timer = setInterval(() => tick((x) => x + 1), 1000);
     const storage = () => controller.onStorageEvent();
@@ -172,7 +215,8 @@ export function useUnifiedRhBridge(selection: BridgeSelection, enabled: boolean,
     const x = snapshot.v2 ?? snapshot.v2Display,
       valid = x && x.profile.descriptor.binding.profileSha256 === profile.descriptor.binding.profileSha256;
     const fresh = !!valid && x === snapshot.v2 && (override?.now ?? Date.now)() < x!.validUntil;
-    const checking = snapshot.v2Loading || (!snapshot.v2 && !snapshot.notice);
+    const checking =
+      !!snapshot.v2Loading || (!snapshot.v2 && !snapshot.v2Display && !snapshot.v2ReadFailed && !snapshot.notice);
     const observation = (value: string | undefined): BridgeObservation =>
       checking && (!valid || value === undefined)
         ? { status: 'loading' }
@@ -186,19 +230,57 @@ export function useUnifiedRhBridge(selection: BridgeSelection, enabled: boolean,
     const view = controller.view(),
       quote = view.grossRaw && x?.gross === view.grossRaw ? x.quote : undefined;
     const display = (raw: string | undefined) => (raw === undefined ? undefined : formatUnits(raw, 18));
+    const direction = selection.originNetwork === BridgeNetwork.ROBINHOOD ? 'RH_TO_ONYX' : 'ONYX_TO_RH';
+    const amounts = previewTransferAmounts(
+      direction,
+      view.grossRaw,
+      quote,
+      x?.limits?.fee ?? profileLimits(profile).fee
+    );
+    const shownAmount = (raw: string): BridgeObservation => ({ status: 'ready', value: formatUnits(raw, 18) });
     const eta = x?.state.etaSeconds[selection.originNetwork === BridgeNetwork.ROBINHOOD ? 'RH_TO_ONYX' : 'ONYX_TO_RH'];
+    const identity = [
+      selection.originNetwork,
+      selection.destinationNetwork,
+      selection.selectedAssetKey,
+      account || '',
+    ].join('|');
+    if (shownIdentity.current !== identity) {
+      shownIdentity.current = identity;
+      shown.current = {};
+    }
+    const show = (
+      field: 'fee' | 'net' | 'eta' | 'perTxMax' | 'remainingCapacity' | 'sourceBalance' | 'destinationBalance',
+      value: BridgeObservation
+    ): BridgeObservation => {
+      const kept = shownObservation(value, shown.current[field]);
+      if (kept.value !== undefined || kept.status === 'disconnected') shown.current[field] = kept;
+      return kept;
+    };
     return {
       selectionKey: selectionKey(selection, wallet.account, wallet.chainId),
       binding: profile.descriptor.binding,
-      fee: observation(display(quote?.fee)),
-      net: observation(display(quote?.net)),
-      eta: observation(formatBridgeEta(eta)),
-      perTxMax: observation(display(x?.capacity.perTxMax)),
-      remainingCapacity: observation(display(x?.capacity.remainingCapacity)),
-      sourceBalance: account ? observation(display(x?.sourceBalance)) : { status: 'disconnected' },
-      destinationBalance: account ? observation(display(x?.destinationBalance)) : { status: 'disconnected' },
+      fee: show('fee', shownAmount(amounts.feeRaw)),
+      net: show('net', shownAmount(amounts.netRaw)),
+      eta: show('eta', observation(formatBridgeEta(eta))),
+      perTxMax: show('perTxMax', observation(display(x?.capacity.perTxMax))),
+      remainingCapacity: show('remainingCapacity', observation(display(x?.capacity.remainingCapacity))),
+      sourceBalance: presentChannel(
+        snapshot.balanceChannel?.source,
+        show('sourceBalance', account ? observation(display(x?.sourceBalance)) : { status: 'disconnected' }),
+        !!account,
+        (override?.now ?? Date.now)()
+      ),
+      destinationBalance: presentChannel(
+        snapshot.balanceChannel?.destination,
+        show('destinationBalance', account ? observation(display(x?.destinationBalance)) : { status: 'disconnected' }),
+        !!account,
+        (override?.now ?? Date.now)()
+      ),
       maxAmount: fresh ? display(x?.maxRaw) : undefined,
       validUntil: x?.validUntil,
+      authority: authorityFrom(snapshot.v2, fresh, (override?.now ?? Date.now)()),
+      checking,
       canApprove: fresh && view.canApprove,
       canConfirm: fresh && view.canBridge,
       busy: snapshot.busy !== null,
@@ -206,7 +288,56 @@ export function useUnifiedRhBridge(selection: BridgeSelection, enabled: boolean,
       approve: (guard) => controller.approve(guard),
       confirm: (guard) => controller.bridge(guard),
       refresh: () => void controller.refreshLane(),
+      refreshBalances: () => controller.refreshBalances('manual'),
+      refreshAfterReceipt: () => controller.refreshAfterReceipt(),
     };
   })();
   return { controller, snapshot, adapter };
+}
+
+function authorityFrom(
+  v2:
+    | {
+        sourceBalance?: string;
+        capacity: { perTxMax: string; remainingCapacity: string };
+        maxRaw?: string;
+        validUntil: number;
+      }
+    | null
+    | undefined,
+  fresh: boolean,
+  nowMs: number
+): BridgeAuthority {
+  return {
+    fresh: !!v2 && fresh && nowMs < v2.validUntil,
+    sourceBalanceAtomic: v2?.sourceBalance,
+    perTxMaxAtomic: v2?.capacity.perTxMax,
+    remainingCapacityAtomic: v2?.capacity.remainingCapacity,
+    maxAmountAtomic: v2?.maxRaw,
+    validUntil: v2?.validUntil,
+  };
+}
+
+function presentChannel(
+  presented: PresentedBalance | undefined,
+  fallback: BridgeObservation,
+  connected: boolean,
+  nowMs: number
+): BridgeObservation {
+  if (!connected) return { status: 'disconnected' };
+  if (!presented || presented.status === 'idle') return fallback;
+  const value = presented.valueAtomic !== undefined ? formatUnits(presented.valueAtomic, 18) : undefined;
+  const observedAt = presented.clock?.observedAtMs;
+  const expired = !!presented.clock && nowMs >= presented.clock.expiresAtMs;
+  if (presented.status === 'disconnected') return { status: 'disconnected' };
+  if ((presented.status === 'ready' || presented.status === 'refreshing') && value !== undefined && !expired)
+    return {
+      status: presented.status === 'refreshing' ? 'refreshing' : 'ready',
+      value,
+      observedAt,
+    };
+  if (value !== undefined && (presented.status === 'stale' || presented.status === 'unavailable' || expired))
+    return { status: presented.status === 'unavailable' ? 'unavailable' : 'stale', value, observedAt };
+  if (presented.status === 'loading') return { status: 'loading' };
+  return { status: 'unavailable', observedAt };
 }

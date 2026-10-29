@@ -8,8 +8,10 @@ import { readV2 } from '../../services/rhBridge/v2-api';
 import type * as V2 from '../../services/rhBridge/v2-types';
 import { freshObservation, sameBinding, timeMs, validateQuote } from '../../services/rhBridge/v2-schema';
 import { buildApproval, buildBridgeCall, parseUnits, validateRecipient } from '../../services/rhBridge/lane';
-import { readAllowance, readDecimals, readOnchainFee, readTokenBalance } from '../../services/rhBridge/chainReads';
+import { readAllowance, readOnchainFee } from '../../services/rhBridge/chainReads';
 import type { ChainReader } from '../../services/rhBridge/chainReads';
+import { qualifyChainBalance } from '../../services/rhBridge/balanceObservations';
+import type { QualifyResult } from '../../services/rhBridge/balanceObservations';
 import type { LaneSnapshot, LaneView } from './view';
 import { sameBindings } from '../../state/rhBridge/history';
 export interface V2Snapshot {
@@ -29,17 +31,70 @@ export interface V2Snapshot {
   validUntil: number;
 }
 const min = (...v: bigint[]) => v.reduce((a, b) => (a < b ? a : b));
-const GENESIS: Record<number, string> = {
-  46630: '0x829a42e6d68c872aafcef3abb2123fe371138fc415dd8b44381bbbf23049dd32',
-  8901: '0xdc7a820f4bc825abbfec84107c41d2f84ea9aea2e4af78af511f05e20eb18e32',
-};
+export interface SnapshotReadOptions {
+  providerEpoch?: number;
+  prefetch?: { source: Promise<QualifyResult>; destination: Promise<QualifyResult> } | null;
+  onBalance?: (side: 'source' | 'destination', result: QualifyResult) => void;
+  onRegistry?: (ok: boolean) => void;
+}
+function assertQualified(result: QualifyResult): asserts result is Extract<QualifyResult, { kind: 'qualified' }> {
+  if (result.kind === 'qualified') return;
+  if (result.kind === 'mismatch' && result.code === 'DECIMALS') throw new Error('RH_DECIMALS_MISMATCH');
+  if (result.kind === 'mismatch' && (result.code === 'GENESIS' || result.code === 'CHAIN'))
+    throw new Error('RH_CHAIN_MISMATCH');
+  if (result.kind === 'mismatch') throw new Error('RH_CODE_MISMATCH');
+  throw new Error('RH_RPC_UNREACHABLE');
+}
+export function qualifyLaneSide(
+  profile: ReviewedProfile,
+  chains: ChainReader,
+  s: LaneSnapshot,
+  now: () => number,
+  side: 'source' | 'destination',
+  providerEpoch = 0
+): Promise<QualifyResult> | null {
+  const account = s.wallet.account;
+  if (!account) return null;
+  const asset = profile.descriptor;
+  const chain: 'rh' | 'onyx' =
+    side === 'source' ? (s.direction === 'RH_TO_ONYX' ? 'rh' : 'onyx') : s.direction === 'RH_TO_ONYX' ? 'onyx' : 'rh';
+  return qualifyChainBalance({
+    reader: chains,
+    now,
+    account,
+    providerEpoch,
+    profileSha256: asset.binding.profileSha256,
+    assetId: asset.binding.assetId,
+    chainId: chain === 'rh' ? 46630 : 8901,
+    kind: chain === 'onyx' || asset.kind === 'ERC20' ? 'erc20' : 'native',
+    token: chain === 'onyx' ? asset.wrapper.address : asset.kind === 'ERC20' ? asset.token : null,
+    expectedCodeKeccak256:
+      chain === 'onyx'
+        ? asset.wrapper.runtimeCodeKeccak256
+        : asset.kind === 'ERC20'
+        ? asset.tokenRuntimeCodeKeccak256 ?? undefined
+        : undefined,
+  });
+}
+export function startQualifiedBalances(
+  profile: ReviewedProfile,
+  chains: ChainReader,
+  s: LaneSnapshot,
+  now: () => number,
+  providerEpoch = 0
+): { source: Promise<QualifyResult>; destination: Promise<QualifyResult> } | null {
+  const source = qualifyLaneSide(profile, chains, s, now, 'source', providerEpoch);
+  const destination = qualifyLaneSide(profile, chains, s, now, 'destination', providerEpoch);
+  return source && destination ? { source, destination } : null;
+}
 export async function readProfileSnapshot(
   api: V2ApiClient,
   catalog: ProfileCatalog,
   profile: ReviewedProfile,
   chains: ChainReader,
   s: LaneSnapshot,
-  now: () => number
+  now: () => number,
+  options?: SnapshotReadOptions
 ): Promise<V2Snapshot> {
   const a = profile.descriptor,
     b = a.binding,
@@ -52,8 +107,6 @@ export async function readProfileSnapshot(
   } catch {
     /* Invalid recipient keeps actions closed. */
   }
-  const assets = await readV2<V2.Assets>(api, { kind: 'assets' }, 'Assets');
-  bindRegistry(assets, catalog);
   const observations = async () => {
     const [limits, state, capacity, health] = await Promise.all([
       readV2<V2.Limits>(api, { kind: 'limits', binding: b }, 'Limits'),
@@ -87,32 +140,41 @@ export async function readProfileSnapshot(
     if (now() >= validUntil) throw new Error('RH_V2_STALE');
     return { limits, state, capacity, health, validUntil };
   };
-  if (!s.wallet.account) {
-    return { profile, ...(await observations()) };
-  }
   const account = s.wallet.account;
-  if (!chains.getCode || !chains.getChainId || !chains.genesisHash) throw new Error('RH_CODE_UNAVAILABLE');
-  const contracts = [a.escrow, a.minter, a.wrapper, a.implementation];
-  const [identities, codes, tokenCode] = await Promise.all([
-    Promise.all(([46630, 8901] as const).map((id) => Promise.all([chains.getChainId!(id), chains.genesisHash!(id)]))),
-    Promise.all(contracts.map((c) => chains.getCode!(c.chainId, c.address))),
-    a.kind === 'ERC20' ? chains.getCode(46630, a.token!) : Promise.resolve(undefined),
-  ]);
-  for (const [index, id] of ([46630, 8901] as const).entries())
-    if (identities[index][0] !== id || identities[index][1] !== GENESIS[id]) throw new Error('RH_CHAIN_MISMATCH');
-  for (const [index, c] of contracts.entries())
-    if (keccak256(codes[index]) !== c.runtimeCodeKeccak256) throw new Error('RH_CODE_MISMATCH');
-  if (a.kind === 'ERC20' && keccak256(tokenCode!) !== a.tokenRuntimeCodeKeccak256)
-    throw new Error('RH_TOKEN_CODE_MISMATCH');
+  if (account && (!chains.getCode || !chains.getChainId || !chains.genesisHash)) throw new Error('RH_CODE_UNAVAILABLE');
   const nativeDeposit = a.kind === 'NATIVE' && direction === 'RH_TO_ONYX';
-  const rhRead =
-    a.kind === 'NATIVE' ? chains.getBalance(46630, account) : readTokenBalance(chains, 46630, a.token!, account);
-  const [rhBalance, onyxBalance, nativeBalance, rhDecimals, wrapperDecimals, allowance] = await Promise.all([
-    rhRead,
-    readTokenBalance(chains, 8901, a.wrapper.address, account),
-    nativeDeposit ? rhRead : chains.getBalance(source, account),
-    a.kind === 'ERC20' ? readDecimals(chains, 46630, a.token!) : Promise.resolve(18),
-    readDecimals(chains, 8901, a.wrapper.address),
+  const sides = account
+    ? options?.prefetch ?? startQualifiedBalances(profile, chains, s, now, options?.providerEpoch ?? 0)
+    : null;
+  if (sides && options?.onBalance) {
+    sides.source.then(
+      (result) => options.onBalance!('source', result),
+      () => undefined
+    );
+    sides.destination.then(
+      (result) => options.onBalance!('destination', result),
+      () => undefined
+    );
+  }
+  // Wrapper and token code start inside the side reads. These three keep the full authority set at four
+  // concurrent getCode calls for a native asset, before capacity is requested.
+  const authorityContracts = [a.escrow, a.minter, a.implementation];
+  const codesPromise = account
+    ? Promise.all(authorityContracts.map((contract) => chains.getCode!(contract.chainId, contract.address)))
+    : null;
+  const assets = await readV2<V2.Assets>(api, { kind: 'assets' }, 'Assets');
+  try {
+    bindRegistry(assets, catalog);
+    options?.onRegistry?.(true);
+  } catch (error) {
+    options?.onRegistry?.(false);
+    throw error;
+  }
+  if (!account || !sides || !codesPromise) return { profile, ...(await observations()) };
+  const [sourceResult, destinationResult, codes, allowance, gasBalance] = await Promise.all([
+    sides.source,
+    sides.destination,
+    codesPromise,
     nativeDeposit
       ? Promise.resolve(undefined)
       : readAllowance(
@@ -122,14 +184,19 @@ export async function readProfileSnapshot(
           account,
           direction === 'RH_TO_ONYX' ? a.escrow.address : a.minter.address
         ),
+    nativeDeposit ? Promise.resolve(undefined) : chains.getBalance(source, account),
   ]);
-  if (rhDecimals !== 18 || wrapperDecimals !== 18) throw new Error('RH_DECIMALS_MISMATCH');
+  assertQualified(sourceResult);
+  assertQualified(destinationResult);
+  for (const [index, contract] of authorityContracts.entries())
+    if (keccak256(codes[index]) !== contract.runtimeCodeKeccak256) throw new Error('RH_CODE_MISMATCH');
+  const rhBalance = direction === 'RH_TO_ONYX' ? sourceResult.valueAtomic : destinationResult.valueAtomic;
   // Dynamic observations arrive after independent RPC qualification, retaining every original expiry.
   const { limits, state, capacity, health, validUntil } = await observations();
   const result: V2Snapshot = { profile, limits, state, capacity, health, validUntil, allowance };
-  result.sourceBalance = direction === 'RH_TO_ONYX' ? rhBalance : onyxBalance;
-  result.destinationBalance = direction === 'RH_TO_ONYX' ? onyxBalance : rhBalance;
-  result.nativeBalance = nativeBalance;
+  result.sourceBalance = sourceResult.valueAtomic;
+  result.destinationBalance = destinationResult.valueAtomic;
+  result.nativeBalance = nativeDeposit ? rhBalance : gasBalance;
   const freshResult = () => {
     if (now() >= result.validUntil) throw new Error('RH_V2_STALE');
     return result;
@@ -253,10 +320,8 @@ export function deriveV2View(s: LaneSnapshot, lane: ReturnType<typeof profileLan
     (native
       ? state.paused.token === null && state.issuer === 'NOT_APPLICABLE'
       : state.paused.token === false && state.issuer === 'OPEN');
-  const directionOpen =
-    s.direction === 'RH_TO_ONYX'
-      ? state.depositsOpen && (!native || r.depositGateOpen === true)
-      : state.exitsOpen && state.collector === 'OPEN';
+  // depositsOpen/exitsOpen also fold in this wallet's allowlist result. A denied wallet is not a closed asset.
+  const directionOpen = s.direction === 'RH_TO_ONYX' ? r.depositGateOpen === true : state.collector === 'OPEN';
   view.gate = {
     open: now < x.validUntil && x.health.status === 'ok' && permitted && pause && directionOpen,
     reasons: [],
@@ -301,7 +366,9 @@ export function deriveV2View(s: LaneSnapshot, lane: ReturnType<typeof profileLan
     if (gross > BigInt(x.capacity.remainingCapacity) || !x.capacity.admissionAllowsNewSource)
       view.capacityError = 'ABOVE_CAPACITY';
     if (!x.quote || x.gross !== view.grossRaw) view.quoteError = 'Refresh the fee quote.';
-    view.needsApproval = !(native && s.direction === 'RH_TO_ONYX') && BigInt(x.allowance ?? '0') < gross;
+    // The allowance field can still be the pre-approval read after the receipt is mined.
+    view.needsApproval =
+      !(native && s.direction === 'RH_TO_ONYX') && BigInt(x.allowance ?? '0') < gross && !view.approvedRecord;
   }
   // The matching owner blocks duplicate actions; persisting its own pre-prompt record is not an intent change.
   const ready =

@@ -54,7 +54,11 @@ export function v2Fixture() {
       profilePreimageUtf8 = 'RH_LEDGER_ASSET_PROFILE_V2\n' + JSON.stringify(canonical(payload));
       a.binding = { ...a.binding, profileSha256: sha256(toUtf8Bytes(profilePreimageUtf8)).slice(2) };
     } else {
-      profilePreimageUtf8 = reviewed.profiles[0].profilePreimageUtf8;
+      const historical =
+        (reviewed as { historical?: { profilePreimageUtf8: string; descriptor: { binding: { profileSha256: string } } }[] })
+          .historical ?? [];
+      const match = historical.find((p) => p.descriptor.binding.profileSha256 === a.binding.profileSha256);
+      profilePreimageUtf8 = (match ?? reviewed.profiles[0]).profilePreimageUtf8;
       payload = JSON.parse(profilePreimageUtf8.slice(profilePreimageUtf8.indexOf('\n') + 1));
     }
     const manifestUtf8 = JSON.stringify({

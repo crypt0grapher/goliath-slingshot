@@ -129,7 +129,7 @@ export default function BridgeStatusModal() {
   const operation = useSelector(selectActiveOperation);
   const pollingError = useSelector(selectPollingError);
   const session = useOptionalBridgeSession();
-  const triggerBalanceRefresh = () => session?.refreshBalances();
+  const triggerBalanceRefresh = () => session?.refreshAfterReceipt?.() ?? session?.refreshBalances();
 
   // Start polling for status updates
   useBridgeStatusPolling(operation);

@@ -62,6 +62,31 @@ test.each(['TSLA', 'RH_ETH'])(
     expect(call.args[3].toString()).toBe(f.c.state.v2!.quote!.suggestedMaxFee);
   }
 );
+test('a mined TSLA approval enables Confirm Bridge while the stored allowance is still the old value', async () => {
+  const f = await setup('TSLA');
+  expect(f.c.view()).toMatchObject({ canApprove: true, canBridge: false, needsApproval: true });
+  await f.c.approve();
+  expect(readHistory(f.storage).records[0].stage).toBe('SOURCE_PENDING');
+  expect(f.c.view()).toMatchObject({ canApprove: false, canBridge: false });
+  expect(f.c.state.v2?.allowance).toBe('0');
+  f.chains.getReceipt = async () => ({ status: 1, blockNumber: 10 });
+  await f.c.trackOnce();
+  expect(readHistory(f.storage).records[0].stage).toBe('APPROVED');
+  expect(f.c.state.v2?.allowance).toBe('0');
+  expect(f.c.view()).toMatchObject({ canApprove: false, canBridge: true, needsApproval: false });
+  f.c.setSelection('TSLA', 'RH_TO_ONYX', '0.02', '');
+  await f.c.refreshAmountQuote();
+  expect(f.c.view()).toMatchObject({ canApprove: true, canBridge: false, needsApproval: true });
+});
+test('an approval already mined when the wallet returns enables Confirm Bridge without a reload', async () => {
+  const f = await setup('TSLA');
+  f.chains.getReceipt = async () => ({ status: 1, blockNumber: 11 });
+  await f.c.approve();
+  expect(f.state.allowance).toBe('0');
+  expect(f.c.state.v2?.allowance).toBe('0');
+  expect(readHistory(f.storage).records[0].stage).toBe('APPROVED');
+  expect(f.c.view()).toMatchObject({ canApprove: false, canBridge: true, needsApproval: false });
+});
 test('untrusted registry/code changes and global holds cannot enable native actions', async () => {
   const f = await setup();
   f.state.badRegistry = true;
@@ -90,7 +115,8 @@ test('failed reads retain only display data with original expiry and never retai
   expect(f.c.state.v2Display!.validUntil).toBe(previous.validUntil);
   expect(f.c.view().canBridge).toBe(false);
   expect(f.c.view().canApprove).toBe(false);
-  expect(f.c.state.notice).toBe('Bridge observations are unavailable or stale. Live actions stay disabled.');
+  expect(f.c.state.notice).toBeNull();
+  expect(f.c.state.v2ReadFailed).toBe(true);
   await f.c.refreshLane();
   expect(f.c.state.v2Display).toBe(previous);
   expect(f.c.view().canBridge).toBe(false);
@@ -149,9 +175,10 @@ test.each([
     );
     f.c.setWallet(wallet, f.provider);
   }
-  expect(f.c.state.v2Display).toBeNull();
+  const keepsFigures = ['amount', 'recipient', 'amount-setter', 'recipient-setter'].includes(change);
+  expect(f.c.state.v2Display === null).toBe(!keepsFigures);
   await f.c.refreshLane();
-  expect(f.c.state.v2Display).toBeNull();
+  expect(f.c.state.v2Display === null).toBe(!keepsFigures);
   expect(f.c.state.v2).toBeNull();
   expect(f.c.view().canBridge).toBe(false);
   expect(f.c.view().canApprove).toBe(false);
@@ -396,6 +423,43 @@ test('v2 controller generations reject an old read after a profile moves away an
   await f.c.refreshLane();
   expect(f.c.view().canBridge).toBe(true);
 });
+test('a wallet outside the allowlist does not mark the asset closed', async () => {
+  const f = await setup('TSLA');
+  const snap = f.c.state;
+  snap.v2 = {
+    ...snap.v2!,
+    state: {
+      ...snap.v2!.state,
+      depositsOpen: false,
+      exitsOpen: false,
+      eligibility: { ...snap.v2!.state.eligibility, status: 'DENIED' },
+    },
+  };
+  const view = f.c.view();
+  expect(view.gate.open).toBe(true);
+  expect(view.canBridge).toBe(false);
+  expect(view.allowlistBlocker).toBe('ALLOWLIST_UNKNOWN');
+});
+test('an amount edit keeps the loaded observations and only replaces the quote', async () => {
+  const f = await setup('TSLA');
+  const before = f.c.state.v2!;
+  const callsBefore = f.transport.mock.calls.length;
+  f.c.setSelection('TSLA', 'RH_TO_ONYX', '0.02', '');
+  expect(f.c.state.v2).toBe(before);
+  expect(f.c.state.v2Display).toBe(before);
+  expect(f.transport.mock.calls).toHaveLength(callsBefore);
+  expect(f.c.state.amountText).toBe('0.02');
+  expect(f.c.view().canBridge).toBe(false);
+  expect(f.c.view().quoteError).toBe('Refresh the fee quote.');
+  await f.c.refreshAmountQuote();
+  const added = f.transport.mock.calls.slice(callsBefore).map((call) => String(call[0]));
+  expect(added).toEqual([expect.stringContaining('fee-quote')]);
+  expect(f.c.state.v2?.capacity.remainingCapacity).toBe(before.capacity.remainingCapacity);
+  expect(f.c.state.v2?.sourceBalance).toBe(before.sourceBalance);
+  expect(f.c.state.v2?.gross).not.toBe(before.gross);
+  expect(f.c.view().quoteError).toBeUndefined();
+  expect(f.c.view().canApprove || f.c.view().canBridge).toBe(true);
+});
 test('controller epoch is checked after asynchronous wallet context preparation immediately before the native prompt', async () => {
   const f = await setup(),
     accounts = deferred<string[]>(),
@@ -522,4 +586,60 @@ test('recovery preserves ambiguity and qualified claims across historical profil
   expect(
     (await t.recover([t.other, t.own], false, [operationClaim(t.other.binding, t.own.operationId, 46630)])).patches
   ).toHaveLength(2);
+});
+
+test('a held capacity read still publishes the qualified balance before actions can open', async () => {
+  const f = v2Fixture(),
+    c = new RhLaneController(f.deps),
+    hold = deferred<void>();
+  c.setWallet({ account: f.state.account, chainId: 46630, isInjected: true, hasProvider: true }, f.provider);
+  c.setSelection('RH_ETH', 'RH_TO_ONYX', '0.0001', '');
+  let capacityEntered = false;
+  const read = f.deps.v2!.api.read;
+  f.deps.v2!.api = {
+    read: async (request) => {
+      if (request.kind === 'capacity') {
+        capacityEntered = true;
+        await hold.promise;
+      }
+      return read(request);
+    },
+  };
+  const pending = c.refreshLane();
+  for (let i = 0; i < 80 && !capacityEntered; i += 1) await Promise.resolve();
+  expect(capacityEntered).toBe(true);
+  expect(c.state.v2).toBeNull();
+  expect(c.state.v2Loading).toBe(true);
+  expect(c.state.balanceChannel?.source).toMatchObject({ status: 'ready', valueAtomic: '1000000000000000' });
+  expect(c.state.balanceChannel?.destination.status).toBe('ready');
+  const clock = c.state.balanceChannel!.source.clock!;
+  expect(clock.expiresAtMs - clock.requestStartedAtMs).toBe(15000);
+  expect(c.view().canBridge).toBe(false);
+  expect(c.view().canApprove).toBe(false);
+  hold.resolve();
+  await pending;
+  expect(c.state.v2?.sourceBalance).toBe('1000000000000000');
+  expect(c.view().canBridge).toBe(true);
+});
+
+test('a destination balance failure leaves the source balance visible and actions closed', async () => {
+  const f = v2Fixture(),
+    c = new RhLaneController(f.deps);
+  c.setWallet({ account: f.state.account, chainId: 46630, isInjected: true, hasProvider: true }, f.provider);
+  c.setSelection('RH_ETH', 'RH_TO_ONYX', '0.0001', '');
+  const owner = f.state.account.toLowerCase();
+  const balanceOf = LANE_ABI.encodeFunctionData('balanceOf', [owner]);
+  const call = f.chains.call!;
+  f.chains.call = async (chainId, to, data) => {
+    if (chainId === 8901 && data === balanceOf) throw new Error('destination rpc down');
+    return call(chainId, to, data);
+  };
+  await c.refreshLane();
+  expect(c.state.v2).toBeNull();
+  expect(c.state.v2ReadFailed).toBe(true);
+  expect(c.state.balanceChannel?.source).toMatchObject({ status: 'ready', valueAtomic: '1000000000000000' });
+  expect(c.state.balanceChannel?.source.valueAtomic).not.toBe('0');
+  expect(c.state.balanceChannel?.destination.status).toBe('unavailable');
+  expect(c.view().canBridge).toBe(false);
+  expect(c.view().canApprove).toBe(false);
 });

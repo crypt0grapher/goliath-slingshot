@@ -42,9 +42,10 @@ const LoadingLine = styled.span`
   }
 `;
 export function observationText(value: BridgeObservation, symbol = ''): string {
-  if (value.status === 'ready' && value.value !== undefined) return value.value + (symbol ? ` ${symbol}` : '');
-  if (value.status === 'stale' && value.value !== undefined)
-    return `${value.value}${symbol ? ` ${symbol}` : ''} · Stale — refreshing`;
+  const suffix = symbol ? ` ${symbol}` : '';
+  if (value.status === 'ready' && value.value !== undefined) return value.value + suffix;
+  if (value.status === 'refreshing' && value.value !== undefined) return `${value.value}${suffix} · Refreshing`;
+  if (value.status === 'stale' && value.value !== undefined) return `${value.value}${suffix} · Stale — refreshing`;
   return value.status === 'loading'
     ? 'Loading…'
     : value.status === 'disconnected'

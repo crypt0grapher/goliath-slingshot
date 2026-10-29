@@ -35,6 +35,7 @@ import {
   buildBridgeCall,
   LaneCall,
   OnchainFee,
+  parseUnits,
   validateFeeQuote,
   validateOnchainFee,
 } from '../../services/rhBridge/lane';
@@ -45,9 +46,27 @@ import { chainKey, deriveView, LaneSnapshot, WalletState } from './view';
 import type { ProfileCatalog } from '../../config/rhBridge/profiles';
 import { profileLane, legacyTslaProfile } from '../../config/rhBridge/profiles';
 import type { V2ApiClient } from '../../services/rhBridge/v2-api';
+import { readV2 } from '../../services/rhBridge/v2-api';
+import { validateQuote } from '../../services/rhBridge/v2-schema';
+import type * as V2 from '../../services/rhBridge/v2-types';
 import type { WalletIntentGuard } from '../bridge/walletIntent';
 import { StaleBridgeIntent } from '../bridge/walletIntent';
-import { readProfileSnapshot } from './v2';
+import { qualifyLaneSide, readProfileSnapshot, startQualifiedBalances } from './v2';
+import type { V2Snapshot } from './v2';
+import {
+  SameCycleCoordinator,
+  contradictsAuthority,
+  createBalanceChannel,
+  reduceBalanceChannel,
+  shareChainReader,
+} from '../../services/rhBridge/balanceObservations';
+import type { BalanceChannelState, BalanceEvent, QualifyResult } from '../../services/rhBridge/balanceObservations';
+import {
+  balanceDelay,
+  canStartManualRefresh,
+  receiptCheckOffsets,
+  RECEIPT_WINDOW_MS,
+} from '../../services/rhBridge/balanceSchedule';
 
 export interface ControllerDeps {
   api: RhApiClient | null;
@@ -80,7 +99,22 @@ export class RhLaneController {
   private tracking = false;
   private disposed = false;
   private selectedAsset: string | null = null;
-  private v2Reading: { generation: number; promise: Promise<void> } | null = null;
+  private v2Reading: { generation: number; cycle: number; promise: Promise<void> } | null = null;
+  private balanceEpoch = 0;
+  private providerEpoch = 0;
+  private readCycle = 0;
+  private latchId = 0;
+  private recoveredId = 0;
+  private authorityCycle = -1;
+  private lastManualAt: number | null = null;
+  private balanceFailures = { source: 0, destination: 0 };
+  private nextBalanceAt = { source: 0, destination: 0 };
+  private sideFlight: Partial<Record<'source' | 'destination', Promise<void>>> = {};
+  private receiptTimers: ReturnType<typeof setTimeout>[] = [];
+  /** Balance publication held until the in-flight snapshot lands, so an age tick cannot mint a new intent. */
+  private heldChannel: BalanceChannelState | null = null;
+  private heldCycle = -1;
+  private readonly balanceCoordinator = new SameCycleCoordinator(() => this.deps.now());
 
   constructor(private readonly deps: ControllerDeps) {
     this.snapshot = {
@@ -94,7 +128,9 @@ export class RhLaneController {
       history: deps.storage ? EMPTY_HISTORY : { status: 'INVALID', records: [], invalidRows: 0 },
       busy: null,
       notice: deps.storage ? null : 'Browser storage is unavailable, so live actions stay disabled.',
-      ...(deps.v2 ? { v2: null, v2Display: null, v2Loading: false } : {}),
+      ...(deps.v2
+        ? { v2: null, v2Display: null, v2Loading: false, v2ReadFailed: false, balanceChannel: createBalanceChannel() }
+        : {}),
     };
     if (deps.storage) {
       // A prompt that was open before this page load can no longer be observed.
@@ -115,6 +151,7 @@ export class RhLaneController {
   }
   dispose(): void {
     this.disposed = true;
+    this.receiptTimers.forEach((timer) => clearTimeout(timer));
     this.listeners.clear();
   }
 
@@ -144,7 +181,20 @@ export class RhLaneController {
     ) {
       // Any context change cancels whatever action captured the previous context.
       this.generation++;
-      this.set({ wallet, chain: {}, ...(this.deps.v2 ? { v2: null, v2Display: null, v2Loading: false } : {}) });
+      this.bumpBalanceContext();
+      this.set({
+        wallet,
+        chain: {},
+        ...(this.deps.v2
+          ? {
+              v2: null,
+              v2Display: null,
+              v2Loading: false,
+              v2ReadFailed: false,
+              balanceChannel: this.contextChannel(wallet.account),
+            }
+          : {}),
+      });
     } else if (previous.hasProvider !== wallet.hasProvider) {
       this.set({ wallet });
     }
@@ -178,10 +228,17 @@ export class RhLaneController {
       this.snapshot.recipientText === recipientText
     )
       return;
-    this.generation++;
+    const identityChanged = this.selectedAsset !== assetId || this.snapshot.direction !== direction;
     this.selectedAsset = assetId;
     const profile = assetId ? this.deps.v2.catalog.current(assetId) : null;
     if (profile) this.deps.lane = profileLane(profile);
+    if (!identityChanged) {
+      // Typing a new amount or recipient must not wipe the figures already on screen.
+      this.set({ direction, amountText, recipientText });
+      return;
+    }
+    this.generation++;
+    this.bumpBalanceContext();
     this.set({
       direction,
       amountText,
@@ -189,6 +246,8 @@ export class RhLaneController {
       v2: null,
       v2Display: null,
       v2Loading: false,
+      v2ReadFailed: false,
+      balanceChannel: this.contextChannel(this.snapshot.wallet.account),
       chain: {},
       quote: {},
       notice: profile || assetId === null ? null : 'Deployment pins are not configured. Live actions stay disabled.',
@@ -196,7 +255,168 @@ export class RhLaneController {
   }
   invalidateContext(): void {
     this.generation++;
-    if (this.deps.v2) this.set({ v2: null, v2Display: null, v2Loading: false });
+    this.bumpBalanceContext();
+    if (this.deps.v2)
+      this.set({
+        v2: null,
+        v2Display: null,
+        v2Loading: false,
+        v2ReadFailed: false,
+        balanceChannel: this.contextChannel(this.snapshot.wallet.account),
+      });
+  }
+
+  /** Balance-only refresh. It never opens a wallet prompt or reads action authority. */
+  refreshBalances(kind: 'manual' | 'focus' | 'poll' = 'manual'): void {
+    if (!this.deps.v2) return;
+    if (kind === 'poll') {
+      if (this.laneCoversBalances()) return;
+      const now = this.deps.now();
+      (['source', 'destination'] as const).forEach((side) => {
+        if (now >= this.nextBalanceAt[side]) void this.readSide(side);
+      });
+      return;
+    }
+    const inFlight = !!(this.sideFlight.source || this.sideFlight.destination || this.snapshot.v2Loading);
+    if (kind === 'manual' && !canStartManualRefresh(this.lastManualAt, this.deps.now(), inFlight)) return;
+    if (kind === 'manual') this.lastManualAt = this.deps.now();
+    if (kind === 'focus' && inFlight) return;
+    void this.readSide('source', true);
+    void this.readSide('destination', true);
+  }
+
+  /** At most five lightweight balance checks in the ten seconds after a receipt. */
+  refreshAfterReceipt(): void {
+    if (!this.deps.v2) return;
+    const started = this.deps.now();
+    for (const offset of receiptCheckOffsets()) {
+      const timer = setTimeout(() => {
+        if (this.disposed || this.deps.now() - started > RECEIPT_WINDOW_MS) return;
+        void this.readSide('source', true);
+        void this.readSide('destination', true);
+      }, offset);
+      this.receiptTimers.push(timer);
+    }
+  }
+
+  private bumpBalanceContext(): void {
+    this.balanceEpoch += 1;
+    this.providerEpoch += 1;
+    this.readCycle += 1;
+    this.latchId = 0;
+    this.recoveredId = 0;
+    this.balanceFailures = { source: 0, destination: 0 };
+    this.nextBalanceAt = { source: 0, destination: 0 };
+  }
+
+  private contextChannel(account: string | null): BalanceChannelState {
+    return reduceBalanceChannel(createBalanceChannel(this.balanceEpoch), {
+      type: 'context',
+      epoch: this.balanceEpoch,
+      providerEpoch: this.providerEpoch,
+      account,
+      profileSha256: this.profileSha(),
+    });
+  }
+
+  private profileSha(): string | null {
+    const profile = this.selectedAsset && this.deps.v2 ? this.deps.v2.catalog.current(this.selectedAsset) : null;
+    return profile?.descriptor.binding.profileSha256 ?? null;
+  }
+
+  private laneCoversBalances(): boolean {
+    if (this.snapshot.v2Loading) return true;
+    const v2 = this.snapshot.v2;
+    return !!v2 && !this.snapshot.v2ReadFailed && this.deps.now() < v2.validUntil && v2.sourceBalance !== undefined;
+  }
+
+  private publishBalance(
+    side: 'source' | 'destination',
+    result: QualifyResult,
+    cycle: number,
+    stampAtStart: number,
+    epochAtStart: number
+  ): void {
+    if (this.disposed) return;
+    const revalidated = this.latchId > 0 && this.recoveredId === this.latchId && stampAtStart === this.latchId;
+    const event: BalanceEvent = { type: 'result', side, epoch: epochAtStart, result, revalidated };
+    this.noteBalance(side, result);
+    const authoritative = side === 'source' ? this.snapshot.v2?.sourceBalance : this.snapshot.v2?.destinationBalance;
+    const contradicts =
+      result.kind === 'qualified' &&
+      !!this.snapshot.v2 &&
+      cycle !== this.authorityCycle &&
+      contradictsAuthority(authoritative, result.valueAtomic);
+    if (contradicts) {
+      this.dropHeld(cycle);
+      this.generation += 1;
+      this.applyBalance(event);
+      this.set({ v2: null, v2ReadFailed: true });
+      return;
+    }
+    // The replacement snapshot is about to land. Publishing the channel now would
+    // render the previous snapshot after its expiry and mint a new intent for the same values.
+    if (this.snapshot.v2 && this.snapshot.v2Loading && cycle !== this.authorityCycle) {
+      const base = this.heldCycle === cycle ? this.heldChannel : this.snapshot.balanceChannel;
+      this.heldChannel = reduceBalanceChannel(base ?? createBalanceChannel(this.balanceEpoch), event);
+      this.heldCycle = cycle;
+      return;
+    }
+    this.applyBalance(event);
+  }
+
+  private dropHeld(cycle: number): void {
+    if (this.heldCycle !== cycle) return;
+    this.heldChannel = null;
+    this.heldCycle = -1;
+  }
+
+  private takeHeld(cycle: number): BalanceChannelState | null {
+    if (this.heldCycle !== cycle) return null;
+    const channel = this.heldChannel;
+    this.heldChannel = null;
+    this.heldCycle = -1;
+    return channel;
+  }
+
+  private noteBalance(side: 'source' | 'destination', result: QualifyResult): void {
+    if (result.kind === 'qualified') {
+      this.balanceFailures[side] = 0;
+      this.nextBalanceAt[side] = this.deps.now() + balanceDelay(0);
+      return;
+    }
+    if (result.kind === 'unavailable') {
+      this.balanceFailures[side] += 1;
+      this.nextBalanceAt[side] = this.deps.now() + balanceDelay(this.balanceFailures[side]);
+    }
+  }
+
+  private applyBalance(event: BalanceEvent): void {
+    const current = this.snapshot.balanceChannel ?? createBalanceChannel(this.balanceEpoch);
+    this.set({ balanceChannel: reduceBalanceChannel(current, event) });
+  }
+
+  private async readSide(side: 'source' | 'destination', force = false): Promise<void> {
+    if (!force && this.deps.now() < this.nextBalanceAt[side]) return;
+    const existing = this.sideFlight[side];
+    if (existing) return existing;
+    const profile = this.selectedAsset && this.deps.v2 ? this.deps.v2.catalog.current(this.selectedAsset) : null;
+    if (!profile || !this.snapshot.wallet.account) return;
+    const cycle = this.readCycle;
+    const stampAtStart = this.latchId;
+    const epochAtStart = this.balanceEpoch;
+    const work = (async () => {
+      const chains = shareChainReader(this.deps.chains, this.balanceCoordinator, cycle);
+      const result = await qualifyLaneSide(profile, chains, this.snapshot, this.deps.now, side, this.providerEpoch);
+      if (!result || this.disposed || epochAtStart !== this.balanceEpoch) return;
+      this.publishBalance(side, result, cycle, stampAtStart, epochAtStart);
+    })();
+    this.sideFlight[side] = work;
+    try {
+      await work;
+    } finally {
+      if (this.sideFlight[side] === work) delete this.sideFlight[side];
+    }
   }
 
   // ----------------------------------------------------------------- reads
@@ -206,25 +426,77 @@ export class RhLaneController {
       const generation = this.generation,
         profile = this.selectedAsset ? this.deps.v2.catalog.current(this.selectedAsset) : null;
       if (!profile) return;
-      if (this.v2Reading?.generation === generation) return this.v2Reading.promise;
+      const cycle = this.readCycle;
+      if (this.v2Reading?.generation === generation && this.v2Reading.cycle === cycle) return this.v2Reading.promise;
       this.set({ v2Loading: true });
+      const amountAtStart = this.snapshot.amountText;
+      const stampAtStart = this.latchId;
+      const epochAtStart = this.balanceEpoch;
       const promise = (async () => {
         try {
-          const v2 = await readProfileSnapshot(
+          const chains = shareChainReader(this.deps.chains, this.balanceCoordinator, cycle);
+          const prefetch = startQualifiedBalances(profile, chains, this.snapshot, this.deps.now, this.providerEpoch);
+          let v2 = await readProfileSnapshot(
             this.deps.v2!.api,
             this.deps.v2!.catalog,
             profile,
-            this.deps.chains,
+            chains,
             this.snapshot,
-            this.deps.now
+            this.deps.now,
+            {
+              providerEpoch: this.providerEpoch,
+              prefetch,
+              onBalance: (side, result) => this.publishBalance(side, result, cycle, stampAtStart, epochAtStart),
+              onRegistry: (ok) => {
+                if (ok && this.latchId > this.recoveredId) this.recoveredId = this.latchId;
+              },
+            }
           );
-          if (generation === this.generation) this.set({ v2, v2Display: v2, notice: null });
-        } catch {
-          if (generation === this.generation)
-            this.set({ v2: null, notice: 'Bridge observations are unavailable or stale. Live actions stay disabled.' });
+          if (generation !== this.generation || cycle !== this.readCycle) {
+            this.dropHeld(cycle);
+            return;
+          }
+          if (this.snapshot.amountText !== amountAtStart) {
+            const patched = await this.quoteSnapshot(v2, this.snapshot.amountText);
+            if (patched) v2 = patched;
+          }
+          if (generation === this.generation && cycle === this.readCycle) {
+            this.authorityCycle = cycle;
+            const balanceChannel = this.takeHeld(cycle);
+            this.set({
+              v2,
+              v2Display: v2,
+              notice: null,
+              v2ReadFailed: false,
+              ...(balanceChannel ? { balanceChannel } : {}),
+            });
+          }
+        } catch (error) {
+          if (generation !== this.generation || cycle !== this.readCycle) {
+            this.dropHeld(cycle);
+            return;
+          }
+          const code = error instanceof Error ? error.message : '';
+          if (code === 'RH_REGISTRY_MISMATCH' || code === 'RH_PROFILE_MISMATCH') {
+            this.latchId += 1;
+            this.applyBalance({
+              type: 'registry-mismatch',
+              epoch: this.balanceEpoch,
+              profileSha256: profile.descriptor.binding.profileSha256,
+              code: code === 'RH_REGISTRY_MISMATCH' ? 'REGISTRY' : 'PROFILE',
+            });
+            this.dropHeld(cycle);
+          }
+          const balanceChannel = this.takeHeld(cycle);
+          this.set({
+            v2: null,
+            notice: null,
+            v2ReadFailed: true,
+            ...(balanceChannel ? { balanceChannel } : {}),
+          });
         }
       })();
-      this.v2Reading = { generation, promise };
+      this.v2Reading = { generation, cycle, promise };
       try {
         await promise;
       } finally {
@@ -254,8 +526,47 @@ export class RhLaneController {
     });
   }
 
+  /** Replace only the fee quote. Leaves every other figure in place when the request fails. */
+  async refreshAmountQuote(): Promise<void> {
+    if (!this.deps.v2) return this.refreshQuote();
+    const current = this.snapshot.v2;
+    const profile = this.selectedAsset ? this.deps.v2.catalog.current(this.selectedAsset) : null;
+    if (!current || !profile) return;
+    const amountText = this.snapshot.amountText;
+    const generation = this.generation;
+    const patched = await this.quoteSnapshot(current, amountText);
+    if (!patched || generation !== this.generation || this.snapshot.amountText !== amountText) return;
+    this.set({ v2: patched, v2Display: patched });
+  }
+
+  private async quoteSnapshot(current: V2Snapshot, amountText: string): Promise<V2Snapshot | null> {
+    const profile = this.selectedAsset ? this.deps.v2?.catalog.current(this.selectedAsset) : null;
+    if (!profile || !this.deps.v2) return null;
+    let gross: string;
+    try {
+      if (!amountText) return null;
+      gross = parseUnits(amountText, 18);
+    } catch {
+      return null;
+    }
+    if (gross === '0' || (current.quote && current.gross === gross)) return current;
+    try {
+      const binding = profile.descriptor.binding;
+      const direction = this.snapshot.direction;
+      const quote = await readV2<V2.FeeQuote>(
+        this.deps.v2.api,
+        { kind: 'feeQuote', binding, direction, gross },
+        'FeeQuote'
+      );
+      const quoteUntil = validateQuote(quote, binding, direction, gross, current.limits, this.deps.now());
+      return { ...current, quote, gross, validUntil: Math.min(current.validUntil, quoteUntil) };
+    } catch {
+      return null;
+    }
+  }
+
   async refreshQuote(): Promise<void> {
-    if (this.deps.v2) return this.refreshLane();
+    if (this.deps.v2) return this.refreshAmountQuote();
     const api = this.deps.api;
     const view = this.view();
     if (!api || this.snapshot.direction !== 'ONYX_TO_RH' || !view.grossRaw) return;
@@ -396,6 +707,7 @@ export class RhLaneController {
       this.set({ busy: 'APPROVE', notice: null });
       try {
         guard?.assertCurrent();
+        this.readCycle += 1;
         await this.refreshLane();
         guard?.assertCurrent();
         const after = this.view();
@@ -418,6 +730,9 @@ export class RhLaneController {
           generation,
           guard
         );
+        // The wallet can return after the approval is mined. Track it before the next paint
+        // so Confirm Bridge does not wait for a later allowance read.
+        await this.trackOnce();
       } finally {
         this.actionLock = false;
         this.set({ busy: null });
@@ -441,6 +756,7 @@ export class RhLaneController {
       this.set({ busy: 'BRIDGE', notice: null });
       try {
         guard?.assertCurrent();
+        this.readCycle += 1;
         await this.refreshLane();
         guard?.assertCurrent();
         const after = this.view(),

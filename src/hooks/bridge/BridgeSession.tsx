@@ -27,12 +27,21 @@ import {
   subscribeWalletActions,
   walletActionBusy,
 } from './walletIntent';
+import { presentBlocker } from '../../components/bridge/actionBlocker';
 export { useOptionalBridgeSession, useBridgeSession } from './BridgeSessionContext';
 
 export interface BridgeObservation {
-  status: 'loading' | 'ready' | 'unavailable' | 'stale' | 'error' | 'disconnected';
+  status: 'loading' | 'ready' | 'refreshing' | 'unavailable' | 'stale' | 'error' | 'disconnected';
   value?: string;
   observedAt?: number;
+}
+export interface BridgeAuthority {
+  fresh: boolean;
+  sourceBalanceAtomic?: string;
+  perTxMaxAtomic?: string;
+  remainingCapacityAtomic?: string;
+  maxAmountAtomic?: string;
+  validUntil?: number;
 }
 export const unavailable = (): BridgeObservation => ({ status: 'unavailable' });
 export const observed = (value: string): BridgeObservation => ({ status: 'ready', value });
@@ -53,9 +62,13 @@ export interface BridgeAdapter {
   busy: boolean;
   notice?: string;
   validUntil?: number;
+  authority?: BridgeAuthority;
+  checking?: boolean;
   approve: (guard?: WalletIntentGuard) => Promise<void>;
   confirm: (guard?: WalletIntentGuard) => Promise<void>;
   refresh: () => void;
+  refreshBalances?: () => void;
+  refreshAfterReceipt?: () => void;
 }
 export const selectionKey = (s: BridgeSelection, account?: string | null, walletChain?: number | null): string =>
   [
@@ -79,6 +92,25 @@ function maximumReady(adapter: BridgeAdapter | undefined, assetKey: string, now:
     adapter.binding.abiVersion.length > 128
   )
     return false;
+  if (adapter.authority) {
+    if (!adapter.authority.fresh) return false;
+    if (
+      adapter.authority.validUntil !== undefined &&
+      (!Number.isFinite(adapter.authority.validUntil) || now >= adapter.authority.validUntil)
+    )
+      return false;
+    try {
+      const max = BigInt(adapter.authority.maxAmountAtomic ?? '');
+      const bounds = [
+        adapter.authority.perTxMaxAtomic,
+        adapter.authority.remainingCapacityAtomic,
+        adapter.authority.sourceBalanceAtomic,
+      ].map((value) => BigInt(value ?? ''));
+      return max > BigInt(0) && bounds.every((bound) => max <= bound);
+    } catch {
+      return false;
+    }
+  }
   if (adapter.validUntil !== undefined && (!Number.isFinite(adapter.validUntil) || now >= adapter.validUntil))
     return false;
   if (
@@ -179,13 +211,19 @@ function useSession(rhEnabled: boolean, rhAdapter?: BridgeAdapter) {
     route.engine === 'RH'
       ? rh?.destinationBalance ?? (account ? unavailable() : { status: 'disconnected' as const })
       : balance(legacy.destinationBalance, legacy.isDestinationBalanceLoading, legacy.destinationBalanceError);
+  const authorityFresh =
+    !!rh?.authority &&
+    rh.authority.fresh &&
+    (rh.authority.validUntil === undefined || Date.now() < rh.authority.validUntil);
   const rhReady =
     !!rh &&
     rh.binding.assetId === asset.key &&
     /^[0-9a-f]{64}$/.test(rh.binding.profileSha256) &&
-    [rh.fee, rh.net, rh.perTxMax, rh.remainingCapacity, rh.sourceBalance].every(
-      (o) => o.status === 'ready' && o.value !== undefined
-    );
+    (rh.authority
+      ? [rh.fee, rh.net, rh.perTxMax, rh.remainingCapacity]
+      : [rh.fee, rh.net, rh.perTxMax, rh.remainingCapacity, rh.sourceBalance]
+    ).every((o) => o.status === 'ready' && o.value !== undefined) &&
+    (!rh.authority || authorityFresh);
   // MAX consumes the engine's fresh gas-bounded limit, even before an amount-bound quote exists.
   const rhMaxReady = maximumReady(rh, asset.key, Date.now());
   const canApprove =
@@ -224,8 +262,9 @@ function useSession(rhEnabled: boolean, rhAdapter?: BridgeAdapter) {
     rh?.remainingCapacity.status || '',
     rh?.remainingCapacity.value || '',
     rh?.perTxMax.value || '',
-    sourceBalance.status,
-    sourceBalance.value || '',
+    rh?.authority ? String(rh.authority.fresh) : sourceBalance.status,
+    rh?.authority ? rh.authority.sourceBalanceAtomic || '' : sourceBalance.value || '',
+    rh?.authority?.maxAmountAtomic || '',
     canApprove,
     canConfirm,
   ].join('|');
@@ -392,6 +431,37 @@ function useSession(rhEnabled: boolean, rhAdapter?: BridgeAdapter) {
     confirmationValid,
     confirmation,
     notice: notice || rh?.notice || (route.engine === 'LEGACY' ? legacy.validation.errorMessage?.key : undefined),
+    actionReason: (() => {
+      let balance: 'ok' | 'unknown' | 'insufficient' = sourceBalance.status === 'ready' ? 'ok' : 'unknown';
+      const authority = rh?.authority;
+      if (authority?.sourceBalanceAtomic && /^(0|[1-9][0-9]*)(\.[0-9]+)?$/.test(selection.inputAmount)) {
+        try {
+          const [whole, fraction = ''] = selection.inputAmount.split('.');
+          const raw = BigInt((whole + fraction.padEnd(18, '0')).slice(0, whole.length + 18));
+          if (raw > BigInt(authority.sourceBalanceAtomic)) balance = 'insufficient';
+        } catch {
+          balance = 'unknown';
+        }
+      }
+      const blocker = presentBlocker({
+        connected: !!account,
+        walletMatches,
+        walletPrompt: false,
+        inFlight: busy || sharedBusy || !!rh?.busy,
+        recipientValid,
+        amountValid: /^(0|[1-9][0-9]*)(\.[0-9]+)?$/.test(selection.inputAmount),
+        balance,
+        gas: authorityFresh ? 'ok' : 'unknown',
+        checking: !!rh?.checking && !authorityFresh,
+        held: false,
+        capacityExceeded: false,
+        quoteReady: fee.status === 'ready',
+        eligible: true,
+        historyReady: true,
+        authorityFresh: rh?.authority ? authorityFresh : sourceBalance.status === 'ready' && fee.status === 'ready',
+      });
+      return account && blocker && blocker.code !== 'CONNECT' ? blocker.message : undefined;
+    })(),
     connect,
     approve,
     confirm,
@@ -429,7 +499,14 @@ function useSession(rhEnabled: boolean, rhAdapter?: BridgeAdapter) {
       } else legacy.setMaxAmount();
     },
     maxEnabled: route.engine === 'RH' ? rhMaxReady : sourceBalance.status === 'ready',
-    refreshBalances: route.engine === 'RH' ? rh?.refresh ?? (() => undefined) : legacy.triggerBalanceRefresh,
+    refreshBalances:
+      route.engine === 'RH'
+        ? () => (rh?.refreshBalances ? rh.refreshBalances() : rh?.refresh())
+        : legacy.triggerBalanceRefresh,
+    refreshAfterReceipt:
+      route.engine === 'RH'
+        ? () => (rh?.refreshAfterReceipt ? rh.refreshAfterReceipt() : rh?.refreshBalances?.() ?? rh?.refresh())
+        : legacy.triggerBalanceRefresh,
     refreshDetails: () => {
       if (route.engine === 'RH') rh?.refresh();
       else {

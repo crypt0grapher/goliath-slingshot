@@ -9,6 +9,14 @@ export function isBlankOrZeroAmount(amount: string | undefined): boolean {
   return amount !== undefined && (amount === '' || /^(?:0+(?:\.0*)?|\.0+)$/.test(amount));
 }
 
+/** Keep the last real figure on screen while a refresh has not produced a replacement yet. */
+export function shownObservation<T extends { status: string; value?: string }>(next: T, previous: T | undefined): T {
+  if (next.status === 'disconnected' || next.status === 'error') return next;
+  if (next.value !== undefined && next.status !== 'loading') return next;
+  if (previous?.value !== undefined) return { ...previous, status: 'ready', value: previous.value } as T;
+  return next;
+}
+
 export function formatBridgeEta(seconds: number | null | undefined): string | undefined {
   if (seconds === null || seconds === undefined || !Number.isFinite(seconds) || seconds < 0) return undefined;
   const total = Math.ceil(seconds),

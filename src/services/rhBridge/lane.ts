@@ -49,6 +49,21 @@ const big = (raw: string): bigint => (RAW.test(raw) ? BigInt(raw) : fail('INVALI
 // ------------------------------------------------------------------ fee
 
 // fee = max(minFee, ceil(gross * feeBps / 10000)) — StockBridgeMinter.feeFor.
+/** Display amounts for the typed gross. A deposit fee is zero. An exit uses the minter fee rule. */
+export function previewTransferAmounts(
+  direction: 'RH_TO_ONYX' | 'ONYX_TO_RH',
+  grossRaw: string | undefined,
+  quote: { fee: string; net: string } | undefined,
+  exitFee: { feeBps: number; minFee: string } | undefined
+): { feeRaw: string; netRaw: string } {
+  if (quote) return { feeRaw: quote.fee, netRaw: quote.net };
+  if (!grossRaw || grossRaw === '0') return { feeRaw: '0', netRaw: '0' };
+  if (direction === 'RH_TO_ONYX' || !exitFee) return { feeRaw: '0', netRaw: grossRaw };
+  const feeRaw = computeExitFee(grossRaw, exitFee.feeBps, exitFee.minFee);
+  const net = BigInt(grossRaw) - BigInt(feeRaw);
+  return { feeRaw, netRaw: net > BigInt(0) ? net.toString() : '0' };
+}
+
 export function computeExitFee(gross: string, feeBps: number, minFee: string): string {
   if (!Number.isInteger(feeBps) || feeBps < 0 || feeBps > 10000) return fail('INVALID_FEE_BPS');
   const product = big(gross) * BigInt(feeBps);

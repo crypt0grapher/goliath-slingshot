@@ -8,6 +8,7 @@ import {
   buildApproval,
   buildBridgeCall,
   computeExitFee,
+  previewTransferAmounts,
   exitFeeCeiling,
   formatUnits,
   LANE_ABI,
@@ -194,6 +195,13 @@ describe('units, limits and fee', () => {
     expect(computeExitFee('4000', 25, '0')).toBe('10');
     expect(computeExitFee('4001', 25, '0')).toBe('11');
     expect(computeExitFee('1', 25, '0')).toBe('1');
+    expect(previewTransferAmounts('RH_TO_ONYX', '1000000000000000000', undefined, undefined)).toEqual({
+      feeRaw: '0',
+      netRaw: '1000000000000000000',
+    });
+    expect(
+      previewTransferAmounts('ONYX_TO_RH', '1000000000000000000', undefined, { feeBps: 25, minFee })
+    ).toEqual({ feeRaw: minFee, netRaw: (1000000000000000000n - BigInt(minFee)).toString() });
     expect(computeExitFee('0', 25, '0')).toBe('0');
   });
 
