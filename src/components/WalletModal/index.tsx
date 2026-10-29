@@ -222,20 +222,20 @@ export default function WalletModal({
             params: [
               {
                 chainId: GOLIATH_CHAIN_ID,
-                chainName: 'Goliath Testnet',
+                chainName: 'Onyx Testnet',
                 nativeCurrency: {
                   name: 'Onyxcoin',
                   symbol: 'XCN',
                   decimals: 18,
                 },
-                rpcUrls: ['https://testnet.rpc.goliath.net'],
+                rpcUrls: ['https://rpc.testnet.onyx.org'],
                 blockExplorerUrls: ['https://testnet.explorer.goliath.net'],
               },
             ],
           });
           return true;
         } catch (addError) {
-          console.error('Failed to add Goliath network:', addError);
+          console.error('Failed to add Onyx network:', addError);
           return false;
         }
       }
@@ -371,7 +371,7 @@ export default function WalletModal({
           <HeaderRow>{error instanceof UnsupportedChainIdError ? 'Wrong Network' : 'Error connecting'}</HeaderRow>
           <ContentWrapper>
             {error instanceof UnsupportedChainIdError ? (
-              <h5>Please connect to the Goliath Testnet.</h5>
+              <h5>Please connect to the Onyx Testnet.</h5>
             ) : (
               'Error connecting. Try refreshing the page.'
             )}

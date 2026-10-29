@@ -1,0 +1,20 @@
+{
+  "fixture": "getStatus.429",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/status/RH_TO_ONYX:0x0aa4f310aca195e6bcdce93657bca646f90faacce92c2b621a120054781bca05",
+    "query": {}
+  },
+  "response": {
+    "status": 429,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "code": "RATE_LIMITED",
+        "message": "Too many requests"
+      }
+    }
+  }
+}

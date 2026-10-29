@@ -1,0 +1,30 @@
+{
+  "fixture": "getStatusByTxV2.404",
+  "operationId": "getStatusByTxV2",
+  "classification": "SYNTHETIC_OFFLINE_NOT_DEPLOYMENT_AUTHORITY",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/v2/status/by-tx/0x3333333333333333333333333333333333333333333333333333333333333333",
+    "query": {
+      "chainId": "46630"
+    }
+  },
+  "response": {
+    "status": 404,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "no-referrer",
+      "vary": "Origin",
+      "x-request-id": "synthetic_request"
+    },
+    "body": {
+      "error": {
+        "code": "NOT_FOUND",
+        "message": "Request refused.",
+        "requestId": "synthetic_request"
+      }
+    }
+  }
+}

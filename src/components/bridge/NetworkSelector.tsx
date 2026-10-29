@@ -1,9 +1,13 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
 import styled from 'styled-components';
 import { ChevronDown } from 'react-feather';
+import { Link } from 'react-router-dom';
 import { BridgeNetwork, NETWORK_METADATA } from '../../constants/bridge/networks';
 
-const SelectorContainer = styled.div<{ disabled: boolean }>`
+const SelectorContainer = styled.button<{ disabled: boolean }>`
+  width: 100%;
+  border: 0;
+  font: inherit;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -77,8 +81,7 @@ const DropdownContainer = styled.div`
   position: relative;
 `;
 
-const DropdownMenu = styled.div<{ isOpen: boolean }>`
-  display: ${({ isOpen }) => (isOpen ? 'block' : 'none')};
+const DropdownMenu = styled.div`
   position: absolute;
   top: calc(100% + 4px);
   left: 0;
@@ -91,7 +94,11 @@ const DropdownMenu = styled.div<{ isOpen: boolean }>`
   box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
 `;
 
-const DropdownItem = styled.div<{ selected: boolean }>`
+const DropdownItem = styled.button<{ selected: boolean }>`
+  width: 100%;
+  border: 0;
+  font: inherit;
+  text-align: left;
   padding: 12px 16px;
   display: flex;
   align-items: center;
@@ -101,6 +108,23 @@ const DropdownItem = styled.div<{ selected: boolean }>`
   &:hover {
     background-color: ${({ theme }) => theme.bg2};
   }
+`;
+
+const NavigationItem = styled(Link)`
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+  &:hover {
+    background-color: ${({ theme }) => theme.bg2};
+  }
+`;
+
+const NavigationDetail = styled.span`
+  display: block;
+  font-size: 12px;
+  color: ${({ theme }) => theme.text2};
 `;
 
 const ChevronWrapper = styled.div<{ isOpen: boolean }>`
@@ -115,6 +139,9 @@ interface NetworkSelectorProps {
   onSelect: (network: BridgeNetwork) => void;
   label: 'From' | 'To';
   disabled?: boolean;
+  allowedNetworks?: readonly BridgeNetwork[];
+  // Routes to separate bridge lanes; these are never values of the legacy BridgeNetwork store.
+  navigationOptions?: readonly { label: string; to: string; description: string }[];
 }
 
 export default function NetworkSelector({
@@ -122,9 +149,12 @@ export default function NetworkSelector({
   onSelect,
   label,
   disabled = false,
+  navigationOptions = [],
+  allowedNetworks = [BridgeNetwork.SEPOLIA, BridgeNetwork.GOLIATH],
 }: NetworkSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const metadata = NETWORK_METADATA[selectedNetwork];
 
   const handleToggle = useCallback(() => {
@@ -137,9 +167,39 @@ export default function NetworkSelector({
     (network: BridgeNetwork) => {
       onSelect(network);
       setIsOpen(false);
+      triggerRef.current?.focus();
     },
     [onSelect]
   );
+
+  useEffect(() => {
+    if (isOpen) dropdownRef.current?.querySelector<HTMLElement>('[role="menuitemradio"][aria-checked="true"]')?.focus();
+  }, [isOpen]);
+
+  const handleMenuKey = (event: React.KeyboardEvent) => {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      setIsOpen(false);
+      triggerRef.current?.focus();
+      return;
+    }
+    const items = Array.from(dropdownRef.current?.querySelectorAll<HTMLElement>('[role^="menuitem"]') || []);
+    const index = items.indexOf(document.activeElement as HTMLElement);
+    const next =
+      event.key === 'ArrowDown'
+        ? (index + 1) % items.length
+        : event.key === 'ArrowUp'
+        ? (index - 1 + items.length) % items.length
+        : event.key === 'Home'
+        ? 0
+        : event.key === 'End'
+        ? items.length - 1
+        : -1;
+    if (next >= 0) {
+      event.preventDefault();
+      items[next]?.focus();
+    }
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -156,8 +216,27 @@ export default function NetworkSelector({
   }, []);
 
   return (
-    <DropdownContainer ref={dropdownRef}>
-      <SelectorContainer onClick={handleToggle} disabled={disabled}>
+    <DropdownContainer
+      ref={dropdownRef}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setIsOpen(false);
+      }}
+    >
+      <SelectorContainer
+        ref={triggerRef}
+        type="button"
+        onClick={handleToggle}
+        disabled={disabled}
+        aria-label={`${label} network`}
+        aria-haspopup="menu"
+        aria-expanded={isOpen}
+        onKeyDown={(event) => {
+          if (!disabled && event.key === 'ArrowDown') {
+            event.preventDefault();
+            setIsOpen(true);
+          }
+        }}
+      >
         <NetworkInfo>
           <NetworkLabel>{label}:</NetworkLabel>
           <NetworkIconPlaceholder>{metadata.shortName.charAt(0)}</NetworkIconPlaceholder>
@@ -170,21 +249,35 @@ export default function NetworkSelector({
         )}
       </SelectorContainer>
 
-      <DropdownMenu isOpen={isOpen}>
-        {Object.values(BridgeNetwork).map((network) => {
-          const netMetadata = NETWORK_METADATA[network];
-          return (
-            <DropdownItem
-              key={network}
-              selected={network === selectedNetwork}
-              onClick={() => handleSelect(network)}
-            >
-              <NetworkIconPlaceholder>{netMetadata.shortName.charAt(0)}</NetworkIconPlaceholder>
-              <NetworkName>{netMetadata.displayName}</NetworkName>
-            </DropdownItem>
-          );
-        })}
-      </DropdownMenu>
+      {isOpen && !disabled && (
+        <DropdownMenu role="menu" aria-label={`${label} network choices`} onKeyDown={handleMenuKey}>
+          {allowedNetworks.map((network) => {
+            const netMetadata = NETWORK_METADATA[network];
+            return (
+              <DropdownItem
+                key={network}
+                type="button"
+                role="menuitemradio"
+                aria-checked={network === selectedNetwork}
+                selected={network === selectedNetwork}
+                onClick={() => handleSelect(network)}
+              >
+                <NetworkIconPlaceholder>{netMetadata.shortName.charAt(0)}</NetworkIconPlaceholder>
+                <NetworkName>{netMetadata.displayName}</NetworkName>
+              </DropdownItem>
+            );
+          })}
+          {navigationOptions.map((option) => (
+            <NavigationItem key={option.to} to={option.to} role="menuitem" onClick={() => setIsOpen(false)}>
+              <NetworkIconPlaceholder>{option.label.charAt(0)}</NetworkIconPlaceholder>
+              <NetworkName>
+                {option.label}
+                <NavigationDetail>{option.description}</NavigationDetail>
+              </NetworkName>
+            </NavigationItem>
+          ))}
+        </DropdownMenu>
+      )}
     </DropdownContainer>
   );
 }

@@ -1,0 +1,49 @@
+{
+  "fixture": "getStatusByTx.200",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/status/by-tx/0xe60ed361dc20bc458d334797ce4234d9d1869186a42eeb01264f01fba98abf55",
+    "query": {}
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "items": [
+        {
+          "operationId": "ONYX_TO_RH:0x90129e41e70303d805c3ab8bace611921e2c7f6fb6101cd724aaf28c59c57d79",
+          "direction": "ONYX_TO_RH",
+          "status": "COMPLETED",
+          "holdCategory": null,
+          "assetId": "TSLA",
+          "sender": "0x5555555555555555555555555555555555555555",
+          "recipient": "0x7777777777777777777777777777777777777777",
+          "grossAmount": "1000000000000000001",
+          "fee": "2500000000000001",
+          "netAmount": "997500000000000000",
+          "source": {
+            "chainId": 8901,
+            "txHash": "0xe60ed361dc20bc458d334797ce4234d9d1869186a42eeb01264f01fba98abf55",
+            "logIndex": "1",
+            "blockNumber": "6299990",
+            "explorerUrl": "https://testnet.explorer.goliath.net/tx/0xe60ed361dc20bc458d334797ce4234d9d1869186a42eeb01264f01fba98abf55",
+            "final": true
+          },
+          "destination": {
+            "chainId": 46630,
+            "txHash": "0xc73e9c080e6245adf3e3be0e2f80ad553491573b78586c8dee5487a113da549d",
+            "logIndex": "0",
+            "blockNumber": "124300",
+            "explorerUrl": "https://explorer.testnet.chain.robinhood.com/tx/0xc73e9c080e6245adf3e3be0e2f80ad553491573b78586c8dee5487a113da549d",
+            "final": true
+          },
+          "createdAt": "2026-10-23T00:00:00.000Z",
+          "updatedAt": "2026-10-23T00:20:00.000Z",
+          "completedAt": "2026-10-23T00:20:00.000Z"
+        }
+      ]
+    }
+  }
+}

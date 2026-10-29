@@ -1,0 +1,45 @@
+{
+  "fixture": "getStatus.200.executing-deposit",
+  "note": "destination.txHash is the in-flight mint attempt; final=false.",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/status/RH_TO_ONYX:0x0aa4f310aca195e6bcdce93657bca646f90faacce92c2b621a120054781bca05",
+    "query": {}
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "operationId": "RH_TO_ONYX:0x0aa4f310aca195e6bcdce93657bca646f90faacce92c2b621a120054781bca05",
+      "direction": "RH_TO_ONYX",
+      "status": "EXECUTING",
+      "holdCategory": null,
+      "assetId": "TSLA",
+      "sender": "0x5555555555555555555555555555555555555555",
+      "recipient": "0x6666666666666666666666666666666666666666",
+      "grossAmount": "1000000000000000001",
+      "fee": "0",
+      "netAmount": "1000000000000000001",
+      "source": {
+        "chainId": 46630,
+        "txHash": "0x4e7faab3c2bd0f1954c6aaef63333db0dd1894b244a038bd295c634085dc60ce",
+        "logIndex": "3",
+        "blockNumber": "123000",
+        "explorerUrl": "https://explorer.testnet.chain.robinhood.com/tx/0x4e7faab3c2bd0f1954c6aaef63333db0dd1894b244a038bd295c634085dc60ce",
+        "final": true
+      },
+      "destination": {
+        "chainId": 8901,
+        "txHash": "0x7bb616741f49639a25a3d1d16db92ac5f0093bdc74d9ff2dc8090f906b87e5d5",
+        "blockNumber": null,
+        "explorerUrl": "https://testnet.explorer.goliath.net/tx/0x7bb616741f49639a25a3d1d16db92ac5f0093bdc74d9ff2dc8090f906b87e5d5",
+        "final": false
+      },
+      "createdAt": "2026-10-23T00:00:00.000Z",
+      "updatedAt": "2026-10-23T00:01:00.000Z",
+      "completedAt": null
+    }
+  }
+}

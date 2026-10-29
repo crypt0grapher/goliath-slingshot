@@ -1,0 +1,29 @@
+{
+  "fixture": "getStatusV2.429",
+  "operationId": "getStatusV2",
+  "classification": "SYNTHETIC_OFFLINE_NOT_DEPLOYMENT_AUTHORITY",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/v2/status/RH_TO_ONYX:0x1111111111111111111111111111111111111111111111111111111111111111",
+    "query": {}
+  },
+  "response": {
+    "status": 429,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "no-referrer",
+      "vary": "Origin",
+      "x-request-id": "synthetic_request",
+      "retry-after": "1"
+    },
+    "body": {
+      "error": {
+        "code": "RATE_LIMITED",
+        "message": "Request refused.",
+        "requestId": "synthetic_request"
+      }
+    }
+  }
+}

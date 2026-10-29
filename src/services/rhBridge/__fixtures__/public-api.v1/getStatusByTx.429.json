@@ -1,0 +1,20 @@
+{
+  "fixture": "getStatusByTx.429",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/status/by-tx/0xe60ed361dc20bc458d334797ce4234d9d1869186a42eeb01264f01fba98abf55",
+    "query": {}
+  },
+  "response": {
+    "status": 429,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "code": "RATE_LIMITED",
+        "message": "Too many requests"
+      }
+    }
+  }
+}

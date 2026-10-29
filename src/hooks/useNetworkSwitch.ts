@@ -5,13 +5,13 @@ export const GOLIATH_TESTNET_CHAIN_ID = 8901;
 
 const GOLIATH_NETWORK_CONFIG = {
   chainId: `0x${GOLIATH_TESTNET_CHAIN_ID.toString(16)}`,
-  chainName: 'Goliath Testnet',
+  chainName: 'Onyx Testnet',
   nativeCurrency: {
     name: 'Onyxcoin',
     symbol: 'XCN',
     decimals: 18,
   },
-  rpcUrls: ['https://testnet.rpc.goliath.net'],
+  rpcUrls: ['https://rpc.testnet.onyx.org'],
   blockExplorerUrls: ['https://testnet.explorer.goliath.net'],
 };
 
@@ -55,7 +55,7 @@ export function useNetworkSwitch(): UseNetworkSwitchReturn {
           });
           return true;
         } catch (addError: any) {
-          setError(addError.message || 'Failed to add Goliath network');
+          setError(addError.message || 'Failed to add Onyx network');
           return false;
         }
       } else {

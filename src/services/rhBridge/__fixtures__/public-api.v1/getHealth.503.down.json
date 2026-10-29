@@ -1,0 +1,29 @@
+{
+  "fixture": "getHealth.503.down",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/health",
+    "query": {}
+  },
+  "response": {
+    "status": 503,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "status": "down",
+      "checkedAt": "2026-10-23T00:00:00.000Z",
+      "components": {
+        "database": "down",
+        "robinhoodWatcher": "unknown",
+        "onyxWatcher": "unknown",
+        "submitter": "unknown",
+        "signer": "unknown"
+      },
+      "lagSeconds": {
+        "robinhood": null,
+        "onyx": null
+      }
+    }
+  }
+}

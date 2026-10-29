@@ -1,175 +1,130 @@
+// SPDX-License-Identifier: Apache-2.0
 import React from 'react';
 import styled, { keyframes } from 'styled-components';
 import { useTranslation } from 'react-i18next';
-import { BridgeDirection } from '../../state/bridge/types';
-import { FeeQuoteResponse } from '../../services/bridgeApi';
-import { getStaticEtaEstimate } from '../../utils/bridge/eta';
+import type { BridgeObservation } from '../../hooks/bridge/BridgeSession';
+import { isBlankOrZeroAmount } from './presentation';
 
-const SummaryContainer = styled.div`
+const SummaryContainer = styled.dl`
   padding: 1rem;
   background-color: ${({ theme }) => theme.bg2};
   border-radius: 12px;
-  margin-top: 8px;
-
-  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-    padding: 0.75rem;
-  `}
+  margin: 8px 0 0;
 `;
-
-const SummaryRow = styled.div`
+const Row = styled.div`
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  gap: 12px;
   padding: 4px 0;
-  gap: 8px;
-`;
-
-const Label = styled.span`
   font-size: 14px;
-  color: ${({ theme }) => theme.text2};
-  flex-shrink: 0;
-
-  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-    font-size: 13px;
-  `}
+  dd {
+    margin: 0;
+    text-align: right;
+    overflow-wrap: anywhere;
+  }
+  dt {
+    color: ${({ theme }) => theme.text2};
+  }
 `;
-
-const Value = styled.span`
-  font-size: 14px;
-  font-weight: 500;
-  color: ${({ theme }) => theme.text1};
-  text-align: right;
-  word-break: break-all;
-
-  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-    font-size: 13px;
-  `}
+const pulse = keyframes`
+  50% { opacity: 0.4; }
 `;
-
-const FreeLabel = styled.span`
-  font-size: 14px;
-  font-weight: 500;
-  color: ${({ theme }) => theme.green1};
-
-  ${({ theme }) => theme.mediaWidth.upToExtraSmall`
-    font-size: 13px;
-  `}
-`;
-
-const spin = keyframes`
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-`;
-
-const Spinner = styled.span`
+const LoadingLine = styled.span`
   display: inline-block;
-  width: 12px;
+  width: 88px;
   height: 12px;
-  border: 2px solid ${({ theme }) => theme.text3};
-  border-top-color: transparent;
-  border-radius: 50%;
-  animation: ${spin} 0.6s linear infinite;
   vertical-align: middle;
+  border-radius: 4px;
+  background-color: ${({ theme }) => theme.bg3};
+  animation: ${pulse} 1.4s ease-in-out infinite;
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `;
-
-interface BridgeSummaryProps {
-  direction: BridgeDirection;
-  recipient: string | null;
-  account: string | null | undefined;
-  token: string;
-  inputAmount: string;
-  feeQuote: FeeQuoteResponse | null;
-  isFeeLoading: boolean;
-  feeError: string | null;
+export function observationText(value: BridgeObservation, symbol = ''): string {
+  const suffix = symbol ? ` ${symbol}` : '';
+  if (value.status === 'ready' && value.value !== undefined) return value.value + suffix;
+  if (value.status === 'refreshing' && value.value !== undefined) return `${value.value}${suffix} · Refreshing`;
+  if (value.status === 'stale' && value.value !== undefined) return `${value.value}${suffix} · Stale — refreshing`;
+  return value.status === 'loading'
+    ? 'Loading…'
+    : value.status === 'disconnected'
+    ? 'Connect wallet'
+    : value.status === 'stale'
+    ? 'Stale — refreshing'
+    : 'Not available';
 }
-
-export default function BridgeSummary({
-  direction,
-  recipient,
-  account,
-  token,
+export function receiveAmountText(value: BridgeObservation, symbol: string, inputAmount?: string): string {
+  return isBlankOrZeroAmount(inputAmount) ? `0.0 ${symbol}` : observationText(value, symbol);
+}
+export function ObservationValue({
+  value,
+  symbol = '',
   inputAmount,
-  feeQuote,
-  isFeeLoading,
-  feeError,
+}: {
+  value: BridgeObservation;
+  symbol?: string;
+  inputAmount?: string;
+}) {
+  if (isBlankOrZeroAmount(inputAmount)) return <>{`0.0 ${symbol}`}</>;
+  return value.status === 'loading' ? (
+    <LoadingLine role="status" aria-label="Loading bridge detail" aria-busy="true" />
+  ) : (
+    <>{observationText(value, symbol)}</>
+  );
+}
+interface BridgeSummaryProps {
+  symbol: string;
+  inputAmount?: string;
+  fee: BridgeObservation;
+  net: BridgeObservation;
+  eta: BridgeObservation;
+  perTxMax: BridgeObservation;
+  remainingCapacity: BridgeObservation;
+  recipient?: string;
+  showRecipient?: boolean;
+}
+export default function BridgeSummary({
+  symbol,
+  inputAmount,
+  fee,
+  net,
+  eta,
+  perTxMax,
+  remainingCapacity,
+  recipient,
+  showRecipient = false,
 }: BridgeSummaryProps) {
   const { t } = useTranslation();
-  const eta = getStaticEtaEstimate(direction);
-  const displayRecipient = recipient || account;
-
-  const truncateAddress = (address: string | null | undefined) => {
-    if (!address) return t('connectWalletShort');
-    return `${address.slice(0, 6)}...${address.slice(-4)}`;
-  };
-
-  const isWithdrawal = direction === 'GOLIATH_TO_SEPOLIA';
-
-  // Determine fee display
-  const renderFeeValue = () => {
-    if (!isWithdrawal) {
-      return <FreeLabel>{t('free')}</FreeLabel>;
-    }
-    if (isFeeLoading) {
-      return <Spinner />;
-    }
-    if (feeError && !feeQuote) {
-      return <Value>{t('bridgeFeeUnavailable')}</Value>;
-    }
-    if (feeQuote && feeQuote.feeBps > 0) {
-      const percent = (feeQuote.feeBps / 100).toFixed(feeQuote.feeBps % 100 === 0 ? 0 : 2);
-      return (
-        <Value>
-          {feeQuote.feeFormatted} {token} ({percent}%)
-        </Value>
-      );
-    }
-    return <FreeLabel>{t('free')}</FreeLabel>;
-  };
-
-  // Determine "You receive" display
-  const renderReceiveValue = () => {
-    if (!isWithdrawal) {
-      return (
-        <Value>
-          {inputAmount || '0'} {token}
-        </Value>
-      );
-    }
-    if (isFeeLoading && !feeQuote) {
-      return <Spinner />;
-    }
-    if (feeQuote) {
-      return (
-        <Value>
-          {feeQuote.outputFormatted} {token}
-        </Value>
-      );
-    }
-    return (
-      <Value>
-        {inputAmount || '0'} {token}
-      </Value>
-    );
-  };
-
+  const rows: Array<[string, React.ReactNode]> = [
+    [
+      t('bridgeFee'),
+      fee.status === 'ready' && /^(0|0\.0+)$/.test(fee.value || '') ? (
+        t('free')
+      ) : (
+        <ObservationValue value={fee} symbol={symbol} />
+      ),
+    ],
+    [t('bridgeYouReceive'), <ObservationValue value={net} symbol={symbol} inputAmount={inputAmount} />],
+    [t('estimatedTime'), <ObservationValue value={eta} />],
+    ...(showRecipient ? ([[t('recipient'), recipient || 'Connect wallet']] as Array<[string, React.ReactNode]>) : []),
+    [
+      t('bridgePerTransactionMax', { defaultValue: 'Per-transaction max' }),
+      <ObservationValue value={perTxMax} symbol={symbol} />,
+    ],
+    [
+      t('bridgeRemainingCapacity', { defaultValue: 'Remaining capacity' }),
+      <ObservationValue value={remainingCapacity} symbol={symbol} />,
+    ],
+  ];
   return (
-    <SummaryContainer>
-      <SummaryRow>
-        <Label>{t('bridgeFee')}</Label>
-        {renderFeeValue()}
-      </SummaryRow>
-      <SummaryRow>
-        <Label>{t('bridgeYouReceive')}</Label>
-        {renderReceiveValue()}
-      </SummaryRow>
-      <SummaryRow>
-        <Label>{t('estimatedTime')}</Label>
-        <Value>{eta}</Value>
-      </SummaryRow>
-      <SummaryRow>
-        <Label>{t('recipient')}</Label>
-        <Value>{truncateAddress(displayRecipient)}</Value>
-      </SummaryRow>
+    <SummaryContainer aria-label="Bridge summary">
+      {rows.map(([label, value]) => (
+        <Row key={label}>
+          <dt>{label}</dt>
+          <dd>{value}</dd>
+        </Row>
+      ))}
     </SummaryContainer>
   );
 }

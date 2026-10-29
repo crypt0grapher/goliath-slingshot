@@ -1,0 +1,40 @@
+{
+  "fixture": "getLimits.200",
+  "note": "Same parameters as the package test candidate.",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/limits",
+    "query": {}
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "assetId": "TSLA",
+      "decimals": 18,
+      "deposit": {
+        "perTxMax": "2000000000000000000",
+        "minAmount": "1"
+      },
+      "exit": {
+        "perTxMax": "2000000000000000000",
+        "minExit": "1000"
+      },
+      "caps": {
+        "escrowReleaseCap": "9000000000000000000",
+        "escrowCustodyCap": "8000000000000000000",
+        "mint24hCap": "5000000000000000000",
+        "outstandingCap": "8000000000000000000"
+      },
+      "fee": {
+        "feeBps": 25,
+        "minFee": "0",
+        "maxFeeBps": 100,
+        "maxMinFee": "100"
+      },
+      "observedAt": "2026-10-23T00:00:00.000Z"
+    }
+  }
+}

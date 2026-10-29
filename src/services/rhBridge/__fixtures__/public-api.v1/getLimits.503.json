@@ -1,0 +1,20 @@
+{
+  "fixture": "getLimits.503",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/limits",
+    "query": {}
+  },
+  "response": {
+    "status": 503,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "code": "SERVICE_UNAVAILABLE",
+        "message": "Service temporarily unavailable"
+      }
+    }
+  }
+}

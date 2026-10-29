@@ -40,10 +40,7 @@ describe('bridgeProviders', () => {
           chainId: 11155111,
           rpcUrl: 'https://primary-rpc.example.com',
           rpcUrlFallback: 'https://fallback-rpc.example.com',
-          rpcUrlFallbacks: [
-            'https://fallback-rpc.example.com',
-            'https://alchemy-rpc.example.com',
-          ],
+          rpcUrlFallbacks: ['https://fallback-rpc.example.com', 'https://alchemy-rpc.example.com'],
         },
         goliath: {
           chainId: 8901,
@@ -74,6 +71,26 @@ describe('bridgeProviders', () => {
   });
 
   describe('getReadonlyProvider', () => {
+    it('rejects RH and unsupported legacy networks before provider creation or RPC', async () => {
+      const providers = require('../bridgeProviders');
+      for (const network of ['ROBINHOOD', 'robinhood', 'unknown']) {
+        expect(() => providers.getReadonlyProvider(network)).toThrow('LEGACY_BRIDGE_NETWORK_REQUIRED');
+        await expect(providers.getNativeBalance('0x1234', network)).rejects.toThrow('LEGACY_BRIDGE_NETWORK_REQUIRED');
+        await expect(providers.getTokenBalance('0xtoken', '0xowner', network)).rejects.toThrow(
+          'LEGACY_BRIDGE_NETWORK_REQUIRED'
+        );
+        await expect(providers.getTokenAllowance('0xtoken', '0xowner', '0xspender', network)).rejects.toThrow(
+          'LEGACY_BRIDGE_NETWORK_REQUIRED'
+        );
+        await expect(providers.getBlockNumber(network)).rejects.toThrow('LEGACY_BRIDGE_NETWORK_REQUIRED');
+        await expect(providers.waitForTransaction('0xhash', network)).rejects.toThrow('LEGACY_BRIDGE_NETWORK_REQUIRED');
+      }
+      expect(mockProviderConstructor).not.toHaveBeenCalled();
+      expect(mockGetBalance).not.toHaveBeenCalled();
+      expect(mockGetBlockNumber).not.toHaveBeenCalled();
+      expect(mockBalanceOf).not.toHaveBeenCalled();
+      expect(mockAllowance).not.toHaveBeenCalled();
+    });
     it('returns a provider for Sepolia', () => {
       const { getReadonlyProvider } = require('../bridgeProviders');
       const provider = getReadonlyProvider('sepolia');
@@ -98,10 +115,7 @@ describe('bridgeProviders', () => {
       const provider = getReadonlyProvider('sepolia');
       expect(provider).toBeDefined();
       // Primary was used (first constructor call is for Sepolia primary)
-      expect(mockProviderConstructor).toHaveBeenCalledWith(
-        'https://primary-rpc.example.com',
-        expect.any(Object)
-      );
+      expect(mockProviderConstructor).toHaveBeenCalledWith('https://primary-rpc.example.com', expect.any(Object));
     });
 
     it('switches to fallback when primary returns NETWORK_ERROR', async () => {
@@ -114,10 +128,7 @@ describe('bridgeProviders', () => {
       await ensureSepoliaProviderReady();
       const provider = getReadonlyProvider('sepolia');
       // Fallback provider was created
-      expect(mockProviderConstructor).toHaveBeenCalledWith(
-        'https://fallback-rpc.example.com',
-        expect.any(Object)
-      );
+      expect(mockProviderConstructor).toHaveBeenCalledWith('https://fallback-rpc.example.com', expect.any(Object));
       expect(provider._rpcUrl).toBe('https://fallback-rpc.example.com');
     });
 
@@ -150,10 +161,7 @@ describe('bridgeProviders', () => {
       const { ensureSepoliaProviderReady } = require('../bridgeProviders');
 
       // Call twice concurrently
-      await Promise.all([
-        ensureSepoliaProviderReady(),
-        ensureSepoliaProviderReady(),
-      ]);
+      await Promise.all([ensureSepoliaProviderReady(), ensureSepoliaProviderReady()]);
 
       // getBlockNumber called only once (shared promise)
       expect(mockGetBlockNumber).toHaveBeenCalledTimes(1);
@@ -188,9 +196,7 @@ describe('bridgeProviders', () => {
     it('throws timeout error when both primary and fallback validations exceed timeout', async () => {
       process.env.REACT_APP_SEPOLIA_RPC_TIMEOUT_MS = '5';
 
-      mockGetBlockNumber.mockImplementation(
-        () => new Promise((resolve) => setTimeout(() => resolve(777), 30))
-      );
+      mockGetBlockNumber.mockImplementation(() => new Promise((resolve) => setTimeout(() => resolve(777), 30)));
 
       const { ensureSepoliaProviderReady } = require('../bridgeProviders');
 
@@ -222,10 +228,7 @@ describe('bridgeProviders', () => {
       mockGetBalance.mockResolvedValue(mockBigNumber);
 
       const { getNativeBalance } = require('../bridgeProviders');
-      const balance = await getNativeBalance(
-        '0x1234567890abcdef1234567890abcdef12345678',
-        'goliath'
-      );
+      const balance = await getNativeBalance('0x1234567890abcdef1234567890abcdef12345678', 'goliath');
       expect(balance).toBe(BigInt('1000000000000000000'));
     });
 
@@ -235,10 +238,7 @@ describe('bridgeProviders', () => {
       mockGetBlockNumber.mockResolvedValue(100);
 
       const { getNativeBalance } = require('../bridgeProviders');
-      const balance = await getNativeBalance(
-        '0x1234567890abcdef1234567890abcdef12345678',
-        'sepolia'
-      );
+      const balance = await getNativeBalance('0x1234567890abcdef1234567890abcdef12345678', 'sepolia');
       expect(balance).toBe(BigInt('500'));
       // getBlockNumber was called for validation
       expect(mockGetBlockNumber).toHaveBeenCalled();
@@ -249,15 +249,10 @@ describe('bridgeProviders', () => {
       error429.code = 429;
       const mockBigNumber = { toBigInt: () => BigInt('500') };
 
-      mockGetBalance
-        .mockRejectedValueOnce(error429)
-        .mockResolvedValue(mockBigNumber);
+      mockGetBalance.mockRejectedValueOnce(error429).mockResolvedValue(mockBigNumber);
 
       const { getNativeBalance } = require('../bridgeProviders');
-      const balance = await getNativeBalance(
-        '0x1234567890abcdef1234567890abcdef12345678',
-        'sepolia'
-      );
+      const balance = await getNativeBalance('0x1234567890abcdef1234567890abcdef12345678', 'sepolia');
       expect(balance).toBe(BigInt('500'));
       expect(mockGetBalance).toHaveBeenCalledTimes(2);
     });
@@ -267,15 +262,10 @@ describe('bridgeProviders', () => {
       networkErr.code = 'NETWORK_ERROR';
       const mockBigNumber = { toBigInt: () => BigInt('999') };
 
-      mockGetBalance
-        .mockRejectedValueOnce(networkErr)
-        .mockResolvedValue(mockBigNumber);
+      mockGetBalance.mockRejectedValueOnce(networkErr).mockResolvedValue(mockBigNumber);
 
       const { getNativeBalance } = require('../bridgeProviders');
-      const balance = await getNativeBalance(
-        '0x1234567890abcdef1234567890abcdef12345678',
-        'sepolia'
-      );
+      const balance = await getNativeBalance('0x1234567890abcdef1234567890abcdef12345678', 'sepolia');
       expect(balance).toBe(BigInt('999'));
     });
 
@@ -284,15 +274,10 @@ describe('bridgeProviders', () => {
       timeoutErr.code = 'TIMEOUT_ERROR';
       const mockBigNumber = { toBigInt: () => BigInt('1234') };
 
-      mockGetBalance
-        .mockRejectedValueOnce(timeoutErr)
-        .mockResolvedValue(mockBigNumber);
+      mockGetBalance.mockRejectedValueOnce(timeoutErr).mockResolvedValue(mockBigNumber);
 
       const { getNativeBalance } = require('../bridgeProviders');
-      const balance = await getNativeBalance(
-        '0x1234567890abcdef1234567890abcdef12345678',
-        'sepolia'
-      );
+      const balance = await getNativeBalance('0x1234567890abcdef1234567890abcdef12345678', 'sepolia');
       expect(balance).toBe(BigInt('1234'));
       expect(mockGetBalance).toHaveBeenCalledTimes(2);
     });
@@ -301,12 +286,9 @@ describe('bridgeProviders', () => {
       mockGetBalance.mockRejectedValue(new Error('invalid argument'));
 
       const { getNativeBalance } = require('../bridgeProviders');
-      await expect(
-        getNativeBalance(
-          '0x1234567890abcdef1234567890abcdef12345678',
-          'goliath'
-        )
-      ).rejects.toThrow('invalid argument');
+      await expect(getNativeBalance('0x1234567890abcdef1234567890abcdef12345678', 'goliath')).rejects.toThrow(
+        'invalid argument'
+      );
       expect(mockGetBalance).toHaveBeenCalledTimes(1);
     });
   });
@@ -330,9 +312,7 @@ describe('bridgeProviders', () => {
       error429.code = 429;
       const mockBigNumber = { toBigInt: () => BigInt('3000') };
 
-      mockBalanceOf
-        .mockRejectedValueOnce(error429)
-        .mockResolvedValue(mockBigNumber);
+      mockBalanceOf.mockRejectedValueOnce(error429).mockResolvedValue(mockBigNumber);
 
       const { getTokenBalance } = require('../bridgeProviders');
       const balance = await getTokenBalance(
@@ -346,7 +326,9 @@ describe('bridgeProviders', () => {
 
   describe('getTokenAllowance', () => {
     it('returns allowance as bigint', async () => {
-      const mockBigNumber = { toBigInt: () => BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935') };
+      const mockBigNumber = {
+        toBigInt: () => BigInt('115792089237316195423570985008687907853269984665640564039457584007913129639935'),
+      };
       mockAllowance.mockResolvedValue(mockBigNumber);
 
       const { getTokenAllowance } = require('../bridgeProviders');

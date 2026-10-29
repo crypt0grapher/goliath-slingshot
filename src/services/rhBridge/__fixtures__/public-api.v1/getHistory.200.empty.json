@@ -1,0 +1,20 @@
+{
+  "fixture": "getHistory.200.empty",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/history",
+    "query": {
+      "address": "0x9999999999999999999999999999999999999999"
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "items": [],
+      "nextCursor": null
+    }
+  }
+}

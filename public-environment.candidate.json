@@ -1,0 +1,7 @@
+{
+  "REACT_APP_NETWORK_URL": "https://rpc.testnet.onyx.org",
+  "REACT_APP_CHAIN_ID": "8901",
+  "REACT_APP_EXPLORER_URL": "https://testnet.explorer.goliath.net",
+  "REACT_APP_GOLIATH_RPC_URL_FALLBACK": "https://rpc.testnet.onyx.org",
+  "REACT_APP_BRIDGE_STATUS_API_URL": "https://bridgeapi.testnet.onyx.org/api/v1"
+}

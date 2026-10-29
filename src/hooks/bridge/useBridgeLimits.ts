@@ -2,11 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { BridgeApiClient, LimitsResponse } from '../../services/bridgeApi';
 import { bridgeConfig } from '../../config/bridgeConfig';
 import { BridgeDirection } from '../../state/bridge/types';
-
-interface MinAmountResult {
-  amount: string;
-  formatted: string;
-}
+import { getMinAmountFromLimits, MinAmountResult } from '../../utils/bridge/limitsLookup';
 
 interface UseBridgeLimitsReturn {
   limits: LimitsResponse | null;
@@ -19,14 +15,14 @@ interface UseBridgeLimitsReturn {
  * Hook that fetches bridge limits once on mount and caches them.
  * Provides a helper to look up minimum amounts per token/direction.
  */
-export function useBridgeLimits(): UseBridgeLimitsReturn {
+export function useBridgeLimits(enabled = true): UseBridgeLimitsReturn {
   const [limits, setLimits] = useState<LimitsResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const fetchedRef = useRef(false);
 
   useEffect(() => {
-    if (fetchedRef.current) return;
+    if (!enabled || fetchedRef.current) return;
     fetchedRef.current = true;
 
     const apiClient = new BridgeApiClient(bridgeConfig.statusApiBaseUrl);
@@ -43,22 +39,11 @@ export function useBridgeLimits(): UseBridgeLimitsReturn {
       .finally(() => {
         setIsLoading(false);
       });
-  }, []);
+  }, [enabled]);
 
   const getMinAmount = useCallback(
     (token: string, direction: BridgeDirection): MinAmountResult | null => {
-      if (!limits) return null;
-
-      const dirLimits =
-        direction === 'GOLIATH_TO_SEPOLIA' ? limits.goliathToSepolia : limits.sepoliaToGoliath;
-
-      const tokenLimits = dirLimits.tokens[token];
-      if (!tokenLimits) return null;
-
-      return {
-        amount: tokenLimits.minAmount,
-        formatted: tokenLimits.minAmountFormatted,
-      };
+      return getMinAmountFromLimits(limits, token, direction);
     },
     [limits]
   );

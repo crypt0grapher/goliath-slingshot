@@ -42,7 +42,7 @@ export type TokenAddressMap = Readonly<
 
 // Create Goliath token list
 const GOLIATH_TOKEN_LIST: TokenList = {
-  name: 'Goliath Default',
+  name: 'Onyx Default',
   timestamp: new Date().toISOString(),
   version: { major: 1, minor: 0, patch: 0 },
   tokens: [
@@ -52,7 +52,7 @@ const GOLIATH_TOKEN_LIST: TokenList = {
       decimals: WXCN.decimals,
       symbol: WXCN.symbol!,
       name: WXCN.name!,
-      logoURI: 'https://bridge.onyx.org/img/networks/80888.svg',
+      logoURI: '/images/tokens/xcn.png',
     },
     {
       chainId: 8901,

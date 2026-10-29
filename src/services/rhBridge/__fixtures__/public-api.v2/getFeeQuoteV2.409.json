@@ -1,0 +1,33 @@
+{
+  "fixture": "getFeeQuoteV2.409",
+  "operationId": "getFeeQuoteV2",
+  "classification": "SYNTHETIC_OFFLINE_NOT_DEPLOYMENT_AUTHORITY",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/v2/fee-quote",
+    "query": {
+      "assetId": "RH_ETH",
+      "profileSha256": "8d8a6990604866b3e05aca52bb67ffe36b4a682fcc1ce0bfe0c6a548213df821",
+      "direction": "ONYX_TO_RH",
+      "gross": "100000000000000"
+    }
+  },
+  "response": {
+    "status": 409,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "no-referrer",
+      "vary": "Origin",
+      "x-request-id": "synthetic_request"
+    },
+    "body": {
+      "error": {
+        "code": "PROFILE_MISMATCH",
+        "message": "Request refused.",
+        "requestId": "synthetic_request"
+      }
+    }
+  }
+}

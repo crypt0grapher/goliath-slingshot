@@ -1,200 +1,139 @@
-import React, { useCallback } from 'react';
-import styled from 'styled-components';
+// SPDX-License-Identifier: Apache-2.0
+import React from 'react';
 import { useDispatch } from 'react-redux';
 import { useTranslation } from 'react-i18next';
-import { ButtonPrimary, ButtonError } from '../../components/Button';
+import { ButtonPrimary } from '../../components/Button';
 import { AutoColumn } from '../../components/Column';
-import {
-  NetworkSelector,
-  BridgeAmountInput,
-  BridgeSummary,
-  DirectionSwapButton,
-} from '../../components/bridge';
-import { useBridgeForm, useBridgeApprove, useBridgeNetworkSwitch } from '../../hooks/bridge';
-import { useActiveWeb3React } from '../../hooks';
-import { useWalletModalToggle } from '../../state/application/hooks';
+import { NetworkSelector, BridgeAmountInput, BridgeSummary, DirectionSwapButton } from '../../components/bridge';
+import { observationText, ObservationValue } from '../../components/bridge/BridgeSummary';
+import { bridgeAssetDisplayName } from '../../components/bridge/presentation';
+import { BridgeSessionProvider, useOptionalBridgeSession, useBridgeSession } from '../../hooks/bridge/BridgeSession';
 import { bridgeActions } from '../../state/bridge/reducer';
-import { getButtonState, GOLIATH_TO_SEPOLIA_MAX_ETH, TranslatableText } from '../../utils/bridge/validation';
-import { BridgeNetwork } from '../../constants/bridge/networks';
-import { Wrapper, FormContainer, NetworkRow, OutputContainer, OutputLabel, OutputAmount, OutputBalance, ErrorMessage } from './styleds';
+import { BridgeNetwork, NETWORK_METADATA } from '../../constants/bridge/networks';
+import { networksForSource } from '../../constants/bridge/registry';
+import {
+  Wrapper,
+  FormContainer,
+  NetworkRow,
+  OutputContainer,
+  OutputLabel,
+  OutputAmount,
+  OutputBalance,
+  ErrorMessage,
+} from './styleds';
 
-const ActionButton = styled(ButtonPrimary)`
-  margin-top: 16px;
-`;
-
-const ErrorButton = styled(ButtonError)`
-  margin-top: 16px;
-`;
-
-const InfoMessage = styled.div`
-  background-color: rgba(33, 114, 229, 0.1);
-  border: 1px solid rgba(33, 114, 229, 0.3);
-  border-radius: 12px;
-  padding: 12px 16px;
-  font-size: 13px;
-  color: ${({ theme }) => theme.text2};
-  line-height: 1.5;
-`;
-
-export default function BridgeForm() {
+function StandardCard() {
+  const s = useBridgeSession();
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { account } = useActiveWeb3React();
-  const toggleWalletModal = useWalletModalToggle();
-  const bridgeForm = useBridgeForm();
-
-  // Helper to translate TranslatableText objects
-  const translateText = (text: TranslatableText | null): string | null => {
-    if (!text) return null;
-    return t(text.key, text.params);
-  };
-  const { approve, isLoading: isApproveLoading } = useBridgeApprove(
-    bridgeForm.selectedToken,
-    bridgeForm.originNetwork,
-    bridgeForm.inputAmount
-  );
-  const { switchNetwork } = useBridgeNetworkSwitch();
-
-  const {
-    originNetwork,
-    destinationNetwork,
-    selectedToken,
-    inputAmount,
-    outputAmount,
-    originBalance,
-    destinationBalance,
-    direction,
-    validation,
-    needsApproval,
-    refetchAllowance,
-    isSubmitting,
-    isApproving,
-    setOriginNetwork,
-    swapDirection,
-    setSelectedToken,
-    setInputAmount,
-    setMaxAmount,
-    feeQuote,
-    isFeeLoading,
-    feeError,
-    minAmountFormatted,
-  } = bridgeForm;
-
-  const buttonState = getButtonState(
-    validation,
-    needsApproval,
-    isApproving || isApproveLoading,
-    isSubmitting,
-    selectedToken
-  );
-
-  const handleButtonClick = useCallback(async () => {
-    if (validation.state === 'NOT_CONNECTED') {
-      toggleWalletModal();
-      return;
-    }
-
-    if (validation.state === 'WRONG_NETWORK') {
-      await switchNetwork(originNetwork);
-      return;
-    }
-
-    if (needsApproval) {
-      const approved = await approve();
-      if (approved) {
-        refetchAllowance();
-      }
-      return;
-    }
-
-    if (validation.isValid) {
-      dispatch(bridgeActions.openConfirmModal());
-    }
-  }, [
-    validation,
-    needsApproval,
-    originNetwork,
-    approve,
-    refetchAllowance,
-    switchNetwork,
-    toggleWalletModal,
-    dispatch,
-  ]);
-
+  const form = s.selection;
+  const destinationChoices = networksForSource(form.originNetwork, s.rhEnabled);
+  const sourceChoices = s.rhEnabled
+    ? [BridgeNetwork.SEPOLIA, BridgeNetwork.GOLIATH, BridgeNetwork.ROBINHOOD]
+    : [BridgeNetwork.SEPOLIA, BridgeNetwork.GOLIATH];
+  const label = !s.account
+    ? t('connectWallet')
+    : !s.walletMatches
+    ? t('switchTo', { network: NETWORK_METADATA[form.originNetwork].shortName })
+    : s.busy
+    ? t('confirming')
+    : s.canApprove
+    ? t('approve')
+    : t('confirmBridge');
+  const disabled = s.busy || (!!s.account && s.walletMatches && !s.canApprove && !s.canConfirm);
+  const action = () =>
+    !s.account ? s.connect() : !s.walletMatches ? s.switchToSource() : s.canApprove ? s.approve() : s.openConfirm();
   return (
-    <Wrapper>
+    <Wrapper data-testid="standard-bridge-form">
       <AutoColumn gap="md">
         <FormContainer>
           <NetworkRow>
             <NetworkSelector
-              selectedNetwork={originNetwork}
-              onSelect={setOriginNetwork}
+              selectedNetwork={form.originNetwork}
+              onSelect={(network) => dispatch(bridgeActions.setOriginNetwork(network))}
               label={t('from')}
+              allowedNetworks={sourceChoices}
             />
           </NetworkRow>
-
           <BridgeAmountInput
-            value={inputAmount}
-            onUserInput={setInputAmount}
-            selectedToken={selectedToken}
-            onTokenSelect={setSelectedToken}
-            balance={originBalance}
-            onMax={setMaxAmount}
-            showMaxButton={true}
-            minAmountFormatted={minAmountFormatted}
+            value={form.inputAmount}
+            onUserInput={(amount) => dispatch(bridgeActions.setInputAmount(amount))}
+            selectedAssetKey={form.selectedAssetKey}
+            assetKeys={s.route.assets}
+            onTokenSelect={(key) => dispatch(bridgeActions.setSelectedAsset(key))}
+            balance={observationText(s.sourceBalance)}
+            onMax={s.setMax}
+            showMaxButton={s.maxEnabled}
           />
-
-          <DirectionSwapButton onClick={swapDirection} />
-
+          <DirectionSwapButton onClick={() => dispatch(bridgeActions.swapDirection())} />
           <NetworkRow>
             <NetworkSelector
-              selectedNetwork={destinationNetwork}
-              onSelect={() => {}}
+              selectedNetwork={form.destinationNetwork}
+              onSelect={(network) => dispatch(bridgeActions.setDestinationNetwork(network))}
               label={t('toLabel')}
-              disabled
+              allowedNetworks={destinationChoices}
+              disabled={destinationChoices.length === 1}
             />
           </NetworkRow>
-
           <OutputContainer>
             <OutputLabel>{t('youWillReceiveBridge')}</OutputLabel>
             <OutputAmount>
-              {outputAmount || '0'} {selectedToken}
+              <ObservationValue value={s.net} symbol={s.asset.symbol} inputAmount={form.inputAmount} />
             </OutputAmount>
-            <OutputBalance>
-              {t('balanceLabel')} {destinationBalance} {selectedToken}
-            </OutputBalance>
           </OutputContainer>
         </FormContainer>
-
+        {s.recipientEditable && (
+          <label>
+            {t('recipient')} · {NETWORK_METADATA[form.destinationNetwork].displayName}
+            <input
+              aria-label="Bridge recipient"
+              value={form.recipient || ''}
+              placeholder={s.account || '0x…'}
+              onChange={(event) => dispatch(bridgeActions.setRecipient(event.target.value || null))}
+              style={{ display: 'block', width: '100%', boxSizing: 'border-box', padding: '8px', marginTop: '6px' }}
+            />
+          </label>
+        )}
         <BridgeSummary
-          direction={direction}
-          recipient={null}
-          account={account}
-          token={selectedToken}
-          inputAmount={inputAmount}
-          feeQuote={feeQuote}
-          isFeeLoading={isFeeLoading}
-          feeError={feeError}
+          symbol={s.asset.symbol}
+          inputAmount={form.inputAmount}
+          fee={s.fee}
+          net={s.net}
+          eta={s.eta}
+          perTxMax={s.perTxMax}
+          remainingCapacity={s.remainingCapacity}
         />
-
-        {originNetwork === BridgeNetwork.GOLIATH && selectedToken === 'ETH' && (
-          <InfoMessage>
-            {t('testnetLimitMessage', { amount: GOLIATH_TO_SEPOLIA_MAX_ETH })}
-          </InfoMessage>
-        )}
-
-        {validation.errorMessage && <ErrorMessage>{translateText(validation.errorMessage)}</ErrorMessage>}
-
-        {buttonState.variant === 'error' ? (
-          <ErrorButton onClick={handleButtonClick} disabled={buttonState.disabled}>
-            {translateText(buttonState.text)}
-          </ErrorButton>
-        ) : (
-          <ActionButton onClick={handleButtonClick} disabled={buttonState.disabled}>
-            {translateText(buttonState.text)}
-          </ActionButton>
-        )}
+        <OutputContainer as="section" aria-label="Your balances">
+          <OutputLabel>{t('bridgeBalances')}</OutputLabel>
+          <button type="button" onClick={() => s.refreshBalances()}>
+            Refresh balances
+          </button>
+          <OutputBalance>
+            {s.asset.symbol} · {NETWORK_METADATA[form.originNetwork].displayName}:{' '}
+            <ObservationValue value={s.sourceBalance} symbol={s.asset.symbol} />
+          </OutputBalance>
+          <OutputBalance>
+            {s.asset.symbol} · {NETWORK_METADATA[form.destinationNetwork].displayName}:{' '}
+            <ObservationValue value={s.destinationBalance} symbol={s.asset.symbol} />
+          </OutputBalance>
+          {s.asset.symbol === 'ETH' && <OutputBalance>{bridgeAssetDisplayName(s.asset)}</OutputBalance>}
+        </OutputContainer>
+        {s.notice && <ErrorMessage role="status">{t(s.notice)}</ErrorMessage>}
+        {disabled && s.account && s.actionReason && <p role="status">{s.actionReason}</p>}
+        <ButtonPrimary onClick={action} disabled={disabled}>
+          {label}
+        </ButtonPrimary>
       </AutoColumn>
     </Wrapper>
+  );
+}
+export default function BridgeForm() {
+  const session = useOptionalBridgeSession();
+  return session ? (
+    <StandardCard />
+  ) : (
+    <BridgeSessionProvider>
+      <StandardCard />
+    </BridgeSessionProvider>
   );
 }

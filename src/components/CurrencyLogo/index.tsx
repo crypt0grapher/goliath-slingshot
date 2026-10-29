@@ -14,7 +14,7 @@ const getTokenLogoURL = (address: string) =>
 // Custom logos for Goliath testnet tokens with local fallbacks
 // Format: { address: [primarySource, ...fallbackSources] } or { address: singleSource }
 const GOLIATH_TOKEN_LOGOS: { [address: string]: string | string[] } = {
-  '0x88A07F7BBb61A2945D8Ac541461fc62efb1F4066': 'https://bridge.onyx.org/img/networks/80888.svg', // WXCN
+  '0x88A07F7BBb61A2945D8Ac541461fc62efb1F4066': '/images/tokens/xcn.png', // WXCN
   '0x4BE65Dce1D79B8728485B759eE06cC8053E824F4': 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48/logo.png', // USDC
   '0x03cDCCa25A46Bc5F3F484096217de52C8C417c9D': 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xdAC17F958D2ee523a2206206994597C13D831ec7/logo.png', // USDT
   '0xEd02AA7dd3f105EDab8702D859781CAfF111324b': 'https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/ethereum/assets/0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2/logo.png', // ETH
@@ -79,7 +79,7 @@ export default function CurrencyLogo({
   // For Goliath network, use XCN logo for native token
   if (currency === ETHER) {
     const isGoliath = chainId === (8901 as any);
-    const logoSrc = isGoliath ? 'https://bridge.onyx.org/img/networks/80888.svg' : EthereumLogo;
+    const logoSrc = isGoliath ? '/images/tokens/xcn.png' : EthereumLogo;
     return <StyledEthereumLogo src={logoSrc} size={size} style={style} />;
   }
 

@@ -1,7 +1,7 @@
 import { ChainId } from '@uniswap/sdk';
 import React from 'react';
 import { Text } from 'rebass';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { darken } from 'polished';
 import styled from 'styled-components';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,8 @@ import { useDarkModeManager } from '../../state/user/hooks';
 import { useETHBalances } from '../../state/wallet/hooks';
 import { migrationConfig } from '../../config/migrationConfig';
 import { stakingConfig } from '../../config/stakingConfig';
+import { useBridgeSourceSwitch } from '../../hooks/bridge/useBridgeSourceSwitch';
+import { RH_TESTNET_CHAIN_ID } from '../../constants/rhBridge';
 
 import { LightCard } from '../Card';
 import { Moon, Sun, HelpCircle } from 'react-feather';
@@ -371,7 +373,7 @@ const NETWORK_LABELS: { [chainId: number]: string } = {
   [ChainId.ROPSTEN]: 'Ropsten',
   [ChainId.GÖRLI]: 'Goerli',
   [ChainId.KOVAN]: 'Kovan',
-  8901: 'Goliath Testnet',
+  8901: 'Onyx Testnet',
   11155111: 'Sepolia',
 };
 
@@ -381,16 +383,26 @@ export default function Header() {
   const userEthBalance = useETHBalances(account ? [account] : [])?.[account ?? ''];
   const [darkMode, toggleDarkMode] = useDarkModeManager();
   const { switchToGoliath, isLoading: isSwitchingNetwork } = useNetworkSwitch();
+  const { pathname } = useLocation();
+  const bridgeSource = useBridgeSourceSwitch(pathname === '/bridge');
 
-  const isWrongNetwork = account && chainId && chainId !== GOLIATH_TESTNET_CHAIN_ID;
-  const networkName = chainId && NETWORK_LABELS[chainId] ? NETWORK_LABELS[chainId] : `Chain ${chainId}`;
+  const isRobinhoodNetwork = Number(chainId) === RH_TESTNET_CHAIN_ID;
+  const bridgePage = pathname === '/bridge';
+  const targetChain = bridgePage ? bridgeSource.source.chainId : GOLIATH_TESTNET_CHAIN_ID;
+  const isWrongNetwork = account && chainId && chainId !== targetChain;
+  const networkName = isRobinhoodNetwork
+    ? 'Robinhood Chain Testnet'
+    : chainId && NETWORK_LABELS[chainId]
+    ? NETWORK_LABELS[chainId]
+    : `Chain ${chainId}`;
+  const nativeSymbol = isRobinhoodNetwork || Number(chainId) === 11155111 ? 'ETH' : 'XCN';
 
   return (
     <HeaderFrame>
       <HeaderRow>
         <Title href=".">
           <Icon>
-            <LogoImg width={'100px'} src="https://testnet.explorer.goliath.net/assets/configs/network_logo.svg" alt="logo" invert={darkMode} />
+            <LogoImg width={'100px'} src="/images/onyx-logo.png" alt="Onyx" invert={darkMode} />
           </Icon>
         </Title>
       </HeaderRow>
@@ -418,8 +430,9 @@ export default function Header() {
         {migrationConfig.migrationEnabled && (
           <StyledNavLink id={`migrate-nav-link`} to={'/migrate'}>
             {t('migration.nav.title')}
-            {migrationConfig.migrationDeadline &&
-              new Date() < new Date(migrationConfig.migrationDeadline) && <DeadlineDot />}
+            {migrationConfig.migrationDeadline && new Date() < new Date(migrationConfig.migrationDeadline) && (
+              <DeadlineDot />
+            )}
           </StyledNavLink>
         )}
         {stakingConfig.stakingEnabled ? (
@@ -427,9 +440,7 @@ export default function Header() {
             {t('yield')}
           </StyledNavLink>
         ) : (
-          <DisabledNavLink id={`yield-nav-link`}>
-            {t('yield')}
-          </DisabledNavLink>
+          <DisabledNavLink id={`yield-nav-link`}>{t('yield')}</DisabledNavLink>
         )}
       </HeaderLinks>
 
@@ -438,29 +449,34 @@ export default function Header() {
           <HideSmall>
             {isWrongNetwork ? (
               <WrongNetworkButton
-                onClick={switchToGoliath}
-                disabled={isSwitchingNetwork}
-                title={`Connected to ${networkName}. Click to switch to Goliath Testnet.`}
+                onClick={bridgePage ? bridgeSource.switchToSource : switchToGoliath}
+                disabled={bridgePage ? bridgeSource.busy : isSwitchingNetwork}
+                title={`Connected to ${networkName}. Click to switch to ${
+                  bridgePage ? bridgeSource.source.displayName : 'Onyx Testnet'
+                }.`}
               >
-                {isSwitchingNetwork ? 'Switching...' : networkName}
+                {(bridgePage ? bridgeSource.busy : isSwitchingNetwork) ? 'Switching...' : networkName}
               </WrongNetworkButton>
             ) : (
-              chainId === GOLIATH_TESTNET_CHAIN_ID && (
-                <NetworkCard title="Goliath Testnet">Goliath Testnet</NetworkCard>
-              )
+              chainId === targetChain && <NetworkCard title={networkName}>{networkName}</NetworkCard>
             )}
           </HideSmall>
           <AccountElement active={!!account} style={{ pointerEvents: 'auto' }}>
             {account && userEthBalance ? (
               <BalanceText style={{ flexShrink: 0 }} pl="0.75rem" pr="0.5rem" fontWeight={500}>
-                {userEthBalance?.toSignificant(7)} XCN
+                {userEthBalance?.toSignificant(7)} {nativeSymbol}
               </BalanceText>
             ) : null}
             <Web3Status />
           </AccountElement>
         </HeaderElement>
         <HeaderElementWrap>
-          <StyledDocsLink href="https://docs.goliath.net" target="_blank" rel="noopener noreferrer" title="Documentation">
+          <StyledDocsLink
+            href="https://docs.goliath.net"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Documentation"
+          >
             <HelpCircle size={20} />
           </StyledDocsLink>
           <StyledMenuButton onClick={toggleDarkMode}>

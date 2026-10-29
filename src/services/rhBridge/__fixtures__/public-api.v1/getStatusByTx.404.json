@@ -1,0 +1,21 @@
+{
+  "fixture": "getStatusByTx.404",
+  "note": "Source not yet finalized and recorded; keep polling.",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/status/by-tx/0x25c5518ceefb4dfc1c4e3080fd860b77820a947f24baabdc43da47638e118415",
+    "query": {}
+  },
+  "response": {
+    "status": 404,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "code": "NOT_FOUND",
+        "message": "Not found"
+      }
+    }
+  }
+}

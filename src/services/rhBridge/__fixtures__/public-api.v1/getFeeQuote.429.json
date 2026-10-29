@@ -1,0 +1,22 @@
+{
+  "fixture": "getFeeQuote.429",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/fee-quote",
+    "query": {
+      "gross": "1000000000000000001"
+    }
+  },
+  "response": {
+    "status": 429,
+    "headers": {
+      "content-type": "application/json; charset=utf-8"
+    },
+    "body": {
+      "error": {
+        "code": "RATE_LIMITED",
+        "message": "Too many requests"
+      }
+    }
+  }
+}

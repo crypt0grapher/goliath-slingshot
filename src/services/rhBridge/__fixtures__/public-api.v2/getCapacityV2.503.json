@@ -1,0 +1,32 @@
+{
+  "fixture": "getCapacityV2.503",
+  "operationId": "getCapacityV2",
+  "classification": "SYNTHETIC_OFFLINE_NOT_DEPLOYMENT_AUTHORITY",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/v2/capacity",
+    "query": {
+      "assetId": "RH_ETH",
+      "profileSha256": "8d8a6990604866b3e05aca52bb67ffe36b4a682fcc1ce0bfe0c6a548213df821",
+      "direction": "RH_TO_ONYX"
+    }
+  },
+  "response": {
+    "status": 503,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "no-referrer",
+      "vary": "Origin",
+      "x-request-id": "synthetic_request"
+    },
+    "body": {
+      "error": {
+        "code": "SERVICE_UNAVAILABLE",
+        "message": "Request unavailable.",
+        "requestId": "synthetic_request"
+      }
+    }
+  }
+}

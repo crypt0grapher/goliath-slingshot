@@ -2,12 +2,7 @@ import { useCallback, useMemo, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useActiveWeb3React } from '../index';
 import { bridgeActions } from '../../state/bridge/reducer';
-import {
-  selectBridgeForm,
-  selectIsSubmitting,
-  selectIsApproving,
-  selectDirection,
-} from '../../state/bridge/selectors';
+import { selectBridgeForm, selectIsSubmitting, selectIsApproving, selectDirection } from '../../state/bridge/selectors';
 import { useBridgeAllowance } from './useBridgeAllowance';
 import { useBridgeBalances } from './useBridgeBalances';
 import { useBridgeFee } from './useBridgeFee';
@@ -19,8 +14,13 @@ import { bridgeConfig } from '../../config/bridgeConfig';
 import { formatAmount, calculateMaxSpendable } from '../../utils/bridge/amounts';
 import { BridgeDirection } from '../../state/bridge/types';
 import { FeeQuoteResponse } from '../../services/bridgeApi';
+import { BRIDGE_ASSETS, routeFor } from '../../constants/bridge/registry';
+const SAFETY_TIMEOUT_MS = 7 * 60 * 1000;
 
 export interface UseBridgeFormReturn {
+  active: boolean;
+  balanceError: string | null;
+  destinationBalanceError: string | null;
   // Form values
   originNetwork: BridgeNetwork;
   destinationNetwork: BridgeNetwork;
@@ -34,6 +34,9 @@ export interface UseBridgeFormReturn {
   // Fee data
   feeQuote: FeeQuoteResponse | null;
   isFeeLoading: boolean;
+  isFeeStale: boolean;
+  refreshQuote: () => void;
+  quoteExpiresAt?: number;
   feeError: string | null;
 
   // Limits data
@@ -70,12 +73,21 @@ export interface UseBridgeFormReturn {
   triggerBalanceRefresh: () => void;
 }
 
-export function useBridgeForm(): UseBridgeFormReturn {
+export function useBridgeForm(enabled = true): UseBridgeFormReturn {
   const dispatch = useDispatch();
   const { account, chainId } = useActiveWeb3React();
 
   // Redux state
-  const form = useSelector(selectBridgeForm);
+  const selection = useSelector(selectBridgeForm);
+  const active = enabled && routeFor(selection.originNetwork, selection.destinationNetwork)?.engine === 'LEGACY';
+  const selectedToken = BRIDGE_ASSETS[selection.selectedAssetKey].legacyToken || 'ETH';
+  // Inactive legacy hooks receive a safe projection and skip reads. RH is never interpreted as Onyx.
+  const form = {
+    originNetwork: active ? selection.originNetwork : BridgeNetwork.SEPOLIA,
+    destinationNetwork: active ? selection.destinationNetwork : BridgeNetwork.GOLIATH,
+    selectedToken,
+    inputAmount: active ? selection.inputAmount : '',
+  };
   const direction = useSelector(selectDirection);
   const isSubmitting = useSelector(selectIsSubmitting);
   const isApproving = useSelector(selectIsApproving);
@@ -83,7 +95,6 @@ export function useBridgeForm(): UseBridgeFormReturn {
   // Safety timeout: auto-reset isSubmitting after 7 minutes to recover from any stuck state
   // This is a defense-in-depth mechanism in case the primary try-finally blocks fail
   const submittingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const SAFETY_TIMEOUT_MS = 7 * 60 * 1000; // 7 minutes
 
   useEffect(() => {
     if (isSubmitting) {
@@ -112,14 +123,16 @@ export function useBridgeForm(): UseBridgeFormReturn {
     balance: originBalance,
     balanceAtomic,
     isLoading: isBalanceLoading,
+    error: balanceError,
     triggerAggressivePolling: triggerOriginPolling,
-  } = useBridgeBalances(form.selectedToken, form.originNetwork);
+  } = useBridgeBalances(form.selectedToken, form.originNetwork, active);
 
   const {
     balance: destinationBalance,
     isLoading: isDestinationBalanceLoading,
+    error: destinationBalanceError,
     triggerAggressivePolling: triggerDestPolling,
-  } = useBridgeBalances(form.selectedToken, form.destinationNetwork);
+  } = useBridgeBalances(form.selectedToken, form.destinationNetwork, active);
 
   // Combined function to refresh both balances (call after transactions)
   const triggerBalanceRefresh = useCallback(() => {
@@ -130,15 +143,16 @@ export function useBridgeForm(): UseBridgeFormReturn {
 
   // Allowance (only for ERC-20 tokens)
   const needsApprovalCheck = tokenRequiresApproval(form.selectedToken, form.originNetwork);
-  const { hasAllowance, isLoading: isAllowanceLoading, refetch: refetchAllowance } = useBridgeAllowance(
-    form.selectedToken,
-    form.originNetwork,
-    form.inputAmount,
-    { skip: !needsApprovalCheck }
-  );
+  const {
+    hasAllowance,
+    isLoading: isAllowanceLoading,
+    refetch: refetchAllowance,
+  } = useBridgeAllowance(form.selectedToken, form.originNetwork, form.inputAmount, {
+    skip: !active || !needsApprovalCheck,
+  });
 
   // Limits (fetched once on mount)
-  const { getMinAmount } = useBridgeLimits();
+  const { getMinAmount } = useBridgeLimits(active);
 
   // Determine effective minimum amount
   const limitsMinAmount = useMemo(() => {
@@ -146,13 +160,21 @@ export function useBridgeForm(): UseBridgeFormReturn {
   }, [getMinAmount, form.selectedToken, direction]);
 
   const effectiveMinAmount = limitsMinAmount?.formatted ?? bridgeConfig.minAmount;
-  const minAmountFormatted = direction === 'GOLIATH_TO_SEPOLIA' ? (limitsMinAmount?.formatted ?? null) : null;
+  const minAmountFormatted = direction === 'GOLIATH_TO_SEPOLIA' ? limitsMinAmount?.formatted ?? null : null;
 
   // Fee quote (debounced, only for G2S)
-  const { feeQuote, isLoading: isFeeLoading, error: feeError } = useBridgeFee({
+  const {
+    feeQuote,
+    isLoading: isFeeLoading,
+    isStale: isFeeStale,
+    refetch: refreshQuote,
+    expiresAt: quoteExpiresAt,
+    error: feeError,
+  } = useBridgeFee({
     amount: form.inputAmount,
     token: form.selectedToken,
     direction,
+    enabled: active,
   });
 
   // Output amount: use fee quote if available, otherwise input amount (1:1)
@@ -160,7 +182,7 @@ export function useBridgeForm(): UseBridgeFormReturn {
     if (direction === 'GOLIATH_TO_SEPOLIA' && feeQuote) {
       return feeQuote.outputFormatted;
     }
-    return form.inputAmount;
+    return direction === 'GOLIATH_TO_SEPOLIA' ? '' : form.inputAmount;
   }, [direction, feeQuote, form.inputAmount]);
 
   // Validation
@@ -173,9 +195,18 @@ export function useBridgeForm(): UseBridgeFormReturn {
       inputAmount: form.inputAmount,
       originBalance,
       minAmount: effectiveMinAmount,
-      bridgeEnabled: bridgeConfig.bridgeEnabled,
+      bridgeEnabled: active && bridgeConfig.bridgeEnabled,
     });
-  }, [account, chainId, form.originNetwork, form.selectedToken, form.inputAmount, originBalance, effectiveMinAmount]);
+  }, [
+    active,
+    account,
+    chainId,
+    form.originNetwork,
+    form.selectedToken,
+    form.inputAmount,
+    originBalance,
+    effectiveMinAmount,
+  ]);
 
   // Derived: needs approval
   const needsApproval = useMemo(() => {
@@ -211,22 +242,21 @@ export function useBridgeForm(): UseBridgeFormReturn {
   );
 
   const setMaxAmount = useCallback(() => {
-    if (balanceAtomic > BigInt(0)) {
-      const maxSpendable = calculateMaxSpendable(
-        balanceAtomic,
-        form.selectedToken,
-        form.originNetwork
-      );
+    if (active && !balanceError && !isBalanceLoading && balanceAtomic > BigInt(0)) {
+      const maxSpendable = calculateMaxSpendable(balanceAtomic, form.selectedToken, form.originNetwork);
       const maxFormatted = formatAmount(maxSpendable, form.selectedToken, form.originNetwork);
       dispatch(bridgeActions.setInputAmount(maxFormatted));
     }
-  }, [balanceAtomic, form.selectedToken, form.originNetwork, dispatch]);
+  }, [active, balanceError, isBalanceLoading, balanceAtomic, form.selectedToken, form.originNetwork, dispatch]);
 
   const resetForm = useCallback(() => {
     dispatch(bridgeActions.resetForm());
   }, [dispatch]);
 
   return {
+    active,
+    balanceError,
+    destinationBalanceError,
     // Form values
     originNetwork: form.originNetwork,
     destinationNetwork: form.destinationNetwork,
@@ -240,6 +270,9 @@ export function useBridgeForm(): UseBridgeFormReturn {
     // Fee data
     feeQuote,
     isFeeLoading,
+    isFeeStale,
+    refreshQuote,
+    quoteExpiresAt,
     feeError,
 
     // Limits data

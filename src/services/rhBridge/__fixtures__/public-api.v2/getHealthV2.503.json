@@ -1,0 +1,54 @@
+{
+  "fixture": "getHealthV2.503",
+  "operationId": "getHealthV2",
+  "classification": "SYNTHETIC_OFFLINE_NOT_DEPLOYMENT_AUTHORITY",
+  "request": {
+    "method": "GET",
+    "path": "/api/v1/rh/v2/health",
+    "query": {}
+  },
+  "response": {
+    "status": 503,
+    "headers": {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff",
+      "referrer-policy": "no-referrer",
+      "vary": "Origin",
+      "x-request-id": "synthetic_request"
+    },
+    "body": {
+      "status": "down",
+      "observedAt": "2026-10-23T19:00:00Z",
+      "components": {
+        "database": "down",
+        "api": "ok",
+        "watcher": "ok",
+        "submitter": "ok",
+        "signer": "ok"
+      },
+      "assets": [
+        {
+          "binding": {
+            "assetId": "RH_ETH",
+            "profileSha256": "8d8a6990604866b3e05aca52bb67ffe36b4a682fcc1ce0bfe0c6a548213df821",
+            "profileVersion": 2,
+            "abiVersion": "rh-native-bridge-abi-synthetic-v1"
+          },
+          "status": "degraded",
+          "consumersReady": false
+        },
+        {
+          "binding": {
+            "assetId": "TSLA",
+            "profileSha256": "38a14bcb94536c4efb8d62d9d0a42ae702117db3e495f6884cf25839da47ee8e",
+            "profileVersion": 1,
+            "abiVersion": "rh-stock-bridge-abi-12fc53612bcf"
+          },
+          "status": "ok",
+          "consumersReady": true
+        }
+      ]
+    }
+  }
+}
